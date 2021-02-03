@@ -2,8 +2,6 @@ with RP.ROM;
 pragma Unreferenced (RP.ROM);
 
 package Runtime is
-   procedure Wait_For_Interrupt;
-
    --  crt0.S expects this symbol to exist. It is called after main returns.
    procedure OS_Exit (Status : Integer)
       with Export        => True,

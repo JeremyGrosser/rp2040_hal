@@ -1,11 +1,4 @@
-with System.Machine_Code;
-
 package body Runtime is
-   procedure Wait_For_Interrupt is
-   begin
-      System.Machine_Code.Asm ("wfi", Volatile => True);
-   end Wait_For_Interrupt;
-
    procedure OS_Exit
       (Status : Integer)
    is
