@@ -1,4 +1,5 @@
 with RP.ROM;
+pragma Unreferenced (RP.ROM);
 
 package Runtime is
    procedure Wait_For_Interrupt;
