@@ -1,7 +1,7 @@
 with Cortex_M_SVD.SysTick;  use Cortex_M_SVD.SysTick;
 with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
+with System.Machine_Code;
 with RP.Clock;
-with Runtime;
 
 package body RP.SysTick is
    procedure Enable is
@@ -50,12 +50,12 @@ package body RP.SysTick is
       --  Handle UInt32 overflow gracefully
       if Ticks > T then
          while Ticks > T loop
-            Runtime.Wait_For_Interrupt;
+            System.Machine_Code.Asm ("wfi", Volatile => True);
          end loop;
       end if;
 
       while Ticks < T loop
-         Runtime.Wait_For_Interrupt;
+         System.Machine_Code.Asm ("wfi", Volatile => True);
       end loop;
    end Delay_Milliseconds;
 
