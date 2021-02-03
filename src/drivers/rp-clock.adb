@@ -82,8 +82,6 @@ package body RP.Clock is
    procedure Initialize
       (XOSC_Frequency : XOSC_Hertz := 0)
    is
-      PLL_SYS_Frequency : constant Hertz := 125_000_000;
-      PLL_USB_Frequency : constant Hertz :=  48_000_000;
       Has_XOSC          : constant Boolean := XOSC_Frequency > 0;
       Reference         : Hertz;
    begin

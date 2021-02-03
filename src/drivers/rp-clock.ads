@@ -3,7 +3,6 @@ with RP2040_SVD.PLL; use RP2040_SVD.PLL;
 with RP2040_SVD;
 with System;
 with HAL; use HAL;
-with HAL.Time;
 
 package RP.Clock is
    --  If XOSC_Frequency = 0 then the internal ROSC is used.

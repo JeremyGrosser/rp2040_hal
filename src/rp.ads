@@ -3,8 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with HAL;
-
 package RP is
    Not_Implemented : exception;
 
