@@ -3,6 +3,10 @@ with RP.Clock;   use RP.Clock;
 with RP.SPI;     use RP.SPI;
 with RP.SysTick;
 
+--  RP.ROM.rom_func_lookup needs to be linked for the startup code
+with RP.ROM;
+pragma Unreferenced (RP.ROM);
+
 package RP.Device is
    SPI_0 : aliased SPI_Port (0, RP2040_SVD.SPI.SPI0_Periph'Access);
    SPI_1 : aliased SPI_Port (1, RP2040_SVD.SPI.SPI1_Periph'Access);

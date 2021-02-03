@@ -4,8 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with RP2040_SVD; use RP2040_SVD;
-with HAL;        use HAL;
+with HAL; use HAL;
 with Interfaces.C;
 with System;
 
