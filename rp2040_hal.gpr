@@ -7,10 +7,12 @@ project Rp2040_Hal is
        ("src",
         "src/drivers",
         "src/svd",
-        "src/devices/RP2040");
+        "src/devices/RP2040",
+        "startup");
 
    for Object_Dir use "obj/RP2040";
 
+   for Languages use ("Ada", "Asm_CPP");
    for Target use "arm-eabi";
    for Runtime ("Ada") use "zfp-cortex-m0p";
 
