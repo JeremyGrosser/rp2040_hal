@@ -16,8 +16,10 @@ package RP.GPIO is
    type GPIO_Point (Pin : GPIO_Pin) is new HAL.GPIO.GPIO_Point with
       null record;
 
+   type GPIO_Config_Mode is (Input, Output, Analog);
+
    type GPIO_Function is
-      (SPI, UART, I2C, PWM, SIO, PIO_0, PIO_1, CLOCK, USB, None);
+      (SPI, UART, I2C, PWM, SIO, PIO_0, PIO_1, CLOCK, USB, HI_Z);
 
    for GPIO_Function use
       (SPI   => 1,
@@ -29,7 +31,7 @@ package RP.GPIO is
        PIO_1 => 7,
        CLOCK => 8,
        USB   => 9,
-       None  => 31);
+       HI_Z  => 31);
 
    type Interrupt_Triggers is (Rising_Edge, Falling_Edge, High_Level, Low_Level);
    type Interrupt_Procedure is access procedure;
@@ -38,7 +40,7 @@ package RP.GPIO is
 
    procedure Configure
       (This : in out GPIO_Point;
-       Mode : HAL.GPIO.GPIO_Config_Mode;
+       Mode : GPIO_Config_Mode;
        Pull : HAL.GPIO.GPIO_Pull_Resistor := HAL.GPIO.Floating;
        Func : GPIO_Function := SIO);
 
@@ -112,7 +114,7 @@ private
       return GPIO_Pin_Mask;
 
    type GPIO_CTRL_Register is record
-      FUNCSEL : GPIO_Function := None;
+      FUNCSEL : GPIO_Function := HI_Z;
       OUTOVER : GPIO0_CTRL_OUTOVER_Field := NORMAL;
       OEOVER  : GPIO0_CTRL_OEOVER_Field := NORMAL;
       INOVER  : GPIO0_CTRL_INOVER_Field := NORMAL;

@@ -34,8 +34,7 @@ project Rp2040_Hal is
       when "enabled" =>
          Compile_Checks_Switches :=
            ("-gnatwa",  -- All warnings
-            "-gnatVa",  -- All validity checks
-            "-gnatwe"); -- Warnings as errors
+            "-gnatVa"); -- All validity checks
       when others => null;
    end case;
 
@@ -72,8 +71,7 @@ project Rp2040_Hal is
          Build_Switches := ("-O3",     -- Optimization
                             "-gnatn"); -- Enable inlining
       when "debug" =>
-         Build_Switches := ("-g",   -- Debug info
-                            "-Og"); -- No optimization
+         Build_Switches := ("-g");   -- Debug info
    end case;
 
    package Compiler is

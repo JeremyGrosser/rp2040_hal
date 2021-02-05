@@ -82,8 +82,8 @@ package body RP.Clock is
    procedure Initialize
       (XOSC_Frequency : XOSC_Hertz := 0)
    is
-      Has_XOSC          : constant Boolean := XOSC_Frequency > 0;
-      Reference         : Hertz;
+      Has_XOSC  : constant Boolean := XOSC_Frequency > 0;
+      Reference : Hertz;
    begin
       --  Enable RESUS in case things go badly
       CLOCKS_Periph.CLK_SYS_RESUS_CTRL.ENABLE := True;
@@ -157,18 +157,30 @@ package body RP.Clock is
 
       --  Switch clk_usb to pll_usb
       CLOCKS_Periph.CLK (USB).DIV.INT := 1;
-      CLOCKS_Periph.CLK (USB).CTRL.AUXSRC := PLL_USB;
+      CLOCKS_Periph.CLK (USB).CTRL.AUXSRC := PLL_SYS; -- the AUXSRC enum has the wrong name for some registers
+      while CLOCKS_Periph.CLK (USB).SELECTED /= CLK_SELECTED_Mask (USB_SRC_USB) loop
+         null;
+      end loop;
 
       --  Switch clk_adc to pll_usb
       CLOCKS_Periph.CLK (ADC).DIV.INT := 1;
-      CLOCKS_Periph.CLK (ADC).CTRL.AUXSRC := PLL_USB;
+      CLOCKS_Periph.CLK (ADC).CTRL.AUXSRC := PLL_SYS;
+      while CLOCKS_Periph.CLK (ADC).SELECTED /= CLK_SELECTED_Mask (ADC_SRC_USB) loop
+         null;
+      end loop;
 
       --  Switch clk_rtc to pll_usb / 1024 = 46_875 Hz
       CLOCKS_Periph.CLK (RTC).DIV := (INT => 1024, FRAC => 0);
-      CLOCKS_Periph.CLK (RTC).CTRL.AUXSRC := PLL_USB;
+      CLOCKS_Periph.CLK (RTC).CTRL.AUXSRC := PLL_SYS;
+      while CLOCKS_Periph.CLK (RTC).SELECTED /= CLK_SELECTED_Mask (RTC_SRC_USB) loop
+         null;
+      end loop;
 
       --  Switch clk_peri to pll_sys
       CLOCKS_Periph.CLK (PERI).CTRL.AUXSRC := PLL_SYS;
+      while CLOCKS_Periph.CLK (PERI).SELECTED /= CLK_SELECTED_Mask (PERI_SRC_SYS) loop
+         null;
+      end loop;
    end Initialize;
 
    procedure Enable
@@ -184,6 +196,9 @@ package body RP.Clock is
    is
       use type RP2040_SVD.CLOCKS.FC0_SRC_FC0_SRC_Field;
    begin
+      --  Get the most accurate clock reading we can.
+      CLOCKS_Periph.FC0_INTERVAL.FC0_INTERVAL := FC0_INTERVAL_FC0_INTERVAL_Field'Last;
+
       case CID is
          when REF  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_ref;
          when SYS  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_sys;

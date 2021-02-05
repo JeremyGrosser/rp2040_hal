@@ -71,6 +71,10 @@ private
    REF_SRC_XOSC : constant CLK_CTRL_SRC_Field := 2;
    SYS_SRC_REF  : constant CLK_CTRL_SRC_Field := 0;
    SYS_SRC_AUX  : constant CLK_CTRL_SRC_Field := 1;
+   USB_SRC_USB  : constant CLK_CTRL_SRC_Field := 0;
+   ADC_SRC_USB  : constant CLK_CTRL_SRC_Field := 0;
+   RTC_SRC_USB  : constant CLK_CTRL_SRC_Field := 0;
+   PERI_SRC_SYS : constant CLK_CTRL_SRC_Field := 0;
 
    subtype CLK_CTRL_PHASE_Field is UInt2;
 

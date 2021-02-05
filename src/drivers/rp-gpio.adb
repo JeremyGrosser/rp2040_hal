@@ -23,7 +23,7 @@ package body RP.GPIO is
 
    procedure Configure
       (This : in out GPIO_Point;
-       Mode : HAL.GPIO.GPIO_Config_Mode;
+       Mode : GPIO_Config_Mode;
        Pull : HAL.GPIO.GPIO_Pull_Resistor := HAL.GPIO.Floating;
        Func : GPIO_Function := SIO)
    is
@@ -102,7 +102,12 @@ package body RP.GPIO is
        Mode : HAL.GPIO.GPIO_Config_Mode)
    is
    begin
-      Configure (This, Mode);
+      case Mode is
+         when HAL.GPIO.Input =>
+            Configure (This, Input);
+         when HAL.GPIO.Output =>
+            Configure (This, Output);
+      end case;
    end Set_Mode;
 
    overriding
