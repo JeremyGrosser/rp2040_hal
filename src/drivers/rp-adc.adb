@@ -73,12 +73,11 @@ package body RP.ADC is
    end Read_Microvolts;
 
    function Temperature
+      (Ref_Temp : Celsius := 27;
+       Vbe      : Microvolts := 706_000;
+       Slope    : Microvolts := -1_721)
       return Celsius
    is
-      --  Constants from datasheet section 4.9.4
-      Ref_Temp : constant Celsius := 27;
-      Vbe      : constant Microvolts := 706_000;
-      Slope    : constant Microvolts := -1_721;
    begin
       return Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor) - Vbe) / Slope);
    end Temperature;

@@ -32,7 +32,12 @@ package RP.ADC is
        VREF    : Microvolts := 3_300_000)
        return Microvolts;
 
+   --  Temperature constants from datasheet section 4.9.4
+   --  May need calibration.
    function Temperature
+      (Ref_Temp : Celsius := 27;
+       Vbe      : Microvolts := 706_000;
+       Slope    : Microvolts := -1_721)
       return Celsius;
 
 end RP.ADC;
