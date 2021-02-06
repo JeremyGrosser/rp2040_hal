@@ -17,8 +17,7 @@ project Rp2040_Hal is
    for Runtime ("Ada") use "zfp-cortex-m0p";
 
    Linker_Switches :=
-       ("-T" & Project'Project_Dir & "startup/memmap_default.ld",
-        Project'Project_Dir & "startup/boot2.S");
+       ("-T" & Project'Project_Dir & "startup/memmap_default.ld");
 
    type Enabled_Kind is ("enabled", "disabled");
    Compile_Checks : Enabled_Kind := External ("RP2040_HAL_COMPILE_CHECKS", "enabled");
