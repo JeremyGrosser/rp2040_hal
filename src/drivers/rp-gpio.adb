@@ -14,16 +14,16 @@ package body RP.GPIO is
 
    procedure Enable is
    begin
-      --  Don't reset if we've already done so
-      if RESETS_Periph.RESET_DONE.io_bank0 then
-         return;
-      end if;
       RESETS_Periph.RESET.io_bank0 := False;
       RESETS_Periph.RESET.pads_bank0 := False;
       while not RESETS_Periph.RESET_DONE.io_bank0 or else not RESETS_Periph.RESET_DONE.pads_bank0 loop
          null;
       end loop;
    end Enable;
+
+   function Enabled
+      return Boolean
+   is (RESETS_Periph.RESET_DONE.io_bank0);
 
    procedure Configure
       (This : in out GPIO_Point;

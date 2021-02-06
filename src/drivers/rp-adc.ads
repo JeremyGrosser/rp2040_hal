@@ -7,6 +7,9 @@ package RP.ADC is
 
    Temperature_Sensor : constant ADC_Channel := 4;
 
+   procedure Enable;
+   function Enabled return Boolean;
+
    procedure Configure
       (Channel : ADC_Channel)
    with Pre => RP.Clock.Frequency (RP.Clock.ADC) = 48_000_000;

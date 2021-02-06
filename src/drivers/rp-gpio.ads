@@ -38,6 +38,8 @@ package RP.GPIO is
 
    procedure Enable;
 
+   function Enabled return Boolean;
+
    procedure Configure
       (This : in out GPIO_Point;
        Mode : GPIO_Config_Mode;
