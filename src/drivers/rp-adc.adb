@@ -25,16 +25,22 @@ package body RP.ADC is
    procedure Configure
       (Channel : ADC_Channel)
    is
-      Point : GPIO_Point := (Pin => GPIO_Pin (Channel) + 26);
    begin
-      if not RP.GPIO.Enabled then
-         RP.GPIO.Enable;
-      end if;
-
-      Configure (Point, Analog, HAL.GPIO.Floating, HI_Z);
-
       if Channel = Temperature_Sensor then
          ADC_Periph.CS.TS_EN := True;
+      else
+         if not RP.GPIO.Enabled then
+            RP.GPIO.Enable;
+         end if;
+         declare
+            Point : GPIO_Point := (Pin => GPIO_Pin (Channel) + 26);
+         begin
+            Configure
+               (This => Point,
+                Mode => Analog,
+                Pull => HAL.GPIO.Floating,
+                Func => HI_Z);
+         end;
       end if;
    end Configure;
 
@@ -50,4 +56,30 @@ package body RP.ADC is
       end loop;
       return Analog_Value (ADC_Periph.RESULT.RESULT);
    end Read;
+
+   function Read_Microvolts
+      (Channel : ADC_Channel;
+       VREF    : Microvolts := 3_300_000)
+      return Microvolts
+   is
+      use type Analog_Value;
+      Counts : constant Analog_Value := Read (Channel);
+   begin
+      if Counts = 0 then
+         return 0;
+      else
+         return (VREF / (Microvolts (Analog_Value'Last) + 1)) * Microvolts (Counts);
+      end if;
+   end Read_Microvolts;
+
+   function Temperature
+      return Celsius
+   is
+      --  Constants from datasheet section 4.9.4
+      Ref_Temp : constant Celsius := 27;
+      Vbe      : constant Microvolts := 706_000;
+      Slope    : constant Microvolts := -1_721;
+   begin
+      return Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor) - Vbe) / Slope);
+   end Temperature;
 end RP.ADC;

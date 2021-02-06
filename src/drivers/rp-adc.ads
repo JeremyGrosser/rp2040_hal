@@ -5,6 +5,9 @@ package RP.ADC is
    subtype Analog_Value is HAL.UInt12;
    subtype ADC_Channel is Natural range 0 .. 4;
 
+   type Microvolts is new Integer;
+   type Celsius is new Integer;
+
    Temperature_Sensor : constant ADC_Channel := 4;
 
    procedure Enable;
@@ -17,4 +20,13 @@ package RP.ADC is
    function Read
       (Channel : ADC_Channel)
       return Analog_Value;
+
+   function Read_Microvolts
+      (Channel : ADC_Channel;
+       VREF    : Microvolts := 3_300_000)
+       return Microvolts;
+
+   function Temperature
+      return Celsius;
+
 end RP.ADC;
