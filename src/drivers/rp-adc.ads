@@ -5,7 +5,13 @@ package RP.ADC is
    subtype Analog_Value is HAL.UInt12;
    subtype ADC_Channel is Natural range 0 .. 4;
 
+   --  We definitely don't have the resolution to measure microvolts, but
+   --  keeping everything in these units allows us to do only integer
+   --  arithmetic.
    type Microvolts is new Integer;
+
+   --  The temperature sensor is not terribly accurate, so whole integer
+   --  resolution is fine.
    type Celsius is new Integer;
 
    Temperature_Sensor : constant ADC_Channel := 4;
