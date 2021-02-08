@@ -4,7 +4,7 @@ with RP.GPIO;
 with HAL; use HAL;
 
 package RP.PWM is
-   type PWM_Slice   is range 0 .. 7;
+   type PWM_Slice is range 0 .. 7;
    type PWM_Channel is (A, B);
 
    type PWM_Divider_Mode is

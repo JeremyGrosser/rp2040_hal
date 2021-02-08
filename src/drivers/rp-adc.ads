@@ -37,7 +37,7 @@ package RP.ADC is
    function Temperature
       (Ref_Temp : Celsius := 27;
        Vbe      : Microvolts := 706_000;
-       Slope    : Microvolts := -1_721)
+       Slope    : Microvolts := 1_721)
       return Celsius;
 
 end RP.ADC;
