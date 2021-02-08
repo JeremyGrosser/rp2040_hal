@@ -4,29 +4,33 @@ with HAL.Time;
 package RP.SysTick is
    type Delays is new HAL.Time.Delays with null record;
 
-   procedure Enable;
-   procedure Disable;
+   procedure Enable
+      (This : in out Delays);
+
+   procedure Disable
+      (This : in out Delays);
 
    function Enabled
+      (This : in out Delays)
       return Boolean;
 
    overriding
    procedure Delay_Microseconds
       (This : in out Delays;
        Us   : Integer)
-   with Pre => Enabled;
+   with Pre => Enabled (This);
 
    overriding
    procedure Delay_Milliseconds
       (This : in out Delays;
        Ms   : Integer)
-   with Pre => Enabled;
+   with Pre => Enabled (This);
 
    overriding
    procedure Delay_Seconds
       (This : in out Delays;
        S    : Integer)
-   with Pre => Enabled;
+   with Pre => Enabled (This);
 
 private
 

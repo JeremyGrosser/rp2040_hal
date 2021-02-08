@@ -4,7 +4,10 @@ with System.Machine_Code;
 with RP.Clock;
 
 package body RP.SysTick is
-   procedure Enable is
+   procedure Enable
+      (This : in out Delays)
+   is
+      pragma Unreferenced (This);
    begin
       --  1ms ticks
       SysTick_Periph.RVR.RELOAD := SYST_RVR_RELOAD_Field
@@ -18,14 +21,19 @@ package body RP.SysTick is
           others    => <>);
    end Enable;
 
-   procedure Disable is
+   procedure Disable
+      (This : in out Delays)
+   is
+      pragma Unreferenced (This);
    begin
       SysTick_Periph.CSR.ENABLE := Disable;
    end Disable;
 
    function Enabled
+      (This : in out Delays)
       return Boolean
    is
+      pragma Unreferenced (This);
    begin
       return SysTick_Periph.CSR.ENABLE = Enable;
    end Enabled;
