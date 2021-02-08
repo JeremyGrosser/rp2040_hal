@@ -21,6 +21,23 @@ package body RP.PWM is
       PWM_Periph.EN.CH.Arr (Natural (Slice)) := True;
    end Enable;
 
+   procedure Disable
+      (Slice : PWM_Slice)
+   is
+   begin
+      PWM_Periph.EN.CH.Arr (Natural (Slice)) := False;
+   end Disable;
+
+   procedure Set_Mode
+      (Slice : PWM_Slice;
+       Mode  : PWM_Divider_Mode)
+   is
+      use RP2040_SVD.PWM;
+   begin
+      PWM_Periph.CH (Slice).CSR.DIVMODE :=
+         CH0_CSR_DIVMODE_Field'Enum_Val (PWM_Divider_Mode'Enum_Rep (Mode));
+   end Set_Mode;
+
    procedure Set_Interval
       (Slice  : PWM_Slice;
        Clocks : Period)

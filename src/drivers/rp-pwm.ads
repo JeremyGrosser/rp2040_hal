@@ -7,6 +7,18 @@ package RP.PWM is
    type PWM_Slice   is range 0 .. 7;
    type PWM_Channel is (A, B);
 
+   type PWM_Divider_Mode is
+      (Free_Running,
+       Gated,          --  Slice counter only runs while channel B is high
+       Rising_Edge,    --  Slice counter increments on channel B rising edge
+       Falling_Edge);  --  Slice counter increments on channel B falling edge
+
+   for PWM_Divider_Mode use
+      (Free_Running => 0,
+       Gated        => 1,
+       Rising_Edge  => 2,
+       Falling_Edge => 3);
+
    type PWM_Point is record
       Slice   : PWM_Slice;
       Channel : PWM_Channel;
@@ -20,6 +32,10 @@ package RP.PWM is
    function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
       return PWM_Point;
+
+   procedure Set_Mode
+      (Slice : PWM_Slice;
+       Mode  : PWM_Divider_Mode);
 
    procedure Set_Phase_Correction
       (Slice   : PWM_Slice;
@@ -44,6 +60,9 @@ package RP.PWM is
        Clocks : Period);
 
    procedure Enable
+      (Slice : PWM_Slice);
+
+   procedure Disable
       (Slice : PWM_Slice);
 
 private
