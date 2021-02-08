@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP2040_SVD.ADC; use RP2040_SVD.ADC;
 with RP.GPIO; use RP.GPIO;

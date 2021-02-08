@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with HAL.SPI; use HAL.SPI;
 with RP2040_SVD.SPI;
 with RP.Clock;

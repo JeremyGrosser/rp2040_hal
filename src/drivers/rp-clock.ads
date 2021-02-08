@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
 with RP2040_SVD.PLL; use RP2040_SVD.PLL;
 with RP2040_SVD;

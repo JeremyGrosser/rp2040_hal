@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with Cortex_M_SVD.SysTick;  use Cortex_M_SVD.SysTick;
 with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
 with System.Machine_Code;

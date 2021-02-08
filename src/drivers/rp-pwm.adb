@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 
 package body RP.PWM is
