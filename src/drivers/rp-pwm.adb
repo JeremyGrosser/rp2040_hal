@@ -33,6 +33,11 @@ package body RP.PWM is
       PWM_Periph.EN.CH.Arr (Natural (Slice)) := False;
    end Disable;
 
+   function Enabled
+      (Slice : PWM_Slice)
+      return Boolean
+   is (PWM_Periph.EN.CH.Arr (Natural (Slice)));
+
    procedure Set_Mode
       (Slice : PWM_Slice;
        Mode  : PWM_Divider_Mode)
@@ -63,6 +68,18 @@ package body RP.PWM is
       end if;
    end Set_Duty_Cycle;
 
+   procedure Set_Invert
+      (Point  : PWM_Point;
+       Invert : Boolean)
+   is
+   begin
+      if Point.Channel = A then
+         PWM_Periph.CH (Point.Slice).CSR.A_INV := Invert;
+      else
+         PWM_Periph.CH (Point.Slice).CSR.B_INV := Invert;
+      end if;
+   end Set_Invert;
+
    procedure Set_Phase_Correction
       (Slice   : PWM_Slice;
        Enabled : Boolean)
@@ -70,6 +87,26 @@ package body RP.PWM is
    begin
       PWM_Periph.CH (Slice).CSR.PH_CORRECT := Enabled;
    end Set_Phase_Correction;
+
+   procedure Advance_Phase
+      (Slice : PWM_Slice)
+   is
+   begin
+      PWM_Periph.CH (Slice).CSR.PH_ADV := True;
+      while PWM_Periph.CH (Slice).CSR.PH_ADV loop
+         null;
+      end loop;
+   end Advance_Phase;
+
+   procedure Retard_Phase
+      (Slice : PWM_Slice)
+   is
+   begin
+      PWM_Periph.CH (Slice).CSR.PH_RET := True;
+      while PWM_Periph.CH (Slice).CSR.PH_RET loop
+         null;
+      end loop;
+   end Retard_Phase;
 
    procedure Set_Clock_Divider
       (Slice   : PWM_Slice;

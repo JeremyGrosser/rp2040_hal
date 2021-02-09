@@ -42,16 +42,12 @@ package RP.PWM is
       (Slice : PWM_Slice;
        Mode  : PWM_Divider_Mode);
 
-   procedure Set_Phase_Correction
-      (Slice   : PWM_Slice;
-       Enabled : Boolean);
-
    --  clk_sys gets divided by Divider
    procedure Set_Clock_Divider
       (Slice   : PWM_Slice;
        Divider : Clock_Divider);
 
-   --  on each divided clock cycle, a counter incremented toward Clocks and
+   --  on each divided clock cycle, a counter is incremented toward Clocks and
    --  wraps around when it matches this value
    procedure Set_Interval
       (Slice  : PWM_Slice;
@@ -69,6 +65,26 @@ package RP.PWM is
 
    procedure Disable
       (Slice : PWM_Slice);
+
+   function Enabled
+      (Slice : PWM_Slice)
+      return Boolean;
+
+   procedure Set_Invert
+      (Point  : PWM_Point;
+       Invert : Boolean);
+
+   procedure Set_Phase_Correction
+      (Slice   : PWM_Slice;
+       Enabled : Boolean);
+
+   procedure Advance_Phase
+      (Slice : PWM_Slice)
+      with Pre => Enabled (Slice);
+
+   procedure Retard_Phase
+      (Slice : PWM_Slice)
+      with Pre => Enabled (Slice);
 
 private
 
