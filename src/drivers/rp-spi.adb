@@ -38,8 +38,6 @@ package body RP.SPI is
           SSE    => False,
           others => <>);
 
-      Set_Speed (This, 1_000_000);
-
       --  Enable DMA request. Harmless if DMA is not used.
       This.Periph.SSPDMACR :=
          (RXDMAE => True,
