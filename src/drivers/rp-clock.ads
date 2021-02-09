@@ -34,8 +34,6 @@ package RP.Clock is
 
 private
 
-   XOSC_Frequency_Stable : Hertz := 0;
-
    procedure Enable_ROSC;
 
    procedure Enable_XOSC

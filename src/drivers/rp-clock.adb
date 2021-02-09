@@ -26,7 +26,6 @@ package body RP.Clock is
       while not XOSC_Periph.STATUS.STABLE loop
          null;
       end loop;
-      XOSC_Frequency_Stable := XOSC_Frequency;
    end Enable_XOSC;
 
    procedure Enable_ROSC is
