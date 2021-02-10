@@ -126,7 +126,7 @@ package body RP.PWM is
    is
       I : constant Natural := Natural (V);
    begin
-      if I > Natural (UInt8'Last) then
+      if Clock_Divider (I) > V then
          return UInt8 (I - 1);
       else
          return UInt8 (I);
