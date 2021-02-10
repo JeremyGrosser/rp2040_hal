@@ -5,7 +5,6 @@ pragma Style_Checks (Off);
 --  SPDX-License-Identifier: BSD-3-Clause
 
 --  This spec has been automatically generated from rp2040.svd
---  and modified to suit both SPI0 and SPI1 with a single definition.
 
 pragma Restrictions (No_Elaboration_Code);
 
@@ -512,6 +511,7 @@ package RP2040_SVD.SPI is
 
    SPI0_Periph : aliased SPI_Peripheral
      with Import, Address => SPI0_Base;
+
    SPI1_Periph : aliased SPI_Peripheral
      with Import, Address => SPI1_Base;
 
