@@ -11,8 +11,7 @@ pragma Restrictions (No_Elaboration_Code);
 with HAL;
 with System;
 
---  DW_apb_i2c address block
-package RP2040_SVD.I2C1 is
+package RP2040_SVD.I2C is
    pragma Preelaborate;
 
    ---------------
@@ -175,7 +174,7 @@ package RP2040_SVD.I2C1 is
       --  Software should ensure that if this bit is written with '1' then bit
       --  6 should also be written with a '1'.
       MASTER_MODE               : IC_CON_MASTER_MODE_Field :=
-                                   RP2040_SVD.I2C1.ENABLED;
+                                   RP2040_SVD.I2C.ENABLED;
       --  These bits control at which speed the DW_apb_i2c operates; its
       --  setting is relevant only if one is operating the DW_apb_i2c in master
       --  mode. Hardware protects against illegal values being programmed by
@@ -187,7 +186,7 @@ package RP2040_SVD.I2C1 is
       --  standard mode (100 kbit/s)\n\n 2: fast mode (<=400 kbit/s) or fast
       --  mode plus (<=1000Kbit/s)\n\n 3: high speed mode (3.4 Mbit/s)\n\n
       --  Note: This field is not applicable when IC_ULTRA_FAST_MODE=1
-      SPEED                     : IC_CON_SPEED_Field := RP2040_SVD.I2C1.FAST;
+      SPEED                     : IC_CON_SPEED_Field := RP2040_SVD.I2C.FAST;
       --  When acting as a slave, this bit controls whether the DW_apb_i2c
       --  responds to 7- or 10-bit addresses. - 0: 7-bit addressing. The
       --  DW_apb_i2c ignores transactions that involve 10-bit addressing; for
@@ -196,12 +195,12 @@ package RP2040_SVD.I2C1 is
       --  10-bit addressing transfers that match the full 10 bits of the IC_SAR
       --  register.
       IC_10BITADDR_SLAVE        : IC_CON_IC_10BITADDR_SLAVE_Field :=
-                                   RP2040_SVD.I2C1.ADDR_7BITS;
+                                   RP2040_SVD.I2C.ADDR_7BITS;
       --  Controls whether the DW_apb_i2c starts its transfers in 7- or 10-bit
       --  addressing mode when acting as a master. - 0: 7-bit addressing - 1:
       --  10-bit addressing
       IC_10BITADDR_MASTER       : IC_CON_IC_10BITADDR_MASTER_Field :=
-                                   RP2040_SVD.I2C1.ADDR_7BITS;
+                                   RP2040_SVD.I2C.ADDR_7BITS;
       --  Determines whether RESTART conditions may be sent when acting as a
       --  master. Some older slaves do not support handling RESTART conditions;
       --  however, RESTART conditions are used in several DW_apb_i2c
@@ -215,7 +214,7 @@ package RP2040_SVD.I2C1 is
       --  operations are performed, it will result in setting bit 6 (TX_ABRT)
       --  of the IC_RAW_INTR_STAT register.\n\n Reset value: ENABLED
       IC_RESTART_EN             : IC_CON_IC_RESTART_EN_Field :=
-                                   RP2040_SVD.I2C1.ENABLED;
+                                   RP2040_SVD.I2C.ENABLED;
       --  This bit controls whether I2C has its slave disabled, which means
       --  once the presetn signal is applied, then this bit is set and the
       --  slave is disabled.\n\n If this bit is set (slave is disabled),
@@ -223,7 +222,7 @@ package RP2040_SVD.I2C1 is
       --  that requires a slave.\n\n NOTE: Software should ensure that if this
       --  bit is written with 0, then bit 0 should also be written with a 0.
       IC_SLAVE_DISABLE          : IC_CON_IC_SLAVE_DISABLE_Field :=
-                                   RP2040_SVD.I2C1.SLAVE_DISABLED;
+                                   RP2040_SVD.I2C.SLAVE_DISABLED;
       --  In slave mode: - 1'b1: issues the STOP_DET interrupt only when it is
       --  addressed. - 1'b0: issues the STOP_DET irrespective of whether it's
       --  addressed or not. Reset value: 0x0\n\n NOTE: During a general call
@@ -233,16 +232,16 @@ package RP2040_SVD.I2C1 is
       --  generated only when the transmitted address matches the slave address
       --  (SAR).
       STOP_DET_IFADDRESSED      : IC_CON_STOP_DET_IFADDRESSED_Field :=
-                                   RP2040_SVD.I2C1.DISABLED;
+                                   RP2040_SVD.I2C.DISABLED;
       --  This bit controls the generation of the TX_EMPTY interrupt, as
       --  described in the IC_RAW_INTR_STAT register.\n\n Reset value: 0x0.
       TX_EMPTY_CTRL             : IC_CON_TX_EMPTY_CTRL_Field :=
-                                   RP2040_SVD.I2C1.DISABLED;
+                                   RP2040_SVD.I2C.DISABLED;
       --  This bit controls whether DW_apb_i2c should hold the bus when the Rx
       --  FIFO is physically full to its RX_BUFFER_DEPTH, as described in the
       --  IC_RX_FULL_HLD_BUS_EN parameter.\n\n Reset value: 0x0.
       RX_FIFO_FULL_HLD_CTRL     : IC_CON_RX_FIFO_FULL_HLD_CTRL_Field :=
-                                   RP2040_SVD.I2C1.DISABLED;
+                                   RP2040_SVD.I2C.DISABLED;
       --  Read-only. Master issues the STOP_DET interrupt irrespective of
       --  whether master is active or not
       STOP_DET_IF_MASTER_ACTIVE : Boolean := False;
@@ -325,12 +324,12 @@ package RP2040_SVD.I2C1 is
       --  Call mode until the SPECIAL bit value (bit 11) is cleared. - 1: START
       --  BYTE Reset value: 0x0
       GC_OR_START    : IC_TAR_GC_OR_START_Field :=
-                        RP2040_SVD.I2C1.GENERAL_CALL;
+                        RP2040_SVD.I2C.GENERAL_CALL;
       --  This bit indicates whether software performs a Device-ID or General
       --  Call or START BYTE command. - 0: ignore bit 10 GC_OR_START and use
       --  IC_TAR normally - 1: perform special I2C command as specified in
       --  Device_ID or GC_OR_START bit Reset value: 0x0
-      SPECIAL        : IC_TAR_SPECIAL_Field := RP2040_SVD.I2C1.DISABLED;
+      SPECIAL        : IC_TAR_SPECIAL_Field := RP2040_SVD.I2C.DISABLED;
       --  unspecified
       Reserved_12_31 : HAL.UInt20 := 16#0#;
    end record
@@ -485,7 +484,7 @@ package RP2040_SVD.I2C1 is
       --  the IC_TAR register has been cleared. If a '1' is written to this bit
       --  after receiving a RD_REQ interrupt, then a TX_ABRT interrupt
       --  occurs.\n\n Reset value: 0x0
-      CMD             : IC_DATA_CMD_CMD_Field := RP2040_SVD.I2C1.WRITE;
+      CMD             : IC_DATA_CMD_CMD_Field := RP2040_SVD.I2C.WRITE;
       --  After a write operation all bits in the field are cleared (set to
       --  zero). This bit controls whether a STOP is issued after the byte is
       --  sent or received.\n\n - 1 - STOP is issued after this byte,
@@ -498,7 +497,7 @@ package RP2040_SVD.I2C1 is
       --  the CMD bit. If the Tx FIFO is empty, the master holds the SCL line
       --  low and stalls the bus until a new command is available in the Tx
       --  FIFO. Reset value: 0x0
-      STOP            : IC_DATA_CMD_STOP_Field := RP2040_SVD.I2C1.DISABLE;
+      STOP            : IC_DATA_CMD_STOP_Field := RP2040_SVD.I2C.DISABLE;
       --  After a write operation all bits in the field are cleared (set to
       --  zero). This bit controls whether a RESTART is issued before the byte
       --  is sent or received.\n\n 1 - If IC_RESTART_EN is 1, a RESTART is
@@ -509,7 +508,7 @@ package RP2040_SVD.I2C1 is
       --  is issued only if the transfer direction is changing from the
       --  previous command; if IC_RESTART_EN is 0, a STOP followed by a START
       --  is issued instead.\n\n Reset value: 0x0
-      RESTART         : IC_DATA_CMD_RESTART_Field := RP2040_SVD.I2C1.DISABLE;
+      RESTART         : IC_DATA_CMD_RESTART_Field := RP2040_SVD.I2C.DISABLE;
       --  Read-only. Indicates the first data byte received after the address
       --  phase for receive transfer in Master receiver or Slave receiver
       --  mode.\n\n Reset value : 0x0\n\n NOTE: In case of
@@ -522,7 +521,7 @@ package RP2040_SVD.I2C1 is
       --  optional read field, user can ignore 2nd byte read [15:8] (offset
       --  0x11) if not interested in FIRST_DATA_BYTE status.
       FIRST_DATA_BYTE : IC_DATA_CMD_FIRST_DATA_BYTE_Field :=
-                         RP2040_SVD.I2C1.INACTIVE;
+                         RP2040_SVD.I2C.INACTIVE;
       --  unspecified
       Reserved_12_31  : HAL.UInt20 := 16#0#;
    end record
@@ -1074,60 +1073,60 @@ package RP2040_SVD.I2C1 is
       --  This bit masks the R_RX_UNDER interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_RX_UNDER                 : IC_INTR_MASK_M_RX_UNDER_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RX_OVER interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_RX_OVER                  : IC_INTR_MASK_M_RX_OVER_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RX_FULL interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_RX_FULL                  : IC_INTR_MASK_M_RX_FULL_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_TX_OVER interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_TX_OVER                  : IC_INTR_MASK_M_TX_OVER_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_TX_EMPTY interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_TX_EMPTY                 : IC_INTR_MASK_M_TX_EMPTY_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RD_REQ interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_RD_REQ                   : IC_INTR_MASK_M_RD_REQ_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_TX_ABRT interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_TX_ABRT                  : IC_INTR_MASK_M_TX_ABRT_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RX_DONE interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_RX_DONE                  : IC_INTR_MASK_M_RX_DONE_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_ACTIVITY interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x0
       M_ACTIVITY                 : IC_INTR_MASK_M_ACTIVITY_Field :=
-                                    RP2040_SVD.I2C1.ENABLED;
+                                    RP2040_SVD.I2C.ENABLED;
       --  This bit masks the R_STOP_DET interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x0
       M_STOP_DET                 : IC_INTR_MASK_M_STOP_DET_Field :=
-                                    RP2040_SVD.I2C1.ENABLED;
+                                    RP2040_SVD.I2C.ENABLED;
       --  This bit masks the R_START_DET interrupt in IC_INTR_STAT
       --  register.\n\n Reset value: 0x0
       M_START_DET                : IC_INTR_MASK_M_START_DET_Field :=
-                                    RP2040_SVD.I2C1.ENABLED;
+                                    RP2040_SVD.I2C.ENABLED;
       --  This bit masks the R_GEN_CALL interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
       M_GEN_CALL                 : IC_INTR_MASK_M_GEN_CALL_Field :=
-                                    RP2040_SVD.I2C1.DISABLED;
+                                    RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RESTART_DET interrupt in IC_INTR_STAT
       --  register.\n\n Reset value: 0x0
       M_RESTART_DET              : IC_INTR_MASK_M_RESTART_DET_Field :=
-                                    RP2040_SVD.I2C1.ENABLED;
+                                    RP2040_SVD.I2C.ENABLED;
       --  Read-only. This M_MASTER_ON_HOLD_read_only bit masks the
       --  R_MASTER_ON_HOLD interrupt in IC_INTR_STAT register.\n\n Reset value:
       --  0x0
       M_MASTER_ON_HOLD_READ_ONLY : IC_INTR_MASK_M_MASTER_ON_HOLD_READ_ONLY_Field :=
-                                    RP2040_SVD.I2C1.ENABLED;
+                                    RP2040_SVD.I2C.ENABLED;
       --  unspecified
       Reserved_14_31             : HAL.UInt18 := 16#0#;
    end record
@@ -1863,7 +1862,7 @@ package RP2040_SVD.I2C1 is
       --  is a two ic_clk delay when enabling or disabling the DW_apb_i2c. For
       --  a detailed description on how to disable DW_apb_i2c, refer to
       --  'Disabling DW_apb_i2c'\n\n Reset value: 0x0
-      ENABLE        : IC_ENABLE_ENABLE_Field := RP2040_SVD.I2C1.DISABLED;
+      ENABLE        : IC_ENABLE_ENABLE_Field := RP2040_SVD.I2C.DISABLED;
       --  When set, the controller initiates the transfer abort. - 0: ABORT not
       --  initiated or ABORT done - 1: ABORT operation in progress The software
       --  can abort the I2C transfer in master mode by setting this bit. The
@@ -1875,7 +1874,7 @@ package RP2040_SVD.I2C1 is
       --  The ABORT bit is cleared automatically after the abort operation.\n\n
       --  For a detailed description on how to abort I2C transfers, refer to
       --  'Aborting I2C Transfers'.\n\n Reset value: 0x0
-      ABORT_k       : IC_ENABLE_ABORT_Field := RP2040_SVD.I2C1.DISABLE;
+      ABORT_k       : IC_ENABLE_ABORT_Field := RP2040_SVD.I2C.DISABLE;
       --  In Master mode: - 1'b1: Blocks the transmission of data on I2C bus
       --  even if Tx FIFO has data to transmit. - 1'b0: The transmission of
       --  data starts on I2C bus automatically, as soon as the first data is
@@ -1885,7 +1884,7 @@ package RP2040_SVD.I2C1 is
       --  Any further commands put in the Tx FIFO are not executed until
       --  TX_CMD_BLOCK bit is unset. Reset value: IC_TX_CMD_BLOCK_DEFAULT
       TX_CMD_BLOCK  : IC_ENABLE_TX_CMD_BLOCK_Field :=
-                       RP2040_SVD.I2C1.NOT_BLOCKED;
+                       RP2040_SVD.I2C.NOT_BLOCKED;
       --  unspecified
       Reserved_3_31 : HAL.UInt29 := 16#0#;
    end record
@@ -2559,7 +2558,7 @@ package RP2040_SVD.I2C1 is
       --  after data byte received - 0: generate NACK/ACK normally Reset value:
       --  0x0
       NACK          : IC_SLV_DATA_NACK_ONLY_NACK_Field :=
-                       RP2040_SVD.I2C1.DISABLED;
+                       RP2040_SVD.I2C.DISABLED;
       --  unspecified
       Reserved_1_31 : HAL.UInt31 := 16#0#;
    end record
@@ -2601,10 +2600,10 @@ package RP2040_SVD.I2C1 is
    type IC_DMA_CR_Register is record
       --  Receive DMA Enable. This bit enables/disables the receive FIFO DMA
       --  channel. Reset value: 0x0
-      RDMAE         : IC_DMA_CR_RDMAE_Field := RP2040_SVD.I2C1.DISABLED;
+      RDMAE         : IC_DMA_CR_RDMAE_Field := RP2040_SVD.I2C.DISABLED;
       --  Transmit DMA Enable. This bit enables/disables the transmit FIFO DMA
       --  channel. Reset value: 0x0
-      TDMAE         : IC_DMA_CR_TDMAE_Field := RP2040_SVD.I2C1.DISABLED;
+      TDMAE         : IC_DMA_CR_TDMAE_Field := RP2040_SVD.I2C.DISABLED;
       --  unspecified
       Reserved_2_31 : HAL.UInt30 := 16#0#;
    end record
@@ -2714,7 +2713,7 @@ package RP2040_SVD.I2C1 is
       --  asserting ic_data_oe) when it receives a General Call. Otherwise,
       --  DW_apb_i2c responds with a NACK (by negating ic_data_oe).
       ACK_GEN_CALL  : IC_ACK_GENERAL_CALL_ACK_GEN_CALL_Field :=
-                       RP2040_SVD.I2C1.ENABLED;
+                       RP2040_SVD.I2C.ENABLED;
       --  unspecified
       Reserved_1_31 : HAL.UInt31 := 16#0#;
    end record
@@ -2953,7 +2952,7 @@ package RP2040_SVD.I2C1 is
    -----------------
 
    --  DW_apb_i2c address block
-   type I2C1_Peripheral is record
+   type I2C_Peripheral is record
       --  I2C Control Register. This register can be written only when the
       --  DW_apb_i2c is disabled, which corresponds to the IC_ENABLE[0]
       --  register being set to 0. Writes at other times have no effect.\n\n
@@ -3153,7 +3152,7 @@ package RP2040_SVD.I2C1 is
    end record
      with Volatile;
 
-   for I2C1_Peripheral use record
+   for I2C_Peripheral use record
       IC_CON                at 16#0# range 0 .. 31;
       IC_TAR                at 16#4# range 0 .. 31;
       IC_SAR                at 16#8# range 0 .. 31;
@@ -3199,7 +3198,11 @@ package RP2040_SVD.I2C1 is
    end record;
 
    --  DW_apb_i2c address block
-   I2C1_Periph : aliased I2C1_Peripheral
+   I2C0_Periph : aliased I2C_Peripheral
+     with Import, Address => I2C0_Base;
+
+   --  DW_apb_i2c address block
+   I2C1_Periph : aliased I2C_Peripheral
      with Import, Address => I2C1_Base;
 
-end RP2040_SVD.I2C1;
+end RP2040_SVD.I2C;
