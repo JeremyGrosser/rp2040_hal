@@ -87,19 +87,19 @@ package body RP.GPIO is
    end Disable_Interrupt;
 
    procedure IO_IRQ_PROC0_Handler is
-      Trigger : UInt4;
       Handler : Interrupt_Procedure;
+      T       : UInt4;
    begin
       for Pin in IO_BANK_Periph.PROC0_INTS'Range loop
          if IO_BANK_Periph.PROC0_INTS (Pin) /= 0 then
-            for I in 0 .. 3 loop
-               Trigger := IO_BANK_Periph.PROC0_INTS (Pin) and UInt4 (Shift_Left (UInt32 (1), I));
-               if Trigger /= 0 then
+            for Trigger in Interrupt_Triggers'Range loop
+               T := IO_BANK_Periph.PROC0_INTS (Pin) and Interrupt_Triggers'Enum_Rep (Trigger);
+               if T /= 0 then
                   Handler := GPIO_Interrupt_Handlers (Pin);
                   if Handler /= null then
-                     Handler.all (Interrupt_Triggers'Enum_Val (Trigger));
+                     Handler.all (Trigger);
                   end if;
-                  IO_BANK_Periph.INTR (Pin) := Trigger;
+                  IO_BANK_Periph.INTR (Pin) := T;
                end if;
             end loop;
          end if;
