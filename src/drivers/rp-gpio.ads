@@ -13,6 +13,7 @@ with System;
 
 package RP.GPIO is
    subtype GPIO_Pin is Natural range 0 .. 29;
+
    type GPIO_Point (Pin : GPIO_Pin) is new HAL.GPIO.GPIO_Point with
       null record;
 
@@ -33,8 +34,15 @@ package RP.GPIO is
        USB   => 9,
        HI_Z  => 31);
 
-   type Interrupt_Triggers is (Rising_Edge, Falling_Edge, High_Level, Low_Level);
-   type Interrupt_Procedure is access procedure;
+   type Interrupt_Triggers is (Low_Level, High_Level, Falling_Edge, Rising_Edge)
+      with Size => 4;
+   for Interrupt_Triggers use
+      (Low_Level    => 2#0001#,
+       High_Level   => 2#0010#,
+       Falling_Edge => 2#0100#,
+       Rising_Edge  => 2#1000#);
+
+   type Interrupt_Procedure is access procedure (Trigger : Interrupt_Triggers);
 
    procedure Enable;
 
@@ -103,12 +111,12 @@ package RP.GPIO is
 
 private
 
-   GPIO_Interrupts : array (GPIO_Pin) of Interrupt_Procedure := (others => null);
+   GPIO_Interrupt_Handlers : array (GPIO_Pin) of Interrupt_Procedure := (others => null);
 
-   procedure SIO_IRQ_PROC0_Handler
+   procedure IO_IRQ_PROC0_Handler
       with Export => True,
            Convention => C,
-           External_Name => "isr_irq14";
+           External_Name => "isr_irq13";
 
    subtype GPIO_Pin_Mask is UInt30;
 
@@ -148,43 +156,23 @@ private
       CTRL   at 4 range 0 .. 31;
    end record;
 
-   type INT_Register is record
-      LEVEL_LOW_0  : Boolean := False;
-      LEVEL_HIGH_0 : Boolean := False;
-      EDGE_LOW_0   : Boolean := False;
-      EDGE_HIGH_0  : Boolean := False;
-      LEVEL_LOW_1  : Boolean := False;
-      LEVEL_HIGH_1 : Boolean := False;
-      EDGE_LOW_1   : Boolean := False;
-      EDGE_HIGH_1  : Boolean := False;
-   end record
-      with Size      => 8,
-           Bit_Order => System.Low_Order_First,
-           Volatile_Full_Access;
-
-   for INT_Register use record
-      LEVEL_LOW_0  at 0 range 0 .. 0;
-      LEVEL_HIGH_0 at 0 range 1 .. 1;
-      EDGE_LOW_0   at 0 range 2 .. 2;
-      EDGE_HIGH_0  at 0 range 3 .. 3;
-      LEVEL_LOW_1  at 0 range 4 .. 4;
-      LEVEL_HIGH_1 at 0 range 5 .. 5;
-      EDGE_LOW_1   at 0 range 6 .. 6;
-      EDGE_HIGH_1  at 0 range 7 .. 7;
-   end record;
-
    type GPIO_Registers is array (GPIO_Pin) of GPIO_Register;
-   type INT_Registers is array (0 .. GPIO_Pin'Last / 2) of INT_Register;
+   type INT_Register is array (0 .. GPIO_Pin'Last) of UInt4
+      with Size => 128,
+           Pack => True;
 
    type IO_BANK is record
       GPIO              : aliased GPIO_Registers;
-      INTR              : aliased INT_Registers;
-      PROC0_INTE        : aliased INT_Registers;
-      PROC0_INTF        : aliased INT_Registers;
-      PROC1_INTE        : aliased INT_Registers;
-      PROC1_INTF        : aliased INT_Registers;
-      DORMANT_WAKE_INTE : aliased INT_Registers;
-      DORMANT_WAKE_INTF : aliased INT_Registers;
+      INTR              : aliased INT_Register;
+      PROC0_INTE        : aliased INT_Register;
+      PROC0_INTF        : aliased INT_Register;
+      PROC0_INTS        : aliased INT_Register;
+      PROC1_INTE        : aliased INT_Register;
+      PROC1_INTF        : aliased INT_Register;
+      PROC1_INTS        : aliased INT_Register;
+      DORMANT_WAKE_INTE : aliased INT_Register;
+      DORMANT_WAKE_INTF : aliased INT_Register;
+      DORMANT_WAKE_INTS : aliased INT_Register;
    end record;
 
    type PADS_BANK_GPIO_Registers is array (GPIO_Pin) of RP2040_SVD.PADS_BANK0.GPIO_Register;

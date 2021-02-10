@@ -4,8 +4,10 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
-with RP2040_SVD.SIO;    use RP2040_SVD.SIO;
+with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
+with RP2040_SVD.Interrupts; use RP2040_SVD.Interrupts;
+with RP2040_SVD.RESETS;     use RP2040_SVD.RESETS;
+with RP2040_SVD.SIO;        use RP2040_SVD.SIO;
 
 package body RP.GPIO is
    function Pin_Mask (Pin : GPIO_Pin)
@@ -19,6 +21,11 @@ package body RP.GPIO is
       while not RESETS_Periph.RESET_DONE.io_bank0 or else not RESETS_Periph.RESET_DONE.pads_bank0 loop
          null;
       end loop;
+
+      IO_BANK_Periph.PROC0_INTE := (others => 0);
+      IO_BANK_Periph.PROC1_INTE := (others => 0);
+      NVIC_Periph.NVIC_ICPR := Shift_Left (1, IO_IRQ_BANK0_Interrupt);
+      NVIC_Periph.NVIC_ISER := NVIC_Periph.NVIC_ISER or Shift_Left (1, IO_IRQ_BANK0_Interrupt);
    end Enable;
 
    function Enabled
@@ -52,29 +59,52 @@ package body RP.GPIO is
        Handler : Interrupt_Procedure)
    is
    begin
-      raise Not_Implemented;
+      GPIO_Interrupt_Handlers (This.Pin) := Handler;
    end Set_Interrupt_Handler;
 
    procedure Enable_Interrupt
       (This    : in out GPIO_Point;
        Trigger : Interrupt_Triggers)
    is
+      INTE : UInt4 := IO_BANK_Periph.PROC0_INTE (This.Pin);
    begin
-      raise Not_Implemented;
+      INTE := INTE or Interrupt_Triggers'Enum_Rep (Trigger);
+
+      --  Clear pending event before enabling the interrupt
+      IO_BANK_Periph.INTR (This.Pin) := INTE;
+
+      IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
    end Enable_Interrupt;
 
    procedure Disable_Interrupt
       (This    : in out GPIO_Point;
        Trigger : Interrupt_Triggers)
    is
+      INTE : UInt4 := IO_BANK_Periph.PROC0_INTE (This.Pin);
    begin
-      raise Not_Implemented;
+      INTE := INTE and not Interrupt_Triggers'Enum_Rep (Trigger);
+      IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
    end Disable_Interrupt;
 
-   procedure SIO_IRQ_PROC0_Handler is
+   procedure IO_IRQ_PROC0_Handler is
+      Trigger : UInt4;
+      Handler : Interrupt_Procedure;
    begin
-      raise Not_Implemented;
-   end SIO_IRQ_PROC0_Handler;
+      for Pin in IO_BANK_Periph.PROC0_INTS'Range loop
+         if IO_BANK_Periph.PROC0_INTS (Pin) /= 0 then
+            for I in 0 .. 3 loop
+               Trigger := IO_BANK_Periph.PROC0_INTS (Pin) and UInt4 (Shift_Left (UInt32 (1), I));
+               if Trigger /= 0 then
+                  Handler := GPIO_Interrupt_Handlers (Pin);
+                  if Handler /= null then
+                     Handler.all (Interrupt_Triggers'Enum_Val (Trigger));
+                  end if;
+                  IO_BANK_Periph.INTR (Pin) := Trigger;
+               end if;
+            end loop;
+         end if;
+      end loop;
+   end IO_IRQ_PROC0_Handler;
 
    overriding
    function Support
