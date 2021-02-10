@@ -11,7 +11,7 @@ pragma Restrictions (No_Elaboration_Code);
 with HAL;
 with System;
 
-package RP2040_SVD.UART1 is
+package RP2040_SVD.UART is
    pragma Preelaborate;
 
    ---------------
@@ -852,7 +852,7 @@ package RP2040_SVD.UART1 is
    -- Peripherals --
    -----------------
 
-   type UART1_Peripheral is record
+   type UART_Peripheral is record
       --  Data Register, UARTDR
       UARTDR        : aliased UARTDR_Register;
       --  Receive Status Register/Error Clear Register, UARTRSR/UARTECR
@@ -900,7 +900,7 @@ package RP2040_SVD.UART1 is
    end record
      with Volatile;
 
-   for UART1_Peripheral use record
+   for UART_Peripheral use record
       UARTDR        at 16#0# range 0 .. 31;
       UARTRSR       at 16#4# range 0 .. 31;
       UARTFR        at 16#18# range 0 .. 31;
@@ -925,7 +925,10 @@ package RP2040_SVD.UART1 is
       UARTPCELLID3  at 16#FFC# range 0 .. 31;
    end record;
 
-   UART1_Periph : aliased UART1_Peripheral
+   UART0_Periph : aliased UART_Peripheral
+     with Import, Address => UART0_Base;
+
+   UART1_Periph : aliased UART_Peripheral
      with Import, Address => UART1_Base;
 
-end RP2040_SVD.UART1;
+end RP2040_SVD.UART;
