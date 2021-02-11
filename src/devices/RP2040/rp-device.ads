@@ -25,7 +25,7 @@ package RP.Device is
    I2C_1 : aliased I2C_Master_Port (1, RP2040_SVD.I2C.I2C1_Periph'Access);
 
    UART_0 : aliased UART_Port (0, RP2040_SVD.UART.UART0_Periph'Access);
-   UART_1 : aliased UART_Port (1, RP2040_SVD.UART.UART0_Periph'Access);
+   UART_1 : aliased UART_Port (1, RP2040_SVD.UART.UART1_Periph'Access);
 
    --  ROSC can vary from 1 .. 12 MHz. Assume that ROSC is running at the
    --  maximum ROSC frequency to avoid unintentional overclocking.
