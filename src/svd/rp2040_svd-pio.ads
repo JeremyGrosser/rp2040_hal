@@ -11,8 +11,7 @@ pragma Restrictions (No_Elaboration_Code);
 with HAL;
 with System;
 
---  Programmable IO block
-package RP2040_SVD.PIO0 is
+package RP2040_SVD.PIO is
    pragma Preelaborate;
 
    ---------------
@@ -806,8 +805,7 @@ package RP2040_SVD.PIO0 is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM0_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM0_EXECCTRL_STATUS_SEL_Field :=
-                       RP2040_SVD.PIO0.TXLEVEL;
+      STATUS_SEL    : SM0_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -1025,8 +1023,7 @@ package RP2040_SVD.PIO0 is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM1_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM1_EXECCTRL_STATUS_SEL_Field :=
-                       RP2040_SVD.PIO0.TXLEVEL;
+      STATUS_SEL    : SM1_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -1244,8 +1241,7 @@ package RP2040_SVD.PIO0 is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM2_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM2_EXECCTRL_STATUS_SEL_Field :=
-                       RP2040_SVD.PIO0.TXLEVEL;
+      STATUS_SEL    : SM2_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -1463,8 +1459,7 @@ package RP2040_SVD.PIO0 is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM3_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM3_EXECCTRL_STATUS_SEL_Field :=
-                       RP2040_SVD.PIO0.TXLEVEL;
+      STATUS_SEL    : SM3_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -2050,7 +2045,7 @@ package RP2040_SVD.PIO0 is
    -----------------
 
    --  Programmable IO block
-   type PIO0_Peripheral is record
+   type PIO_Peripheral is record
       --  PIO control register
       CTRL              : aliased CTRL_Register;
       --  FIFO status register
@@ -2253,7 +2248,7 @@ package RP2040_SVD.PIO0 is
    end record
      with Volatile;
 
-   for PIO0_Peripheral use record
+   for PIO_Peripheral use record
       CTRL              at 16#0# range 0 .. 31;
       FSTAT             at 16#4# range 0 .. 31;
       FDEBUG            at 16#8# range 0 .. 31;
@@ -2338,7 +2333,11 @@ package RP2040_SVD.PIO0 is
    end record;
 
    --  Programmable IO block
-   PIO0_Periph : aliased PIO0_Peripheral
+   PIO0_Periph : aliased PIO_Peripheral
      with Import, Address => PIO0_Base;
 
-end RP2040_SVD.PIO0;
+   --  Programmable IO block
+   PIO1_Periph : aliased PIO_Peripheral
+     with Import, Address => PIO1_Base;
+
+end RP2040_SVD.PIO;
