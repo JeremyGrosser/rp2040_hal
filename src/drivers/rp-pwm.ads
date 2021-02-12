@@ -30,7 +30,7 @@ package RP.PWM is
    end record;
 
    Clock_Fraction : constant := 1.0 / (2.0 ** 4);
-   type Clock_Divider is delta Clock_Fraction range 1.0 .. (2.0 ** 8) - Clock_Fraction;
+   type Clock_Divider is delta Clock_Fraction range Clock_Fraction .. (2.0 ** 8) - Clock_Fraction;
 
    subtype Period is UInt16;
 

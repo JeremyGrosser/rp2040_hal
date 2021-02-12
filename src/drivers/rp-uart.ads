@@ -59,7 +59,8 @@ private
    is new HAL.UART.UART_Port with null record;
 
    UART_Fraction : constant := 1.0 / 2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size;
-   type UART_Divider is delta UART_Fraction range 0.0 .. (2.0 ** UARTIBRD_BAUD_DIVINT_Field'Size) - UART_Fraction;
+   type UART_Divider is delta UART_Fraction
+      range UART_Fraction .. (2.0 ** UARTIBRD_BAUD_DIVINT_Field'Size) - UART_Fraction;
 
    function Div_Integer
       (D : UART_Divider)
