@@ -6,10 +6,12 @@
 with RP2040_SVD.SPI;
 with RP2040_SVD.I2C;
 with RP2040_SVD.UART;
+with RP2040_SVD;
 with RP.Clock;       use RP.Clock;
 with RP.SPI;         use RP.SPI;
 with RP.I2C_Master;  use RP.I2C_Master;
 with RP.UART;        use RP.UART;
+with RP.PIO;         use RP.PIO;
 with RP.SysTick;
 
 --  Runtime contains symbols that need to be linked for the startup code to
@@ -26,6 +28,13 @@ package RP.Device is
 
    UART_0 : aliased UART_Port (0, RP2040_SVD.UART.UART0_Periph'Access);
    UART_1 : aliased UART_Port (1, RP2040_SVD.UART.UART1_Periph'Access);
+
+   PIO0_Periph : aliased RP.PIO.PIO_Peripheral
+      with Import, Address => RP2040_SVD.PIO0_Base;
+   PIO1_Periph : aliased RP.PIO.PIO_Peripheral
+      with Import, Address => RP2040_SVD.PIO1_Base;
+   PIO_0 : aliased PIO_Port (0, PIO0_Periph'Access);
+   PIO_1 : aliased PIO_Port (1, PIO1_Periph'Access);
 
    --  ROSC can vary from 1 .. 12 MHz. Assume that ROSC is running at the
    --  maximum ROSC frequency to avoid unintentional overclocking.

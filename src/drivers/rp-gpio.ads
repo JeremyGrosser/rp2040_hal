@@ -20,7 +20,7 @@ package RP.GPIO is
    type GPIO_Config_Mode is (Input, Output, Analog);
 
    type GPIO_Function is
-      (SPI, UART, I2C, PWM, SIO, PIO_0, PIO_1, CLOCK, USB, HI_Z);
+      (SPI, UART, I2C, PWM, SIO, PIO0, PIO1, CLOCK, USB, HI_Z);
 
    for GPIO_Function use
       (SPI   => 1,
@@ -28,8 +28,8 @@ package RP.GPIO is
        I2C   => 3,
        PWM   => 4,
        SIO   => 5,
-       PIO_0 => 6,
-       PIO_1 => 7,
+       PIO0 => 6,
+       PIO1 => 7,
        CLOCK => 8,
        USB   => 9,
        HI_Z  => 31);
