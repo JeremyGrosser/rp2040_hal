@@ -36,6 +36,9 @@ package RP.PIO is
    procedure Enable
       (This : in out PIO_Point);
 
+   procedure Disable
+      (This : in out PIO_Point);
+
    procedure Restart
       (This : in out PIO_Point);
 
@@ -127,7 +130,8 @@ private
    type FIFO_Register is array (State_Machine) of UInt32
       with Pack, Volatile;
 
-   type INSTR_MEM_Register is array (Program_Index) of UInt32;
+   type INSTR_MEM_Register is array (Program_Index) of UInt32
+      with Volatile;
 
    type SM_Register is record
       CLKDIV    : aliased SM0_CLKDIV_Register;

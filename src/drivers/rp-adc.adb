@@ -6,7 +6,6 @@
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP2040_SVD.ADC; use RP2040_SVD.ADC;
 with RP.GPIO; use RP.GPIO;
-with HAL.GPIO;
 
 package body RP.ADC is
    procedure Enable
@@ -43,7 +42,7 @@ package body RP.ADC is
             Configure
                (This => Point,
                 Mode => Analog,
-                Pull => HAL.GPIO.Floating,
+                Pull => Floating,
                 Func => HI_Z);
          end;
       end if;

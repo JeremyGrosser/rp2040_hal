@@ -44,6 +44,13 @@ package body RP.PIO is
       This.Port.Periph.CTRL.SM_ENABLE := This.Port.Periph.CTRL.SM_ENABLE or SM_Mask (This.SM);
    end Enable;
 
+   procedure Disable
+      (This : in out PIO_Point)
+   is
+   begin
+      This.Port.Periph.CTRL.SM_ENABLE := This.Port.Periph.CTRL.SM_ENABLE xor SM_Mask (This.SM);
+   end Disable;
+
    procedure Restart
       (This : in out PIO_Point)
    is
@@ -144,8 +151,8 @@ package body RP.PIO is
       for I in Offset .. Offset + Prog'Length - 1 loop
          P.INSTR_MEM (I) := UInt32 (Prog (Prog'First + I));
       end loop;
-      SM.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
-      SM.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
+      SM.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap_Target);
+      SM.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap);
    end Load;
 
    procedure Execute

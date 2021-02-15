@@ -22,14 +22,16 @@ package RP.GPIO is
    type GPIO_Function is
       (SPI, UART, I2C, PWM, SIO, PIO0, PIO1, CLOCK, USB, HI_Z);
 
+   type GPIO_Pull_Mode is (Floating, Pull_Up, Pull_Down, Pull_Both);
+
    for GPIO_Function use
       (SPI   => 1,
        UART  => 2,
        I2C   => 3,
        PWM   => 4,
        SIO   => 5,
-       PIO0 => 6,
-       PIO1 => 7,
+       PIO0  => 6,
+       PIO1  => 7,
        CLOCK => 8,
        USB   => 9,
        HI_Z  => 31);
@@ -51,7 +53,7 @@ package RP.GPIO is
    procedure Configure
       (This : in out GPIO_Point;
        Mode : GPIO_Config_Mode;
-       Pull : HAL.GPIO.GPIO_Pull_Resistor := HAL.GPIO.Floating;
+       Pull : GPIO_Pull_Mode := Floating;
        Func : GPIO_Function := SIO);
 
    procedure Set_Interrupt_Handler

@@ -35,20 +35,26 @@ package body RP.GPIO is
    procedure Configure
       (This : in out GPIO_Point;
        Mode : GPIO_Config_Mode;
-       Pull : HAL.GPIO.GPIO_Pull_Resistor := HAL.GPIO.Floating;
+       Pull : GPIO_Pull_Mode := Floating;
        Func : GPIO_Function := SIO)
    is
       use HAL.GPIO;
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
-      IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL := Func;
+      PADS_BANK_Periph.GPIO (This.Pin) :=
+         (PUE    => (Pull = Pull_Both or Pull = Pull_Up),
+          PDE    => (Pull = Pull_Both or Pull = Pull_Down),
+          IE     => True,
+          OD     => False,
+          others => <>);
 
-      PADS_BANK_Periph.GPIO (This.Pin).PUE := (Pull = Pull_Up);
-      PADS_BANK_Periph.GPIO (This.Pin).PDE := (Pull = Pull_Down);
-      PADS_BANK_Periph.GPIO (This.Pin).IE := True;
+      IO_BANK_Periph.GPIO (This.Pin).CTRL :=
+         (FUNCSEL => Func,
+          others  => <>);
 
-      if Mode = Output then
-         PADS_BANK_Periph.GPIO (This.Pin).OD := False;
+      if Mode = Input then
+         PADS_BANK_Periph.GPIO (This.Pin).OD := True;
+      elsif Mode = Output then
          SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
          SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
       end if;
