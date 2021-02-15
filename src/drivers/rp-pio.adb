@@ -153,6 +153,7 @@ package body RP.PIO is
       end loop;
       SM.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap_Target);
       SM.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap);
+      This.Execute (Instruction (Offset)); --  Jump to the first instruction
    end Load;
 
    procedure Execute
