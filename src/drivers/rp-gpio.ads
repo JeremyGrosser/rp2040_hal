@@ -8,7 +8,7 @@ with RP2040_SVD.IO_BANK0;   use RP2040_SVD.IO_BANK0;
 with RP2040_SVD.PADS_BANK0; use RP2040_SVD.PADS_BANK0;
 with RP2040_SVD;            use RP2040_SVD;
 with HAL;                   use HAL;
-with HAL.GPIO;
+with HAL.GPIO;              use HAL.GPIO;
 with System;
 
 package RP.GPIO is
@@ -55,6 +55,11 @@ package RP.GPIO is
        Mode : GPIO_Config_Mode;
        Pull : GPIO_Pull_Mode := Floating;
        Func : GPIO_Function := SIO);
+
+   function Get
+      (This : GPIO_Point)
+      return Boolean
+   with Pre => This.Mode = HAL.GPIO.Input;
 
    procedure Set_Interrupt_Handler
       (This    : in out GPIO_Point;

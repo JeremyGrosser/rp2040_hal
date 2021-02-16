@@ -38,7 +38,6 @@ package body RP.GPIO is
        Pull : GPIO_Pull_Mode := Floating;
        Func : GPIO_Function := SIO)
    is
-      use HAL.GPIO;
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
       PADS_BANK_Periph.GPIO (This.Pin) :=
@@ -59,6 +58,11 @@ package body RP.GPIO is
          SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
       end if;
    end Configure;
+
+   function Get
+      (This : GPIO_Point)
+      return Boolean
+   is ((SIO_Periph.GPIO_IN.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
 
    procedure Set_Interrupt_Handler
       (This    : in out GPIO_Point;
@@ -124,7 +128,6 @@ package body RP.GPIO is
       (This : GPIO_Point)
       return HAL.GPIO.GPIO_Mode
    is
-      use HAL.GPIO;
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
       if IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL /= SIO then
@@ -155,7 +158,6 @@ package body RP.GPIO is
       (This : GPIO_Point)
       return HAL.GPIO.GPIO_Pull_Resistor
    is
-      use HAL.GPIO;
    begin
       if PADS_BANK_Periph.GPIO (This.Pin).PUE then
          return Pull_Up;
@@ -171,7 +173,6 @@ package body RP.GPIO is
       (This : in out GPIO_Point;
        Pull : HAL.GPIO.GPIO_Pull_Resistor)
    is
-      use HAL.GPIO;
    begin
       case Pull is
          when Pull_Up =>
