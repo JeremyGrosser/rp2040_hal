@@ -18,8 +18,8 @@ package RP.Clock is
 
    --  Currently we have hardcoded PLL divider values for 12 MHz ROSC or XOSC
    --  operation. This exception is thrown if any other reference frequency is
-   --  given.
-   Unknown_PLL_Config : exception;
+   --  given or Enable_PLL is called with invalid arguments.
+   Invalid_PLL_Config : exception;
 
    type Clock_Id is
       (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC);

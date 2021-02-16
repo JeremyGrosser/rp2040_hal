@@ -8,7 +8,6 @@ with RP2040_SVD.XOSC; use RP2040_SVD.XOSC;
 with RP2040_SVD.ROSC; use RP2040_SVD.ROSC;
 with RP.Watchdog;
 with RP.Device;
-with Ada.Assertions; use Ada.Assertions;
 
 package body RP.Clock is
    function CLK_SELECTED_Mask (SRC : CLK_CTRL_SRC_Field)
@@ -51,8 +50,13 @@ package body RP.Clock is
       FBDIV   : constant FBDIV_INT_FBDIV_INT_Field := FBDIV_INT_FBDIV_INT_Field
          (VCO / (Reference / Reference_Div));
    begin
-      Assert (FBDIV in 16 .. 320);
-      Assert (ref_mhz <= (VCO / 16));
+      if FBDIV not in 16 .. 320 then
+         raise Invalid_PLL_Config with "FBDIV out of range";
+      end if;
+
+      if ref_mhz > VCO / 16 then
+         raise Invalid_PLL_Config with "ref_mhz out of range";
+      end if;
 
       --  Ensure PLL is stopped before configuring
       Periph.PWR := (others => <>);
@@ -148,7 +152,7 @@ package body RP.Clock is
              Post_Div_2    => 2);
       else
          --  TODO: calculate PLL dividers for other clk_ref frequencies
-         raise Unknown_PLL_Config;
+         raise Invalid_PLL_Config with "unsupported clk_ref frequency";
       end if;
 
       --  Switch clk_sys to pll_sys
