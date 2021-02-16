@@ -16,9 +16,6 @@ project Rp2040_Hal is
    for Target use "arm-eabi";
    for Runtime ("Ada") use "zfp-cortex-m0p";
 
-   Linker_Switches :=
-       ("-T" & Project'Project_Dir & "startup/memmap_default.ld");
-
    type Enabled_Kind is ("enabled", "disabled");
    Compile_Checks : Enabled_Kind := External ("RP2040_HAL_COMPILE_CHECKS", "enabled");
    Runtime_Checks : Enabled_Kind := External ("RP2040_HAL_RUNTIME_CHECKS", "enabled");
@@ -65,13 +62,25 @@ project Rp2040_Hal is
    end case;
 
    Build_Switches := ();
+   Linker_Optimize_Switches := ();
    case Build_Mode is
       when "optimize" =>
-         Build_Switches := ("-O3",     -- Optimization
-                            "-gnatn"); -- Enable inlining
+         Build_Switches :=
+             ("-ffunction-sections",
+              "-fdata-sections",
+              "-O2",     -- Optimization
+              "-gnatn"); -- Enable inlining
+         Linker_Optimize_Switches :=
+             ("-Wl,-gc-sections",
+              "-Wl,-Map=link.map",
+              "-Wl,-print-memory-usage");
       when "debug" =>
          Build_Switches := ("-g");   -- Debug info
    end case;
+
+   Linker_Switches :=
+       ("-T" & Project'Project_Dir & "startup/memmap_default.ld") &
+        Linker_Optimize_Switches;
 
    package Compiler is
       for Default_Switches ("Ada") use
@@ -80,7 +89,8 @@ project Rp2040_Hal is
         Runtime_Checks_Switches &
         Style_Checks_Switches &
         Contracts_Switches &
-        ("-gnatw.X", -- Disable warnings for No_Exception_Propagation
+        ("-fstack-usage",
+         "-gnatw.X", -- Disable warnings for No_Exception_Propagation
          "-gnatQ");  -- Don't quit. Generate ALI and tree files even if illegalities
    end Compiler;
 
