@@ -14,11 +14,6 @@ with RP.UART;        use RP.UART;
 with RP.PIO;         use RP.PIO;
 with RP.SysTick;
 
---  Runtime contains symbols that need to be linked for the startup code to
---  function
-with Runtime;
-pragma Unreferenced (Runtime);
-
 package RP.Device is
    SPI_0 : aliased SPI_Port (0, RP2040_SVD.SPI.SPI0_Periph'Access);
    SPI_1 : aliased SPI_Port (1, RP2040_SVD.SPI.SPI1_Periph'Access);
