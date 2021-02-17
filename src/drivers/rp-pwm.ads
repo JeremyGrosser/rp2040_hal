@@ -86,6 +86,11 @@ package RP.PWM is
       (Slice : PWM_Slice)
       with Pre => Enabled (Slice);
 
+   function Count
+      (Slice : PWM_Slice)
+      return Natural
+      with Pre => Enabled (Slice);
+
 private
 
    function Div_Integer

@@ -120,6 +120,11 @@ package body RP.PWM is
           others => <>);
    end Set_Clock_Divider;
 
+   function Count
+      (Slice : PWM_Slice)
+      return Natural
+   is (Natural (PWM_Periph.CH (Slice).CTR.CH0_CTR));
+
    function Div_Integer
       (V : Clock_Divider)
       return UInt8
