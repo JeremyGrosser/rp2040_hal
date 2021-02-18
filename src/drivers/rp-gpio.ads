@@ -189,7 +189,7 @@ private
       DORMANT_WAKE_INTS : aliased INT_Register;
    end record
       with Volatile;
-   for IO_Bank use record
+   for IO_BANK use record
       GPIO              at 16#0000# range 0 .. 1919;
       INTR              at 16#00f0# range 0 .. 119;
       PROC0_INTE        at 16#0100# range 0 .. 119;
