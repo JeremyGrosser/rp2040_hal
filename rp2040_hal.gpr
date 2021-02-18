@@ -12,4 +12,16 @@ project Rp2040_Hal is
    for Object_Dir use "obj/RP2040";
    for Create_Missing_Dirs use "True";
 
+   package Compiler is
+       for Default_Switches ("Ada") use
+           ("-Og",
+            "-g",
+            "-fstack-usage",
+            "-ffunction-sections",
+            "-fdata-sections",
+            "-gnatwa",  --  enable most warnings
+            "-gnatwl",  --  elaboration warnings
+            "-gnatw.X", --  ignore No_Exception_Propagation warnings
+            "-gnata");  --  enable assertions
+   end Compiler;
 end Rp2040_Hal;
