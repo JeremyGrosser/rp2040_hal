@@ -6,7 +6,9 @@
 with HAL; use HAL;
 with HAL.Time;
 
-package RP.SysTick is
+package RP.SysTick
+   with Elaborate_Body
+is
    type Delays is new HAL.Time.Delays with null record;
 
    procedure Enable

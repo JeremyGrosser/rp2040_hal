@@ -2,7 +2,9 @@ with RP2040_SVD.UART; use RP2040_SVD.UART;
 with HAL.UART; use HAL.UART;
 with RP.Clock;
 
-package RP.UART is
+package RP.UART
+   with Elaborate_Body
+is
 
    type UART_Port
       (Num    : Natural;

@@ -3,7 +3,9 @@ with RP2040_SVD.I2C;
 with RP.Clock;
 with HAL;
 
-package RP.I2C_Master is
+package RP.I2C_Master
+   with Elaborate_Body
+is
 
    type I2C_Master_Port
       (Num    : Natural;

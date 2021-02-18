@@ -32,6 +32,14 @@ package RP.Clock is
        return Hertz;
    No_Frequency_Counter : exception;
 
+   --  ROSC can vary from 1 .. 12 MHz. Assume that ROSC is running at the
+   --  maximum ROSC frequency to avoid unintentional overclocking.
+   --
+   --  TODO: measure ROSC with the internal frequency counter and temperature
+   --        sensor, then update this value before enabling PLLs
+   --  2.15.2.1.1. Mitigating ROSC frequency variation due to process
+   function ROSC_Frequency return Hertz;
+
 private
 
    procedure Enable_ROSC;
@@ -125,7 +133,9 @@ private
       DIV      : CLK_DIV_Register;
       SELECTED : CLK_SELECTED_Field;
    end record
-      with Size => (3 * 32);
+      with Size => (3 * 32),
+           Volatile;
+
    for CLK_Register use record
       CTRL     at 0 range 0 .. 31;
       DIV      at 0 range 32 .. 63;

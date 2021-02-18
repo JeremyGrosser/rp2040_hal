@@ -29,8 +29,8 @@ package RP.PWM is
       Channel : PWM_Channel;
    end record;
 
-   Clock_Fraction : constant := 1.0 / (2.0 ** 4);
-   type Clock_Divider is delta Clock_Fraction range Clock_Fraction .. (2.0 ** 8) - Clock_Fraction;
+   Divider_Fraction : constant := 1.0 / (2.0 ** 4);
+   type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** 8) - Divider_Fraction;
 
    subtype Period is UInt16;
 
@@ -43,9 +43,16 @@ package RP.PWM is
        Mode  : PWM_Divider_Mode);
 
    --  clk_sys gets divided by Divider
-   procedure Set_Clock_Divider
-      (Slice   : PWM_Slice;
-       Divider : Clock_Divider);
+   procedure Set_Divider
+      (Slice : PWM_Slice;
+       Div   : Divider);
+
+   --  Set_Frequency is a convenience method that calculates the correct
+   --  divider for the target frequency
+   procedure Set_Frequency
+      (Slice     : PWM_Slice;
+       Frequency : Hertz)
+       with Pre => Frequency > 0;
 
    --  on each divided clock cycle, a counter is incremented toward Clocks and
    --  wraps around when it matches this value
@@ -94,17 +101,17 @@ package RP.PWM is
 private
 
    function Div_Integer
-      (V : Clock_Divider)
+      (V : Divider)
       return UInt8;
 
    function Div_Fraction
-      (V : Clock_Divider)
+      (V : Divider)
       return UInt4;
 
    function Div_Value
       (Int  : UInt8;
        Frac : UInt4)
-      return Clock_Divider;
+      return Divider;
 
    type PWM_Slice_Register is record
       CSR : aliased RP2040_SVD.PWM.CH0_CSR_Register;
@@ -113,7 +120,8 @@ private
       CC  : aliased RP2040_SVD.PWM.CH0_CC_Register;
       TOP : aliased RP2040_SVD.PWM.CH0_TOP_Register;
    end record
-      with Size => 32 * 5;
+      with Size => 32 * 5,
+           Volatile;
    for PWM_Slice_Register use record
       CSR at 0 range 0 .. 31;
       DIV at 4 range 0 .. 31;
@@ -132,7 +140,8 @@ private
       INTF : aliased RP2040_SVD.PWM.INTF_Register;
       INTS : aliased RP2040_SVD.PWM.INTS_Register;
    end record
-      with Size => 1440;
+      with Size => 1440,
+           Volatile;
    for PWM_Peripheral use record
       CH   at   0 range 0 .. 1279;
       EN   at 160 range 0 .. 31;

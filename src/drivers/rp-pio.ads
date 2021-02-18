@@ -5,22 +5,11 @@ with HAL; use HAL;
 
 package RP.PIO is
    type PIO_Peripheral is private;
-
-   type PIO_Port
-      (Num    : Natural;
-       Periph : not null access PIO_Peripheral)
-   is tagged private;
-
-   type State_Machine is (SM_0, SM_1, SM_2, SM_3);
-   for State_Machine use
-      (SM_0 => 2#0001#,
-       SM_1 => 2#0010#,
-       SM_2 => 2#0100#,
-       SM_3 => 2#1000#);
+   type State_Machine is range 0 .. 3;
 
    type PIO_Point is tagged record
-      Port : not null access PIO_Port;
-      SM   : State_Machine;
+      Periph : not null access PIO_Peripheral;
+      SM     : State_Machine;
    end record;
 
    subtype Instruction is UInt16;
@@ -30,58 +19,63 @@ package RP.PIO is
    Divider_Fraction : constant := 1.0 / 2.0 ** 8;
    type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** 16 - Divider_Fraction);
 
-   procedure Enable
-      (This : not null access PIO_Port);
+   --  RESET the PIO peripherals
+   procedure Initialize;
 
+   --  Start execution on a state machine
    procedure Enable
-      (This : in out PIO_Point);
+      (This : PIO_Point);
 
+   --  Stop execution on a state machine
    procedure Disable
-      (This : in out PIO_Point);
+      (This : PIO_Point);
 
+   --  Clear internal state
    procedure Restart
-      (This : in out PIO_Point);
-
-   procedure Clock_Restart
-      (This : in out PIO_Point);
+      (This : PIO_Point);
 
    procedure Set_Divider
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Div  : Divider);
 
+   procedure Set_Frequency
+      (This      : PIO_Point;
+       Frequency : Hertz)
+       with Pre => Frequency > 0;
+
    procedure Set_Out_Pins
-      (This  : in out PIO_Point;
+      (This  : PIO_Point;
        Base  : RP.GPIO.GPIO_Point;
        Count : Natural)
        with Pre => Count <= 32;
 
    procedure Set_Set_Pins
-      (This  : in out PIO_Point;
+      (This  : PIO_Point;
        Base  : RP.GPIO.GPIO_Point;
        Count : Natural)
        with Pre => Count <= 5;
 
    procedure Set_In_Pins
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Base : RP.GPIO.GPIO_Point);
 
    procedure Set_Sideset_Pins
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Base : RP.GPIO.GPIO_Point);
 
    procedure Set_Sideset
-      (This      : in out PIO_Point;
+      (This      : PIO_Point;
        Bit_Count : Natural;
        Optional  : Boolean;
        Pin_Dirs  : Boolean)
        with Pre => Bit_Count <= 32;
 
    procedure Set_Jmp_Pin
-      (This  : in out PIO_Point;
+      (This  : PIO_Point;
        Point : RP.GPIO.GPIO_Point);
 
    procedure Load
-      (This        : in out PIO_Point;
+      (This        : PIO_Point;
        Prog        : Program;
        Wrap        : Program_Index;
        Wrap_Target : Program_Index;
@@ -89,7 +83,7 @@ package RP.PIO is
        with Pre => (Program_Index'Last - Offset) >= Prog'Length - 1;
 
    procedure Execute
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Insn : Instruction);
 
    function Address
@@ -97,19 +91,19 @@ package RP.PIO is
       return Program_Index;
 
    procedure Receive
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Data : out UInt32_Array);
 
    procedure Receive
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Data : out UInt32);
 
    procedure Transmit
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Data : UInt32_Array);
 
    procedure Transmit
-      (This : in out PIO_Point;
+      (This : PIO_Point;
        Data : UInt32);
 
 private
@@ -170,12 +164,6 @@ private
       IRQ1_INTS         : aliased IRQ1_INTS_Register;
    end record
       with Size => 2592,
-           Pack,
            Volatile;
-
-   type PIO_Port
-      (Num    : Natural;
-       Periph : not null access PIO_Peripheral)
-   is tagged null record;
 
 end RP.PIO;

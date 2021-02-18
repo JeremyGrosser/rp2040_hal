@@ -7,7 +7,9 @@ with HAL.SPI; use HAL.SPI;
 with RP2040_SVD.SPI;
 with RP.Clock;
 
-package RP.SPI is
+package RP.SPI
+   with Elaborate_Body
+is
    type SPI_Port
       (Num    : Natural;
        Periph : not null access RP2040_SVD.SPI.SPI_Peripheral) is

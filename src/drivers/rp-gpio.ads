@@ -11,11 +11,15 @@ with HAL;                   use HAL;
 with HAL.GPIO;              use HAL.GPIO;
 with System;
 
-package RP.GPIO is
-   subtype GPIO_Pin is Natural range 0 .. 29;
+package RP.GPIO
+   with Elaborate_Body
+is
+   type GPIO_Pin is range 0 .. 29;
 
-   type GPIO_Point (Pin : GPIO_Pin) is new HAL.GPIO.GPIO_Point with
-      null record;
+   type GPIO_Point is new HAL.GPIO.GPIO_Point with
+      record
+         Pin : GPIO_Pin;
+      end record;
 
    type GPIO_Config_Mode is (Input, Output, Analog);
 
@@ -44,7 +48,9 @@ package RP.GPIO is
        Falling_Edge => 2#0100#,
        Rising_Edge  => 2#1000#);
 
-   type Interrupt_Procedure is access procedure (Trigger : Interrupt_Triggers);
+   type Interrupt_Procedure is access procedure
+      (Pin     : GPIO_Pin;
+       Trigger : Interrupt_Triggers);
 
    procedure Enable;
 
@@ -156,7 +162,8 @@ private
       CTRL   : aliased GPIO_CTRL_Register;
    end record
       with Bit_Order => System.Low_Order_First,
-           Size => 64;
+           Size      => 64,
+           Volatile;
 
    for GPIO_Register use record
       STATUS at 0 range 0 .. 31;
@@ -164,8 +171,8 @@ private
    end record;
 
    type GPIO_Registers is array (GPIO_Pin) of GPIO_Register;
-   type INT_Register is array (0 .. GPIO_Pin'Last) of UInt4
-      with Size => 128,
+   type INT_Register is array (GPIO_Pin) of UInt4
+      with Size => 120,
            Pack => True;
 
    type IO_BANK is record
@@ -180,16 +187,31 @@ private
       DORMANT_WAKE_INTE : aliased INT_Register;
       DORMANT_WAKE_INTF : aliased INT_Register;
       DORMANT_WAKE_INTS : aliased INT_Register;
+   end record
+      with Volatile;
+   for IO_Bank use record
+      GPIO              at 16#0000# range 0 .. 1919;
+      INTR              at 16#00f0# range 0 .. 119;
+      PROC0_INTE        at 16#0100# range 0 .. 119;
+      PROC0_INTF        at 16#0110# range 0 .. 119;
+      PROC0_INTS        at 16#0120# range 0 .. 119;
+      PROC1_INTE        at 16#0130# range 0 .. 119;
+      PROC1_INTF        at 16#0140# range 0 .. 119;
+      PROC1_INTS        at 16#0150# range 0 .. 119;
+      DORMANT_WAKE_INTE at 16#0160# range 0 .. 119;
+      DORMANT_WAKE_INTF at 16#0170# range 0 .. 119;
+      DORMANT_WAKE_INTS at 16#0180# range 0 .. 119;
    end record;
 
    type PADS_BANK_GPIO_Registers is array (GPIO_Pin) of RP2040_SVD.PADS_BANK0.GPIO_Register;
 
    type PADS_BANK is record
-      VOLTAGE_SELECT : aliased VOLTAGE_SELECT_Register;
-      GPIO           : aliased PADS_BANK_GPIO_Registers;
-      SWCLK          : aliased SWCLK_Register;
-      SWD            : aliased SWD_Register;
-   end record;
+      VOLTAGE_SELECT : VOLTAGE_SELECT_Register;
+      GPIO           : PADS_BANK_GPIO_Registers;
+      SWCLK          : SWCLK_Register;
+      SWD            : SWD_Register;
+   end record
+      with Volatile;
 
    IO_BANK_Periph : aliased IO_BANK
       with Import, Address => IO_BANK0_Base;

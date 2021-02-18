@@ -101,7 +101,7 @@ package body RP.Clock is
          Reference := XOSC_Frequency;
          Enable_XOSC (XOSC_Frequency);
       else
-         Reference := RP.Device.ROSC_Frequency;
+         Reference := ROSC_Frequency;
          Enable_ROSC;
       end if;
 
@@ -229,4 +229,8 @@ package body RP.Clock is
          return Hertz (CLOCKS_Periph.FC0_RESULT.KHZ) * 1_000;
       end if;
    end Frequency;
+
+   function ROSC_Frequency
+      return Hertz
+   is (12_000_000);
 end RP.Clock;

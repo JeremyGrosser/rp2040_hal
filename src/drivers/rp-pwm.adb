@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
+with RP.Clock;
 
 package body RP.PWM is
    function To_PWM
@@ -57,7 +58,7 @@ package body RP.PWM is
    end Set_Interval;
 
    procedure Set_Duty_Cycle
-      (Point : PWM_Point;
+      (Point  : PWM_Point;
        Clocks : Period)
    is
    begin
@@ -108,17 +109,25 @@ package body RP.PWM is
       end loop;
    end Retard_Phase;
 
-   procedure Set_Clock_Divider
-      (Slice   : PWM_Slice;
-       Divider : Clock_Divider)
+   procedure Set_Divider
+      (Slice : PWM_Slice;
+       Div   : Divider)
    is
       use RP2040_SVD.PWM;
    begin
       PWM_Periph.CH (Slice).DIV :=
-         (INT    => CH0_DIV_INT_Field  (Div_Integer (Divider)),
-          FRAC   => CH0_DIV_FRAC_Field (Div_Fraction (Divider)),
+         (INT    => CH0_DIV_INT_Field  (Div_Integer (Div)),
+          FRAC   => CH0_DIV_FRAC_Field (Div_Fraction (Div)),
           others => <>);
-   end Set_Clock_Divider;
+   end Set_Divider;
+
+   procedure Set_Frequency
+      (Slice     : PWM_Slice;
+       Frequency : Hertz)
+   is
+   begin
+      Set_Divider (Slice, Divider (RP.Clock.Frequency (RP.Clock.SYS) / Frequency));
+   end Set_Frequency;
 
    function Count
       (Slice : PWM_Slice)
@@ -126,12 +135,12 @@ package body RP.PWM is
    is (Natural (PWM_Periph.CH (Slice).CTR.CH0_CTR));
 
    function Div_Integer
-      (V : Clock_Divider)
+      (V : Divider)
       return UInt8
    is
       I : constant Natural := Natural (V);
    begin
-      if Clock_Divider (I) > V then
+      if Divider (I) > V then
          return UInt8 (I - 1);
       else
          return UInt8 (I);
@@ -139,14 +148,14 @@ package body RP.PWM is
    end Div_Integer;
 
    function Div_Fraction
-      (V : Clock_Divider)
+      (V : Divider)
       return UInt4
-   is (UInt4 ((V - Clock_Divider (Div_Integer (V))) * 2 ** 4));
+   is (UInt4 ((V - Divider (Div_Integer (V))) * 2 ** 4));
 
    function Div_Value
       (Int  : UInt8;
        Frac : UInt4)
-       return Clock_Divider
-   is (Clock_Divider (Int) + (Clock_Divider (Frac) / 2 ** 4));
+       return Divider
+   is (Divider (Int) + (Divider (Frac) / 2 ** 4));
 
 end RP.PWM;

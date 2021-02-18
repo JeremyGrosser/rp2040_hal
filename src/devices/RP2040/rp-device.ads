@@ -24,22 +24,10 @@ package RP.Device is
    UART_0 : aliased UART_Port (0, RP2040_SVD.UART.UART0_Periph'Access);
    UART_1 : aliased UART_Port (1, RP2040_SVD.UART.UART1_Periph'Access);
 
-   PIO0_Periph : aliased RP.PIO.PIO_Peripheral
+   PIO_0 : aliased RP.PIO.PIO_Peripheral
       with Import, Address => RP2040_SVD.PIO0_Base;
-   PIO1_Periph : aliased RP.PIO.PIO_Peripheral
+   PIO_1 : aliased RP.PIO.PIO_Peripheral
       with Import, Address => RP2040_SVD.PIO1_Base;
-   PIO_0 : aliased PIO_Port (0, PIO0_Periph'Access);
-   PIO_1 : aliased PIO_Port (1, PIO1_Periph'Access);
-
-   --  ROSC can vary from 1 .. 12 MHz. Assume that ROSC is running at the
-   --  maximum ROSC frequency to avoid unintentional overclocking.
-   --
-   --  TODO: measure ROSC with the internal frequency counter and temperature
-   --        sensor, then update this value before enabling PLLs
-   --  2.15.2.1.1. Mitigating ROSC frequency variation due to process
-
-   subtype ROSC_Hertz is Hertz range 1_000_000 .. 12_000_000;
-   ROSC_Frequency : ROSC_Hertz := 12_000_000;
 
    SysTick : aliased RP.SysTick.Delays;
 end RP.Device;

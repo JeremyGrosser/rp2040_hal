@@ -107,7 +107,7 @@ package body RP.GPIO is
                if T /= 0 then
                   Handler := GPIO_Interrupt_Handlers (Pin);
                   if Handler /= null then
-                     Handler.all (Trigger);
+                     Handler.all (Pin, Trigger);
                   end if;
                   IO_BANK_Periph.INTR (Pin) := T;
                end if;
