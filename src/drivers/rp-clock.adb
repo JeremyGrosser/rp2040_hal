@@ -7,7 +7,6 @@ with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP2040_SVD.XOSC; use RP2040_SVD.XOSC;
 with RP2040_SVD.ROSC; use RP2040_SVD.ROSC;
 with RP.Watchdog;
-with RP.Device;
 
 package body RP.Clock is
    function CLK_SELECTED_Mask (SRC : CLK_CTRL_SRC_Field)
