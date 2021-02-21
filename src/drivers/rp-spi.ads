@@ -24,6 +24,10 @@ is
    with Pre => Baud < RP.Clock.Frequency (RP.Clock.PERI);
    Clock_Speed_Error : exception;
 
+   procedure Set_Data_Size
+      (This      : in out SPI_Port;
+       Data_Size : SPI_Data_Size);
+
    overriding
    function Data_Size
       (This : SPI_Port)

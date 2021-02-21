@@ -29,8 +29,8 @@ package body RP.SPI is
          (DSS    => 2#0111#, --  8 bits
           FRF    => 0,       --  Motorola format
           SCR    => 0,       --  No divider before Set_Speed is called
-          SPO    => False,   --  CPOL
-          SPH    => False,   --  CPHA
+          SPO    => False,   --  CPOL data is active low
+          SPH    => False,   --  CPHA latch on clock rising edge
           others => <>);
 
       This.Periph.SSPCR1 :=
@@ -51,27 +51,40 @@ package body RP.SPI is
       (This : in out SPI_Port;
        Baud : Hertz)
    is
-      Freq_In  : constant Hertz := RP.Clock.Frequency (RP.Clock.PERI);
-      Prescale : Hertz := 2;
-      Postdiv  : SSPCR0_SCR_Field := SSPCR0_SCR_Field'Last;
+      Baud64   : constant UInt64 := UInt64 (Baud);
+      Freq_In  : constant UInt64 := UInt64 (RP.Clock.Frequency (RP.Clock.PERI));
+      Prescale : UInt64 := 2;
+      Postdiv  : UInt64 := 256;
    begin
-      loop
-         exit when Freq_In < ((Prescale + 2) * 256 * Baud);
+      while Prescale <= 254 loop
+         exit when Freq_In < (Prescale + 2) * 256 * Baud64;
          Prescale := Prescale + 2;
-         if Prescale > 254 then
-            raise Clock_Speed_Error with "PERI frequency too low for requested SPI baud";
-         end if;
       end loop;
+      if Prescale > 254 then
+         raise Clock_Speed_Error with "PERI frequency too low for requested SPI baud";
+      end if;
 
-      loop
+      while Postdiv > 1 loop
+         exit when Freq_In / (Prescale * (Postdiv - 1)) > Baud64;
          Postdiv := Postdiv - 1;
-         exit when Postdiv = 1 or else
-                   Freq_In / (Prescale * (Hertz (Postdiv) - 1)) > Baud;
       end loop;
 
       This.Periph.SSPCPSR.CPSDVSR := SSPCPSR_CPSDVSR_Field (Prescale);
-      This.Periph.SSPCR0.SCR := Postdiv - 1;
+      This.Periph.SSPCR0.SCR := SSPCR0_SCR_Field (Postdiv - 1);
    end Set_Speed;
+
+   procedure Set_Data_Size
+      (This      : in out SPI_Port;
+       Data_Size : SPI_Data_Size)
+   is
+   begin
+      case Data_Size is
+         when Data_Size_8b =>
+            This.Periph.SSPCR0.DSS := 2#0111#;
+         when Data_Size_16b =>
+            This.Periph.SSPCR0.DSS := 2#1111#;
+      end case;
+   end Set_Data_Size;
 
    overriding
    function Data_Size
@@ -79,7 +92,11 @@ package body RP.SPI is
       return SPI_Data_Size
    is
    begin
-      return Data_Size_8b;
+      if This.Periph.SSPCR0.DSS = 2#1111# then
+         return Data_Size_16b;
+      else
+         return Data_Size_8b;
+      end if;
    end Data_Size;
 
    overriding
@@ -111,7 +128,17 @@ package body RP.SPI is
        Timeout : Natural := 1000)
    is
    begin
-      Status := Err_Error;
+      for D of Data loop
+         while not This.Periph.SSPSR.TNF loop
+            null;
+         end loop;
+         This.Periph.SSPDR.DATA := SSPDR_DATA_Field (D);
+      end loop;
+
+      while not This.Periph.SSPSR.TFE loop
+         null;
+      end loop;
+      Status := Ok;
    end Transmit;
 
    overriding
@@ -138,9 +165,14 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
-      pragma Unreferenced (Data);
    begin
-      Status := Err_Error;
+      for I in Data'Range loop
+         while not This.Periph.SSPSR.RNE loop
+            null;
+         end loop;
+         Data (I) := UInt16 (This.Periph.SSPDR.DATA);
+      end loop;
+      Status := Ok;
    end Receive;
 
 end RP.SPI;
