@@ -24,10 +24,12 @@ package RP.Device is
    UART_0 : aliased UART_Port (0, RP2040_SVD.UART.UART0_Periph'Access);
    UART_1 : aliased UART_Port (1, RP2040_SVD.UART.UART1_Periph'Access);
 
-   PIO_0 : aliased RP.PIO.PIO_Peripheral
+   PIO0_Periph : aliased RP.PIO.PIO_Peripheral
       with Import, Address => RP2040_SVD.PIO0_Base;
-   PIO_1 : aliased RP.PIO.PIO_Peripheral
+   PIO1_Periph : aliased RP.PIO.PIO_Peripheral
       with Import, Address => RP2040_SVD.PIO1_Base;
+   PIO_0 : aliased PIO_Device (PIO0_Periph'Access);
+   PIO_1 : aliased PIO_Device (PIO1_Periph'Access);
 
    SysTick : aliased RP.SysTick.Delays;
 end RP.Device;

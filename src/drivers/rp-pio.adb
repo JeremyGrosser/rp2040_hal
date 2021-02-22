@@ -2,10 +2,19 @@ with RP2040_SVD.RESETS;
 with RP.Clock;
 
 package body RP.PIO is
-   function SM_Mask
-      (SM : State_Machine)
+   function Mask
+      (SM : State_Machines)
       return UInt4
-   is (UInt4 (Shift_Left (UInt8 (1), State_Machine'Pos (SM))));
+   is
+      M : UInt8 := 0;
+   begin
+      for I in SM'Range loop
+         if SM (I) then
+            M := M or Shift_Left (1, Natural (I));
+         end if;
+      end loop;
+      return UInt4 (M);
+   end Mask;
 
    function Div_Integer
       (Div : Divider)
@@ -36,140 +45,97 @@ package body RP.PIO is
    end Initialize;
 
    procedure Enable
-      (This : PIO_Point)
+      (This : in out PIO_Device;
+       SM   : State_Machines)
    is
    begin
-      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or SM_Mask (This.SM);
+      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or Mask (SM);
    end Enable;
 
    procedure Disable
-      (This : PIO_Point)
+      (This : in out PIO_Device;
+       SM   : State_Machines)
    is
    begin
-      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE xor SM_Mask (This.SM);
+      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not Mask (SM);
    end Disable;
 
    procedure Restart
-      (This : PIO_Point)
+      (This : in out PIO_Device;
+       SM   : State_Machines)
    is
    begin
-      This.Periph.CTRL.SM_RESTART := SM_Mask (This.SM);
+      This.Periph.CTRL.SM_RESTART := Mask (SM);
    end Restart;
 
-   procedure Set_Divider
-      (This : PIO_Point;
-       Div  : Divider)
+   procedure Configure
+      (This   : in out PIO_Device;
+       SM     : State_Machine;
+       Config : State_Machine_Configuration)
    is
+      P : SM_Register renames This.Periph.SM (SM);
    begin
-      This.Periph.SM (This.SM).CLKDIV :=
-         (INT    => Div_Integer (Div),
-          FRAC   => Div_Fraction (Div),
+      P.CLKDIV :=
+         (INT    => Div_Integer (Config.Clock_Divider),
+          FRAC   => Div_Fraction (Config.Clock_Divider),
           others => <>);
-   end Set_Divider;
+      P.PINCTRL :=
+         (OUT_BASE      => SM0_PINCTRL_OUT_BASE_Field (Config.Out_Base.Pin),
+          OUT_COUNT     => SM0_PINCTRL_OUT_COUNT_Field (Config.Out_Count),
+          SET_BASE      => SM0_PINCTRL_SET_BASE_Field (Config.Set_Base.Pin),
+          SET_COUNT     => SM0_PINCTRL_SET_COUNT_Field (Config.Set_Count),
+          IN_BASE       => SM0_PINCTRL_IN_BASE_Field (Config.In_Base.Pin),
+          SIDESET_BASE  => SM0_PINCTRL_SIDESET_BASE_Field (Config.Sideset_Base.Pin),
+          SIDESET_COUNT => SM0_PINCTRL_SIDESET_COUNT_Field (Config.Sideset_Count));
+      P.EXECCTRL.SIDE_EN := Config.Sideset_Optional;
+      P.EXECCTRL.SIDE_PINDIR := Config.Sideset_Pindir;
+      P.EXECCTRL.JMP_PIN := SM0_EXECCTRL_JMP_PIN_Field (Config.Jmp_Pin.Pin);
+      P.SHIFTCTRL.AUTOPULL := Config.Autopull;
+      P.SHIFTCTRL.AUTOPUSH := Config.Autopush;
+   end Configure;
 
-   procedure Set_Frequency
-      (This      : PIO_Point;
-       Frequency : Hertz)
-   is
-   begin
-      Set_Divider (This, Divider (RP.Clock.Frequency (RP.Clock.SYS) / Frequency));
-   end Set_Frequency;
-
-   procedure Set_Out_Pins
-      (This  : PIO_Point;
-       Base  : RP.GPIO.GPIO_Point;
-       Count : Natural)
-   is
-      SM : SM_Register renames This.Periph.SM (This.SM);
-   begin
-      SM.PINCTRL.OUT_BASE := SM0_PINCTRL_OUT_BASE_Field (Base.Pin);
-      SM.PINCTRL.OUT_COUNT := SM0_PINCTRL_OUT_COUNT_Field (Count);
-   end Set_Out_Pins;
-
-   procedure Set_Set_Pins
-      (This  : PIO_Point;
-       Base  : RP.GPIO.GPIO_Point;
-       Count : Natural)
-   is
-      SM : SM_Register renames This.Periph.SM (This.SM);
-   begin
-      SM.PINCTRL.SET_BASE := SM0_PINCTRL_SET_BASE_Field (Base.Pin);
-      SM.PINCTRL.SET_COUNT := SM0_PINCTRL_SET_COUNT_Field (Count);
-   end Set_Set_Pins;
-
-   procedure Set_In_Pins
-      (This : PIO_Point;
-       Base : RP.GPIO.GPIO_Point)
-   is
-      SM : SM_Register renames This.Periph.SM (This.SM);
-   begin
-      SM.PINCTRL.IN_BASE := SM0_PINCTRL_IN_BASE_Field (Base.Pin);
-   end Set_In_Pins;
-
-   procedure Set_Sideset_Pins
-      (This : PIO_Point;
-       Base : RP.GPIO.GPIO_Point)
-   is
-      SM : SM_Register renames This.Periph.SM (This.SM);
-   begin
-      SM.PINCTRL.SIDESET_BASE := SM0_PINCTRL_SIDESET_BASE_Field (Base.Pin);
-   end Set_Sideset_Pins;
-
-   procedure Set_Sideset
-      (This      : PIO_Point;
-       Bit_Count : Natural;
-       Optional  : Boolean;
-       Pin_Dirs  : Boolean)
-   is
-      SM : SM_Register renames This.Periph.SM (This.SM);
-   begin
-      SM.PINCTRL.SIDESET_COUNT := SM0_PINCTRL_SIDESET_COUNT_Field (Bit_Count);
-      SM.EXECCTRL.SIDE_EN := Optional;
-      SM.EXECCTRL.SIDE_PINDIR := Pin_Dirs;
-   end Set_Sideset;
-
-   procedure Set_Jmp_Pin
-      (This  : PIO_Point;
-       Point : RP.GPIO.GPIO_Point)
-   is
-      SM : SM_Register renames This.Periph.SM (This.SM);
-   begin
-      SM.EXECCTRL.JMP_PIN := SM0_EXECCTRL_JMP_PIN_Field (Point.Pin);
-   end Set_Jmp_Pin;
+   function To_Divider
+      (Frequency : Hertz)
+       return Divider
+   is (Divider (Float (RP.Clock.Frequency (RP.Clock.SYS)) / Float (Frequency)));
 
    procedure Load
-      (This        : PIO_Point;
+      (This        : in out PIO_Device;
+       SM          : State_Machine;
        Prog        : Program;
        Wrap        : Program_Index;
        Wrap_Target : Program_Index;
        Offset      : Program_Index := Program_Index'First)
    is
-      P  : access PIO_Peripheral renames This.Periph;
-      SM : SM_Register renames This.Periph.SM (This.SM);
+      P : access PIO_Peripheral renames This.Periph;
+      S : SM_Register renames This.Periph.SM (SM);
    begin
       for I in Offset .. Offset + Prog'Length - 1 loop
          P.INSTR_MEM (I) := UInt32 (Prog (Prog'First + I));
       end loop;
-      SM.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap_Target);
-      SM.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap);
-      This.Execute (Instruction (Offset)); --  Jump to the first instruction
+      S.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
+      S.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
+      Execute (This, SM, Instruction (Offset)); --  Jump to the first instruction
    end Load;
 
    procedure Execute
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Insn : Instruction)
    is
    begin
-      This.Periph.SM (This.SM).INSTR.SM0_INSTR := SM0_INSTR_SM0_INSTR_Field (Insn);
+      This.Periph.SM (SM).INSTR.SM0_INSTR := SM0_INSTR_SM0_INSTR_Field (Insn);
    end Execute;
 
    function Address
-      (This : PIO_Point)
+      (This : PIO_Device;
+       SM   : State_Machine)
       return Program_Index
-   is (Program_Index (This.Periph.SM (This.SM).ADDR.SM0_ADDR));
+   is (Program_Index (This.Periph.SM (SM).ADDR.SM0_ADDR));
 
    procedure Receive
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : out UInt32_Array)
    is
       P : access PIO_Peripheral renames This.Periph;
@@ -178,12 +144,13 @@ package body RP.PIO is
          while P.FSTAT.RXFULL = 0 loop
             null;
          end loop;
-         Data (I) := P.RXF (This.SM);
+         Data (I) := P.RXF (SM);
       end loop;
    end Receive;
 
    procedure Receive
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : out UInt32)
    is
       P : access PIO_Peripheral renames This.Periph;
@@ -191,11 +158,12 @@ package body RP.PIO is
       while P.FSTAT.RXFULL = 0 loop
          null;
       end loop;
-      Data := P.RXF (This.SM);
+      Data := P.RXF (SM);
    end Receive;
 
    procedure Transmit
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : UInt32_Array)
    is
       P : access PIO_Peripheral renames This.Periph;
@@ -204,12 +172,13 @@ package body RP.PIO is
          while P.FSTAT.TXEMPTY = 0 loop
             null;
          end loop;
-         P.TXF (This.SM) := Data (I);
+         P.TXF (SM) := Data (I);
       end loop;
    end Transmit;
 
    procedure Transmit
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : UInt32)
    is
       P : access PIO_Peripheral renames This.Periph;
@@ -217,7 +186,7 @@ package body RP.PIO is
       while P.FSTAT.TXEMPTY = 0 loop
          null;
       end loop;
-      This.Periph.TXF (This.SM) := Data;
+      This.Periph.TXF (SM) := Data;
    end Transmit;
 
 end RP.PIO;

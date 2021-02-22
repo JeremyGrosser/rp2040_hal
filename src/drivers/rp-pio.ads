@@ -1,16 +1,14 @@
-with RP2040_SVD.PIO;
+with RP2040_SVD.PIO; use RP2040_SVD.PIO;
 with RP2040_SVD;
-with RP.GPIO;
+with RP.GPIO; use RP.GPIO;
 with HAL; use HAL;
 
 package RP.PIO is
    type PIO_Peripheral is private;
-   type State_Machine is range 0 .. 3;
+   type PIO_Device (Periph : not null access PIO_Peripheral) is tagged limited private;
 
-   type PIO_Point is tagged record
-      Periph : not null access PIO_Peripheral;
-      SM     : State_Machine;
-   end record;
+   type State_Machine is range 0 .. 3;
+   type State_Machines is array (State_Machine) of Boolean;
 
    subtype Instruction is UInt16;
    subtype Program_Index is Natural range 0 .. 31;
@@ -19,63 +17,45 @@ package RP.PIO is
    Divider_Fraction : constant := 1.0 / 2.0 ** 8;
    type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** 16 - Divider_Fraction);
 
+   type State_Machine_Configuration is record
+      Clock_Divider    : Divider := 1.0;
+      Out_Base         : GPIO_Point := (Pin => 0);
+      Out_Count        : UInt6 := 0;
+      Set_Base         : GPIO_Point := (Pin => 0);
+      Set_Count        : UInt3 := 0;
+      In_Base          : GPIO_Point := (Pin => 0);
+      Sideset_Base     : GPIO_Point := (Pin => 0);
+      Sideset_Count    : UInt3 := 0;
+      Sideset_Optional : Boolean := False;
+      Sideset_Pindir   : Boolean := False;
+      Jmp_Pin          : GPIO_Point := (Pin => 0);
+      Autopull         : Boolean := False;
+      Autopush         : Boolean := False;
+   end record;
+
    --  RESET the PIO peripherals
    procedure Initialize;
 
-   --  Start execution on a state machine
+   procedure Configure
+      (This   : in out PIO_Device;
+       SM     : State_Machine;
+       Config : State_Machine_Configuration);
+
    procedure Enable
-      (This : PIO_Point);
+      (This : in out PIO_Device;
+       SM   : State_Machines);
 
-   --  Stop execution on a state machine
    procedure Disable
-      (This : PIO_Point);
+      (This : in out PIO_Device;
+       SM   : State_Machines);
 
-   --  Clear internal state
    procedure Restart
-      (This : PIO_Point);
-
-   procedure Set_Divider
-      (This : PIO_Point;
-       Div  : Divider);
-
-   procedure Set_Frequency
-      (This      : PIO_Point;
-       Frequency : Hertz)
-       with Pre => Frequency > 0;
-
-   procedure Set_Out_Pins
-      (This  : PIO_Point;
-       Base  : RP.GPIO.GPIO_Point;
-       Count : Natural)
-       with Pre => Count <= 32;
-
-   procedure Set_Set_Pins
-      (This  : PIO_Point;
-       Base  : RP.GPIO.GPIO_Point;
-       Count : Natural)
-       with Pre => Count <= 5;
-
-   procedure Set_In_Pins
-      (This : PIO_Point;
-       Base : RP.GPIO.GPIO_Point);
-
-   procedure Set_Sideset_Pins
-      (This : PIO_Point;
-       Base : RP.GPIO.GPIO_Point);
-
-   procedure Set_Sideset
-      (This      : PIO_Point;
-       Bit_Count : Natural;
-       Optional  : Boolean;
-       Pin_Dirs  : Boolean)
-       with Pre => Bit_Count <= 32;
-
-   procedure Set_Jmp_Pin
-      (This  : PIO_Point;
-       Point : RP.GPIO.GPIO_Point);
+      (This : in out PIO_Device;
+       SM   : State_Machines);
 
    procedure Load
-      (This        : PIO_Point;
+      (This        : in out PIO_Device;
+       SM          : State_Machine;
        Prog        : Program;
        Wrap        : Program_Index;
        Wrap_Target : Program_Index;
@@ -83,34 +63,43 @@ package RP.PIO is
        with Pre => (Program_Index'Last - Offset) >= Prog'Length - 1;
 
    procedure Execute
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Insn : Instruction);
 
    function Address
-      (This : PIO_Point)
+      (This : PIO_Device;
+       SM   : State_Machine)
       return Program_Index;
 
    procedure Receive
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : out UInt32_Array);
 
    procedure Receive
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : out UInt32);
 
    procedure Transmit
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : UInt32_Array);
 
    procedure Transmit
-      (This : PIO_Point;
+      (This : in out PIO_Device;
+       SM   : State_Machine;
        Data : UInt32);
 
-private
-   use RP2040_SVD.PIO;
+   function To_Divider (Frequency : Hertz)
+      return Divider
+      with Pre => Frequency > 0;
 
-   function SM_Mask
-      (SM : State_Machine)
+private
+
+   function Mask
+      (SM : State_Machines)
       return UInt4;
 
    function Div_Integer
@@ -166,4 +155,6 @@ private
       with Size => 2592,
            Volatile;
 
+   type PIO_Device (Periph : not null access PIO_Peripheral) is
+      tagged limited null record;
 end RP.PIO;
