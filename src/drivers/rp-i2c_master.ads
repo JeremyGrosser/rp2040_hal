@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with HAL.I2C; use HAL.I2C;
 with RP2040_SVD.I2C;
 with RP.Clock;
