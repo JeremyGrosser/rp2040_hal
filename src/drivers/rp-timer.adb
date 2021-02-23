@@ -22,7 +22,7 @@ package body RP.Timer is
    begin
       High := TIMER_Periph.TIMERAWH;
       loop
-         --  If TIMEHW changed while we were reading TIMELW, try again
+         --  If TIMERAWH changed while we were reading TIMERAWL, try again
          Low := TIMER_Periph.TIMERAWL;
          Next_High := TIMER_Periph.TIMERAWH;
          exit when Next_High = High;
