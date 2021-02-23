@@ -108,13 +108,12 @@ package body RP.PIO is
        Offset      : Program_Index := Program_Index'First)
    is
       P : access PIO_Peripheral renames This.Periph;
-      S : SM_Register renames This.Periph.SM (SM);
    begin
       for I in Offset .. Offset + Prog'Length - 1 loop
          P.INSTR_MEM (I) := UInt32 (Prog (Prog'First + I));
       end loop;
-      S.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
-      S.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
+      This.Periph.SM (SM).EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
+      This.Periph.SM (SM).EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
       Execute (This, SM, Instruction (Offset)); --  Jump to the first instruction
    end Load;
 
