@@ -13,6 +13,7 @@ with RP.I2C_Master;  use RP.I2C_Master;
 with RP.UART;        use RP.UART;
 with RP.PIO;         use RP.PIO;
 with RP.SysTick;
+with RP.Timer;
 
 package RP.Device is
    SPI_0 : aliased SPI_Port (0, RP2040_SVD.SPI.SPI0_Periph'Access);
@@ -32,4 +33,5 @@ package RP.Device is
    PIO_1 : aliased PIO_Device (PIO1_Periph'Access);
 
    SysTick : aliased RP.SysTick.Delays;
+   Timer   : aliased RP.Timer.Delays;
 end RP.Device;
