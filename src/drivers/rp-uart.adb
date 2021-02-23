@@ -98,7 +98,7 @@ package body RP.UART is
       Timeout : Natural := 1000)
    is
    begin
-      raise Unsupported_Data_Size;
+      null;
    end Transmit;
 
    overriding
@@ -109,7 +109,7 @@ package body RP.UART is
       Timeout : Natural := 1000)
    is
    begin
-      raise Unsupported_Data_Size;
+      null;
    end Receive;
 
    function Div_Integer

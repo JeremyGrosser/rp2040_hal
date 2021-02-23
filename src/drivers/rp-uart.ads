@@ -21,10 +21,6 @@ is
       (Port : UART_Port)
       return UART_Data_Size;
 
-   Unsupported_Data_Size : exception;
-   --  Raised if any of the UART_Data_9b procedures are called. The hardware
-   --  does not support this.
-
    overriding
    procedure Transmit
      (This    : in out UART_Port;
