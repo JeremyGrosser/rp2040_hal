@@ -6,7 +6,6 @@ package RP.Timer is
    Ticks_Per_Second : constant := 1_000_000;
 
    --  Monotonic clock running at Ticks_Per_Second.
-   --  Not guaranteed to start at 0.
    function Clock
       return Time;
 

@@ -11,9 +11,6 @@ package body RP.Timer is
       while not RESETS_Periph.RESET_DONE.timer loop
          null;
       end loop;
-
-      TIMER_Periph.TIMELW := 0;
-      TIMER_Periph.TIMEHW := 0;
    end Reset;
 
    function Clock
