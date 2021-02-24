@@ -10,14 +10,6 @@ with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
 with System.Machine_Code;
 
 package body RP.Timer is
-   procedure Reset is
-   begin
-      RESETS_Periph.RESET.timer := False;
-      while not RESETS_Periph.RESET_DONE.timer loop
-         null;
-      end loop;
-   end Reset;
-
    function Clock
       return Time
    is
@@ -61,6 +53,23 @@ package body RP.Timer is
       (This : Delays)
       return Boolean
    is (TIMER_Periph.INTE.ALARM_2);
+
+   procedure Delay_Until
+      (T : Time)
+   is
+   begin
+      TIMER_Periph.ALARM2 := UInt32 (T and 16#FFFFFFFF#);
+      loop
+         System.Machine_Code.Asm ("wfi", Volatile => True);
+         if Clock >= T then
+            return;
+         elsif TIMER_Periph.INTS.ALARM_2 then
+            --  If the high byte of the timer rolled over but we still haven't
+            --  reached the target time, reset the alarm and go again
+            TIMER_Periph.ALARM2 := UInt32 (T and 16#FFFFFFFF#);
+         end if;
+      end loop;
+   end Delay_Until;
 
    overriding
    procedure Delay_Microseconds

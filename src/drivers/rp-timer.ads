@@ -16,10 +16,6 @@ is
    function Clock
       return Time;
 
-   --  The timer is already reset at startup by the boot ROM, you shouldn't
-   --  need to call this.
-   procedure Reset;
-
    type Delays is new HAL.Time.Delays with null record;
 
    function Enabled
@@ -32,6 +28,9 @@ is
 
    procedure Disable
       (This : in out Delays);
+
+   procedure Delay_Until
+      (T : Time);
 
    overriding
    procedure Delay_Microseconds
