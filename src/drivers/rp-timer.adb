@@ -55,7 +55,8 @@ package body RP.Timer is
    is (TIMER_Periph.INTE.ALARM_2);
 
    procedure Delay_Until
-      (T : Time)
+      (This : in out Delays;
+       T    : Time)
    is
    begin
       TIMER_Periph.ALARM2 := UInt32 (T and 16#FFFFFFFF#);

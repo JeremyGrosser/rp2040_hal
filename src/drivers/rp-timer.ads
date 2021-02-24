@@ -30,7 +30,9 @@ is
       (This : in out Delays);
 
    procedure Delay_Until
-      (T : Time);
+      (This : in out Delays;
+       T    : Time)
+       with Pre => Enabled (This);
 
    overriding
    procedure Delay_Microseconds
