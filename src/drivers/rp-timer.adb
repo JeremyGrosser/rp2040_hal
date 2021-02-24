@@ -67,7 +67,7 @@ package body RP.Timer is
       (This : in out Delays;
        Us   : Integer)
    is
-      T : constant UInt32 := UInt32 (Integer (TIMER_Periph.TIMERAWL) + Us);
+      T : constant UInt32 := TIMER_Periph.TIMERAWL + UInt32 (Us);
    begin
       TIMER_Periph.ALARM2 := T;
       loop
