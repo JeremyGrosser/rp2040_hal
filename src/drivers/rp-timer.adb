@@ -82,7 +82,7 @@ package body RP.Timer is
    is
       T : constant UInt32 := TIMER_Periph.TIMERAWL + UInt32 (Us);
    begin
-      if Us < 0 then
+      if Us <= 0 then
          return;
       end if;
       TIMER_Periph.ALARM2 := T;
