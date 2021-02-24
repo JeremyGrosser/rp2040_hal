@@ -59,6 +59,9 @@ package body RP.Timer is
        T    : Time)
    is
    begin
+      if T <= Clock then
+         return;
+      end if;
       TIMER_Periph.ALARM2 := UInt32 (T and 16#FFFFFFFF#);
       loop
          System.Machine_Code.Asm ("wfi", Volatile => True);
@@ -79,6 +82,9 @@ package body RP.Timer is
    is
       T : constant UInt32 := TIMER_Periph.TIMERAWL + UInt32 (Us);
    begin
+      if Us < 0 then
+         return;
+      end if;
       TIMER_Periph.ALARM2 := T;
       loop
          System.Machine_Code.Asm ("wfi", Volatile => True);
