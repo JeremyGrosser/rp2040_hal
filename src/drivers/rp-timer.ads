@@ -40,8 +40,6 @@ is
        Us   : Integer)
        with Pre => Enabled (This);
 
-   --  Delay_Milliseconds and Delay_Seconds are slightly less accurate than
-   --  Delay_Microseconds, but can sleep longer.
    overriding
    procedure Delay_Milliseconds
       (This : in out Delays;

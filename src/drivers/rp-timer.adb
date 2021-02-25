@@ -98,9 +98,7 @@ package body RP.Timer is
        Ms   : Integer)
    is
    begin
-      for I in 1 .. Ms loop
-         Delay_Microseconds (This, 1_000);
-      end loop;
+      Delay_Until (This, Clock + (1_000 * Time (Ms)));
    end Delay_Milliseconds;
 
    overriding
@@ -109,8 +107,6 @@ package body RP.Timer is
        S    : Integer)
    is
    begin
-      for I in 1 .. S loop
-         Delay_Microseconds (This, 1_000_000);
-      end loop;
+      Delay_Until (This, Clock + (1_000_000 * Time (S)));
    end Delay_Seconds;
 end RP.Timer;
