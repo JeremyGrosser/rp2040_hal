@@ -11,6 +11,8 @@ package body RP.ADC is
    procedure Enable
    is
    begin
+      RP.Clock.Enable (RP.Clock.ADC);
+
       RESETS_Periph.RESET.adc := False;
       while not RESETS_Periph.RESET_DONE.adc loop
          null;

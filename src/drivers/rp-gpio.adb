@@ -22,6 +22,19 @@ package body RP.GPIO is
          null;
       end loop;
 
+      --  Errata RP2040-E6
+      --
+      --  GPIO26-29 are shared with ADC inputs AIN0-3. The GPIO digital input
+      --  is enabled after RUN is released. If the pins are connected to an
+      --  analogue signal to measure, there could be unexpected signal levels
+      --  on these pads. This is unlikely to cause a problem as the digital
+      --  inputs have hysteresis enabled by default.
+
+      for Pin in ADC_Pin'Range loop
+         PADS_BANK_Periph.GPIO (Pin).IE := False;
+         PADS_BANK_Periph.GPIO (Pin).OD := True;
+      end loop;
+
       IO_BANK_Periph.PROC0_INTE := (others => 0);
       IO_BANK_Periph.PROC1_INTE := (others => 0);
       NVIC_Periph.NVIC_ICPR := Shift_Left (1, IO_IRQ_BANK0_Interrupt);
@@ -40,23 +53,36 @@ package body RP.GPIO is
    is
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
-      PADS_BANK_Periph.GPIO (This.Pin) :=
-         (PUE    => (Pull = Pull_Both or Pull = Pull_Up),
-          PDE    => (Pull = Pull_Both or Pull = Pull_Down),
-          IE     => True,
-          OD     => False,
-          others => <>);
-
       IO_BANK_Periph.GPIO (This.Pin).CTRL :=
          (FUNCSEL => Func,
           others  => <>);
 
-      if Mode = Input then
-         PADS_BANK_Periph.GPIO (This.Pin).OD := True;
-      elsif Mode = Output then
-         SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
-         SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
-      end if;
+      case Mode is
+         when Input =>
+            PADS_BANK_Periph.GPIO (This.Pin) :=
+               (PUE    => (Pull = Pull_Both or Pull = Pull_Up),
+                PDE    => (Pull = Pull_Both or Pull = Pull_Down),
+                IE     => True,
+                OD     => True,
+                others => <>);
+         when Output =>
+            PADS_BANK_Periph.GPIO (This.Pin) :=
+               (PUE    => (Pull = Pull_Both or Pull = Pull_Up),
+                PDE    => (Pull = Pull_Both or Pull = Pull_Down),
+                IE     => True,
+                OD     => False,
+                others => <>);
+            SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
+            SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
+         when Analog =>
+            PADS_BANK_Periph.GPIO (This.Pin) :=
+               (PUE    => False,
+                PDE    => False,
+                IE     => True,
+                OD     => True,
+                others => <>);
+            IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL := HI_Z;
+      end case;
    end Configure;
 
    function Get

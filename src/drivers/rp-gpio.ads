@@ -15,6 +15,7 @@ package RP.GPIO
    with Elaborate_Body
 is
    type GPIO_Pin is range 0 .. 29;
+   subtype ADC_Pin is GPIO_Pin range 26 .. 29;
 
    type GPIO_Point is new HAL.GPIO.GPIO_Point with
       record
@@ -61,6 +62,7 @@ is
        Mode : GPIO_Config_Mode;
        Pull : GPIO_Pull_Mode := Floating;
        Func : GPIO_Function := SIO);
+   --  In Analog mode, Pull and Func are ignored and set to Floating and HI_Z
 
    function Get
       (This : GPIO_Point)
