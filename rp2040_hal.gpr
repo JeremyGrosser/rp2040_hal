@@ -3,6 +3,9 @@ with "cortex_m0.gpr";
 
 project Rp2040_Hal is
 
+   for Runtime ("Ada") use "zfp-cortex-m0p";
+   for Target use "arm-eabi";
+
    for Languages use ("Ada");
    for Source_Dirs use
        ("src",
@@ -11,6 +14,15 @@ project Rp2040_Hal is
         "src/devices/RP2040");
    for Object_Dir use "obj/RP2040";
    for Create_Missing_Dirs use "True";
+
+   for Library_Name use "rp2040_hal";
+   for Library_Version use "0.2.1";
+   for Library_Dir use "lib";
+
+   type Library_Type_Type is ("relocatable", "static", "static-pic");
+   Library_Type : Library_Type_Type :=
+       external ("RP2040_HAL_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
+   for Library_Kind use Library_Type;
 
    type Enabled_Kind is ("enabled", "disabled");
    Compile_Checks : Enabled_Kind := External ("RP2040_HAL_COMPILE_CHECKS", "enabled");
