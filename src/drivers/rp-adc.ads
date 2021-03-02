@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP.Clock;
+with RP.GPIO;
 with HAL;
 
 package RP.ADC is
@@ -44,5 +45,10 @@ package RP.ADC is
        Vbe      : Microvolts := 706_000;
        Slope    : Microvolts := 1_721)
       return Celsius;
+
+   function To_ADC_Channel
+      (Point : RP.GPIO.GPIO_Point)
+      return ADC_Channel
+      with Pre => Point.Pin in RP.GPIO.ADC_Pin;
 
 end RP.ADC;

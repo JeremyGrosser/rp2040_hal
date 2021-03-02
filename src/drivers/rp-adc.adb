@@ -87,4 +87,9 @@ package body RP.ADC is
    begin
       return Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor) - Vbe) / Slope);
    end Temperature;
+
+   function To_ADC_Channel
+      (Point : RP.GPIO.GPIO_Point)
+      return ADC_Channel
+   is (ADC_Channel (Point.Pin - 26));
 end RP.ADC;
