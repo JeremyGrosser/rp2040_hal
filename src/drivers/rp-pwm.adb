@@ -3,7 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with Cortex_M_SVD.NVIC; use Cortex_M_SVD.NVIC;
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
+with RP2040_SVD.Interrupts;
 with RP.Clock;
 
 package body RP.PWM is
@@ -32,6 +34,48 @@ package body RP.PWM is
    is
    begin
       PWM_Periph.EN.CH.Arr (Natural (Slice)) := False;
+   end Disable;
+
+   function To_Mask
+      (Slices : PWM_Slice_Array)
+      return UInt8
+   is
+      Mask : UInt8 := 0;
+   begin
+      for I in Slices'Range loop
+         if Slices (I) then
+            Mask := Mask or Shift_Left (1, Natural (I));
+         end if;
+      end loop;
+      return Mask;
+   end To_Mask;
+
+   procedure Enable
+      (Slices : PWM_Slice_Array)
+   is
+      Mask : constant UInt8 := To_Mask (Slices);
+   begin
+      if not RESETS_Periph.RESET_DONE.pwm then
+         RESETS_Periph.RESET.pwm := False;
+         while not RESETS_Periph.RESET_DONE.pwm loop
+            null;
+         end loop;
+      end if;
+      PWM_Periph.EN.CH.Val := PWM_Periph.EN.CH.Val or Mask;
+   end Enable;
+
+   procedure Disable
+      (Slices : PWM_Slice_Array)
+   is
+      Mask : constant UInt8 := To_Mask (Slices);
+   begin
+      if not RESETS_Periph.RESET_DONE.pwm then
+         RESETS_Periph.RESET.pwm := False;
+         while not RESETS_Periph.RESET_DONE.pwm loop
+            null;
+         end loop;
+      end if;
+      PWM_Periph.EN.CH.Val := PWM_Periph.EN.CH.Val and not Mask;
    end Disable;
 
    function Enabled
@@ -133,6 +177,35 @@ package body RP.PWM is
       (Slice : PWM_Slice)
       return Natural
    is (Natural (PWM_Periph.CH (Slice).CTR.CH0_CTR));
+
+   procedure Set_Count
+      (Slice : PWM_Slice;
+       Value : Period)
+   is
+   begin
+      PWM_Periph.CH (Slice).CTR.CH0_CTR := Value;
+   end Set_Count;
+
+   procedure Attach
+      (Slice   : PWM_Slice;
+       Handler : PWM_Interrupt_Handler)
+   is
+   begin
+      Handlers (Slice) := Handler;
+      NVIC_Periph.NVIC_ICPR := Shift_Left (1, RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
+      NVIC_Periph.NVIC_ISER := Shift_Left (1, RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
+      PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
+   end Attach;
+
+   procedure PWM_IRQ_WRAP_Interrupt is
+   begin
+      for Slice in PWM_Slice'Range loop
+         if PWM_Periph.INTS.CH.Arr (Natural (Slice)) and then Handlers (Slice) /= null then
+            PWM_Periph.INTR.CH.Arr (Natural (Slice)) := True;
+            Handlers (Slice).all;
+         end if;
+      end loop;
+   end PWM_IRQ_WRAP_Interrupt;
 
    function Div_Integer
       (V : Divider)

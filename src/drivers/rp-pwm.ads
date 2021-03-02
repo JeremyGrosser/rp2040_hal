@@ -29,10 +29,14 @@ package RP.PWM is
       Channel : PWM_Channel;
    end record;
 
+   type PWM_Slice_Array is array (PWM_Slice) of Boolean;
+
    Divider_Fraction : constant := 1.0 / (2.0 ** 4);
    type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** 8) - Divider_Fraction;
 
    subtype Period is UInt16;
+
+   type PWM_Interrupt_Handler is access procedure;
 
    function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
@@ -73,6 +77,12 @@ package RP.PWM is
    procedure Disable
       (Slice : PWM_Slice);
 
+   procedure Enable
+      (Slices : PWM_Slice_Array);
+
+   procedure Disable
+      (Slices : PWM_Slice_Array);
+
    function Enabled
       (Slice : PWM_Slice)
       return Boolean;
@@ -98,7 +108,19 @@ package RP.PWM is
       return Natural
       with Pre => Enabled (Slice);
 
+   procedure Set_Count
+      (Slice : PWM_Slice;
+       Value : Period);
+
+   procedure Attach
+      (Slice   : PWM_Slice;
+       Handler : PWM_Interrupt_Handler);
+
 private
+
+   function To_Mask
+      (Slices : PWM_Slice_Array)
+      return UInt8;
 
    function Div_Integer
       (V : Divider)
@@ -112,6 +134,11 @@ private
       (Int  : UInt8;
        Frac : UInt4)
       return Divider;
+
+   procedure PWM_IRQ_WRAP_Interrupt
+      with Export        => True,
+           Convention    => C,
+           External_Name => "isr_irq4";
 
    type PWM_Slice_Register is record
       CSR : aliased RP2040_SVD.PWM.CH0_CSR_Register;
@@ -153,4 +180,6 @@ private
 
    PWM_Periph : aliased PWM_Peripheral
       with Import, Address => RP2040_SVD.PWM_Base;
+
+   Handlers : array (PWM_Slice) of PWM_Interrupt_Handler;
 end RP.PWM;
