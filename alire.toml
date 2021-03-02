@@ -10,5 +10,5 @@ tags = ["embedded", "nostd", "rp2040", "raspberrypi", "drivers"]
 website = "https://github.com/JeremyGrosser/rp2040_hal"
 
 [[depends-on]]
-cortex_m = "^0.3.0"
-hal = "^0.1.0"
+cortex_m = "~0.3"
+hal = "~0.1"
