@@ -53,6 +53,10 @@ package body RP.GPIO is
    is
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
+      if not Enabled then
+         Enable;
+      end if;
+
       IO_BANK_Periph.GPIO (This.Pin).CTRL :=
          (FUNCSEL => Func,
           others  => <>);
