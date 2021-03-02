@@ -34,6 +34,10 @@ package RP.PIO is
       Sideset_Optional : Boolean := False;
       Sideset_Pindir   : Boolean := False;
       Jmp_Pin          : GPIO_Point := (Pin => 0);
+      Pull_Threshold   : UInt5 := 0;
+      Push_Threshold   : UInt5 := 0;
+      Shift_Out_Right  : Boolean := True;
+      Shift_In_Right   : Boolean := True;
       Autopull         : Boolean := False;
       Autopush         : Boolean := False;
    end record;

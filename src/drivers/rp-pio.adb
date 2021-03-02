@@ -95,8 +95,14 @@ package body RP.PIO is
       P.EXECCTRL.SIDE_EN := Config.Sideset_Optional;
       P.EXECCTRL.SIDE_PINDIR := Config.Sideset_Pindir;
       P.EXECCTRL.JMP_PIN := SM0_EXECCTRL_JMP_PIN_Field (Config.Jmp_Pin.Pin);
-      P.SHIFTCTRL.AUTOPULL := Config.Autopull;
-      P.SHIFTCTRL.AUTOPUSH := Config.Autopush;
+      P.SHIFTCTRL :=
+         (AUTOPULL     => Config.Autopull,
+          AUTOPUSH     => Config.Autopush,
+          PULL_THRESH  => Config.Pull_Threshold,
+          PUSH_THRESH  => Config.Push_Threshold,
+          OUT_SHIFTDIR => Config.Shift_Out_Right,
+          IN_SHIFTDIR  => Config.Shift_In_Right,
+          others       => <>);
    end Configure;
 
    function To_Divider
@@ -114,8 +120,8 @@ package body RP.PIO is
    is
       P : access PIO_Peripheral renames This.Periph;
    begin
-      for I in Offset .. Offset + Prog'Length - 1 loop
-         P.INSTR_MEM (I) := UInt32 (Prog (Prog'First + I));
+      for I in Prog'Range loop
+         P.INSTR_MEM (Offset + (I - Prog'First)) := UInt32 (Prog (I));
       end loop;
       This.Periph.SM (SM).EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
       This.Periph.SM (SM).EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
