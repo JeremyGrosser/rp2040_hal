@@ -10,8 +10,9 @@ with System;
 with HAL; use HAL;
 
 package RP.Clock is
-   --  If XOSC_Frequency = 0 then the internal ROSC is used.
-   subtype XOSC_Hertz is Hertz range 0 .. 15_000_000;
+   subtype XOSC_Hertz is Hertz range 0 .. 15_000_000
+      with Static_Predicate => XOSC_Hertz in 0 | 1_000_000 .. 15_000_000;
+   --  The special value 0 indicates that the XOSC is not available.
 
    procedure Initialize
       (XOSC_Frequency : XOSC_Hertz := 0);
