@@ -10,7 +10,11 @@ with HAL; use HAL;
 
 package RP.PIO is
    type PIO_Peripheral is private;
-   type PIO_Device (Periph : not null access PIO_Peripheral) is tagged limited private;
+   type PIO_Peripheral_Index is range 0 .. 1;
+   type PIO_Device
+      (Num    : PIO_Peripheral_Index;
+       Periph : not null access PIO_Peripheral)
+   is tagged limited private;
 
    type State_Machine is range 0 .. 3;
    type State_Machines is array (State_Machine) of Boolean;
@@ -105,6 +109,10 @@ package RP.PIO is
       return Divider
       with Pre => Frequency > 0;
 
+   function GPIO_Function
+      (This : PIO_Device)
+      return RP.GPIO.GPIO_Function;
+
 private
 
    function Mask
@@ -164,6 +172,8 @@ private
       with Size => 2592,
            Volatile;
 
-   type PIO_Device (Periph : not null access PIO_Peripheral) is
-      tagged limited null record;
+   type PIO_Device
+      (Num    : PIO_Peripheral_Index;
+       Periph : not null access PIO_Peripheral)
+   is tagged limited null record;
 end RP.PIO;

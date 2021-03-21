@@ -29,8 +29,8 @@ package RP.Device is
       with Import, Address => RP2040_SVD.PIO0_Base;
    PIO1_Periph : aliased RP.PIO.PIO_Peripheral
       with Import, Address => RP2040_SVD.PIO1_Base;
-   PIO_0 : aliased PIO_Device (PIO0_Periph'Access);
-   PIO_1 : aliased PIO_Device (PIO1_Periph'Access);
+   PIO_0 : aliased PIO_Device (0, PIO0_Periph'Access);
+   PIO_1 : aliased PIO_Device (1, PIO1_Periph'Access);
 
    SysTick : aliased RP.SysTick.Delays;
    Timer   : aliased RP.Timer.Delays;

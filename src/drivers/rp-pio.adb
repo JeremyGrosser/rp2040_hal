@@ -110,6 +110,19 @@ package body RP.PIO is
        return Divider
    is (Divider (Float (RP.Clock.Frequency (RP.Clock.SYS)) / Float (Frequency)));
 
+   function GPIO_Function
+      (This : PIO_Device)
+      return RP.GPIO.GPIO_Function
+   is
+   begin
+      case This.Num is
+         when 0 =>
+            return RP.GPIO.PIO0;
+         when 1 =>
+            return RP.GPIO.PIO1;
+      end case;
+   end GPIO_Function;
+
    procedure Load
       (This        : in out PIO_Device;
        SM          : State_Machine;
