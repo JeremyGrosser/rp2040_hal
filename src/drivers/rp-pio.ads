@@ -16,126 +16,111 @@ package RP.PIO is
        Periph : not null access PIO_Peripheral)
    is tagged limited private;
 
-   type State_Machine is range 0 .. 3;
-   type State_Machines is array (State_Machine) of Boolean;
-
-   subtype Instruction is UInt16;
-   subtype Program_Index is Natural range 0 .. 31;
-   type Program is array (Program_Index range <>) of Instruction;
-
-   Divider_Fraction : constant := 1.0 / 2.0 ** 8;
-   type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** 16 - Divider_Fraction);
-
-   type State_Machine_Configuration is record
-      Clock_Divider    : Divider := 1.0;
-      Out_Base         : GPIO_Point := (Pin => 0);
-      Out_Count        : UInt6 := 0;
-      Set_Base         : GPIO_Point := (Pin => 0);
-      Set_Count        : UInt3 := 0;
-      In_Base          : GPIO_Point := (Pin => 0);
-      Sideset_Base     : GPIO_Point := (Pin => 0);
-      Sideset_Count    : UInt3 := 0;
-      Sideset_Optional : Boolean := False;
-      Sideset_Pindir   : Boolean := False;
-      Jmp_Pin          : GPIO_Point := (Pin => 0);
-      Pull_Threshold   : UInt5 := 0;
-      Push_Threshold   : UInt5 := 0;
-      Shift_Out_Right  : Boolean := True;
-      Shift_In_Right   : Boolean := True;
-      Autopull         : Boolean := False;
-      Autopush         : Boolean := False;
+   type PIO_SM is range 0 .. 3;
+   type PIO_SM_Config is record
+      clkdiv, execctrl, shiftctrl, pinctrl : UInt32;
    end record;
 
-   --  RESET the PIO peripherals
-   procedure Initialize;
+   type PIO_FIFO_Join is (Join_None, Join_TX, Join_RX);
+   for PIO_FIFO_JOIN use (0, 1, 2);
 
-   procedure Configure
-      (This   : in out PIO_Device;
-       SM     : State_Machine;
-       Config : State_Machine_Configuration);
+   type PIO_MOV_Status_Type is (TX_Less_Than, RX_Less_Than);
+   for PIO_MOV_Status_Type use (0, 1);
 
-   procedure Enable
-      (This : in out PIO_Device;
-       SM   : State_Machines);
+   subtype Program_Index is Natural range 0 .. 31;
+   subtype Pin_Count is Natural range 0 .. 32;
+   subtype Sideset_Bit_Count is Natural range 0 .. 5;
 
-   procedure Disable
-      (This : in out PIO_Device;
-       SM   : State_Machines);
+   procedure Set_Out_Pins
+      (SM_Config : in out PIO_SM_Config;
+       Out_Base  : GPIO_Pin;
+       Out_Count : Pin_Count);
 
-   procedure Enable
-      (This : in out PIO_Device;
-       SM   : State_Machine);
+   procedure Set_Set_Pins
+      (SM_Config : in out PIO_SM_Config;
+       Set_Base  : GPIO_Pin;
+       Set_Count : Pin_Count);
 
-   procedure Disable
-      (This : in out PIO_Device;
-       SM   : State_Machine);
+   procedure Set_In_Pins
+      (SM_Config : in out PIO_SM_Config;
+       In_Base   : GPIO_Pin);
 
-   procedure Restart
-      (This : in out PIO_Device;
-       SM   : State_Machines);
+   procedure Set_Sideset_Pins
+      (SM_Config    : in out PIO_SM_Config;
+       Sideset_Base : GPIO_Pin);
 
-   procedure Load
-      (This        : in out PIO_Device;
-       SM          : State_Machine;
-       Prog        : Program;
-       Wrap        : Program_Index;
+   procedure Set_Sideset
+      (SM_Config : in out PIO_SM_Config;
+       Bit_Count : Sideset_Bit_Count;
+       Optional  : Boolean;
+       Pindirs   : Boolean);
+
+   procedure Set_Clkdiv
+      (SM_Config : in out PIO_SM_Config;
+       Div       : Float);
+
+   procedure Set_Clkdiv_Int_Frac
+      (SM_Config : in out PIO_SM_Config;
+       Div_Int   : UInt16;
+       Div_Frac  : UInt8);
+
+   procedure Set_Wrap
+      (SM_Config   : in out PIO_SM_Config;
        Wrap_Target : Program_Index;
-       Offset      : Program_Index := Program_Index'First)
-       with Pre => (Program_Index'Last - Offset) >= Prog'Length - 1;
+       Wrap        : Program_Index);
 
-   procedure Execute
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Insn : Instruction);
+   procedure Set_Jmp_Pin
+      (SM_Config : in out PIO_SM_Config;
+       Pin       : GPIO_Pin);
 
-   function Address
-      (This : PIO_Device;
-       SM   : State_Machine)
-      return Program_Index;
+   procedure Set_In_Shift
+      (SM_Config      : in out PIO_SM_Config;
+       Shift_Right    : Boolean;
+       Autopush       : Boolean;
+       Push_Threshold : UInt5);
 
-   procedure Receive
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : out UInt32_Array);
+   procedure Set_Out_Shift
+      (SM_Config      : in out PIO_SM_Config;
+       Shift_Right    : Boolean;
+       Autopull       : Boolean;
+       Pull_Threshold : UInt5);
 
-   procedure Receive
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : out UInt32);
+   procedure Set_FIFO_Join
+      (SM_Config : in out PIO_SM_Config;
+       Join      : PIO_FIFO_Join);
 
-   procedure Transmit
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : UInt32_Array);
+   procedure Set_Out_Special
+      (SM_Config        : in out PIO_SM_Config;
+       Sticky           : Boolean;
+       Has_Enable_Pin   : Boolean;
+       Enable_Pin_Index : GPIO_Pin);
 
-   procedure Transmit
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : UInt32);
+   procedure Set_MOV_Status
+      (SM_Config  : in out PIO_SM_Config;
+       Status_Sel : PIO_MOV_Status_Type;
+       Status_N   : UInt5);
 
-   function To_Divider (Frequency : Hertz)
-      return Divider
-      with Pre => Frequency > 0;
+   function Default_SM_Config
+      return PIO_SM_Config;
+
+   procedure Set_Config
+      (PIO    : in out PIO_Device;
+       SM     : PIO_SM;
+       Config : PIO_SM_Config);
 
    function GPIO_Function
-      (This : PIO_Device)
+      (PIO : PIO_Device)
       return RP.GPIO.GPIO_Function;
+
+   function DREQ
+      (PIO   : PIO_Device;
+       SM    : PIO_SM;
+       Is_TX : Boolean)
+      return Natural;
 
 private
 
-   function Mask
-      (SM : State_Machines)
-      return UInt4;
-
-   function Div_Integer
-      (Div : Divider)
-      return SM0_CLKDIV_INT_Field;
-
-   function Div_Fraction
-      (Div : Divider)
-      return SM0_CLKDIV_FRAC_Field;
-
-   type FIFO_Register is array (State_Machine) of UInt32
+   type FIFO_Register is array (PIO_SM) of UInt32
       with Pack, Volatile;
 
    type INSTR_MEM_Register is array (Program_Index) of UInt32
@@ -151,7 +136,7 @@ private
    end record
       with Pack, Volatile;
 
-   type SM_Register_Array is array (State_Machine) of SM_Register
+   type SM_Register_Array is array (PIO_SM) of SM_Register
       with Pack, Volatile;
 
    type PIO_Peripheral is record
