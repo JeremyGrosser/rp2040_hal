@@ -62,6 +62,14 @@ package RP.PIO is
       (This : in out PIO_Device;
        SM   : State_Machines);
 
+   procedure Enable
+      (This : in out PIO_Device;
+       SM   : State_Machine);
+
+   procedure Disable
+      (This : in out PIO_Device;
+       SM   : State_Machine);
+
    procedure Restart
       (This : in out PIO_Device;
        SM   : State_Machines);

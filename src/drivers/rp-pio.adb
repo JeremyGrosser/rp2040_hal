@@ -43,10 +43,12 @@ package body RP.PIO is
    is
       use RP2040_SVD.RESETS;
    begin
-      RESETS_Periph.RESET.pio.Val := 2#00#;
-      while RESETS_Periph.RESET_DONE.pio.Val /= 2#11# loop
-         null;
-      end loop;
+      if RESETS_Periph.RESET_DONE.pio.Val /= 2#11# then
+         RESETS_Periph.RESET.pio.Val := 2#00#;
+         while RESETS_Periph.RESET_DONE.pio.Val /= 2#11# loop
+            null;
+         end loop;
+      end if;
    end Initialize;
 
    procedure Enable
@@ -65,6 +67,24 @@ package body RP.PIO is
       This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not Mask (SM);
    end Disable;
 
+   procedure Enable
+      (This : in out PIO_Device;
+       SM   : State_Machine)
+   is
+      M : constant CTRL_SM_ENABLE_Field := CTRL_SM_ENABLE_Field (Shift_Left (UInt8 (1), Natural (SM)));
+   begin
+      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or M;
+   end Enable;
+
+   procedure Disable
+      (This : in out PIO_Device;
+       SM   : State_Machine)
+   is
+      M : constant CTRL_SM_ENABLE_Field := CTRL_SM_ENABLE_Field (Shift_Left (UInt8 (1), Natural (SM)));
+   begin
+      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not M;
+   end Disable;
+
    procedure Restart
       (This : in out PIO_Device;
        SM   : State_Machines)
@@ -80,6 +100,7 @@ package body RP.PIO is
    is
       P : SM_Register renames This.Periph.SM (SM);
    begin
+      Initialize;
       P.CLKDIV :=
          (INT    => Div_Integer (Config.Clock_Divider),
           FRAC   => Div_Fraction (Config.Clock_Divider),
