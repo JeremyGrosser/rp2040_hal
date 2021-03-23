@@ -3,23 +3,83 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS;
+with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP.Clock;
 
 package body RP.PIO is
-   function Mask
-      (SM : State_Machines)
-      return UInt4
+   procedure Enable
+      (This : in out PIO_Device)
    is
-      M : UInt8 := 0;
    begin
-      for I in SM'Range loop
-         if SM (I) then
-            M := M or Shift_Left (1, Natural (I));
-         end if;
+      RESETS_Periph.RESET.pio.Arr (This.Num) := False;
+      while not RESETS_Periph.RESET_DONE.pio.Arr (This.Num) loop
+         null;
       end loop;
-      return UInt4 (M);
-   end Mask;
+   end Enable;
+
+   procedure Disable
+      (This : in out PIO_Device)
+   is
+   begin
+      RESETS_Periph.RESET.pio.Arr (This.Num) := True;
+   end Disable;
+
+   procedure Set_Out_Pins
+      (Config    : in out PIO_SM_Config;
+       Out_Base  : GPIO_Pin;
+       Out_Count : Pin_Count)
+   is
+   begin
+      Config.PINCTRL.OUT_BASE := SM0_PINCTRL_OUT_BASE_Field (Out_Base);
+      Config.PINCTRL.OUT_COUNT := SM0_PINCTRL_OUT_COUNT_Field (Out_Count);
+   end Set_Out_Pins;
+
+   procedure Set_Set_Pins
+      (Config    : in out PIO_SM_Config;
+       Set_Base  : GPIO_Pin;
+       Set_Count : Pin_Count)
+   is
+   begin
+      Config.PINCTRL.SET_BASE := SM0_PINCTRL_SET_BASE_Field (Set_Base);
+      Config.PINCTRL.SET_COUNT := SM0_PINCTRL_SET_COUNT_Field (Set_Count);
+   end Set_Set_Pins;
+
+   procedure Set_In_Pins
+      (Config    : in out PIO_SM_Config;
+       In_Base   : GPIO_Pin)
+   is
+   begin
+      Config.PINCTRL.IN_BASE := SM0_PINCTRL_IN_BASE_Field (In_Base);
+   end Set_In_Pins;
+
+   procedure Set_Sideset_Pins
+      (Config       : in out PIO_SM_Config;
+       Sideset_Base : GPIO_Pin)
+   is
+   begin
+      Config.PINCTRL.SIDESET_BASE := SM0_PINCTRL_SIDESET_BASE_Field (Sideset_Base);
+   end Set_Sideset_Pins;
+
+   procedure Set_Sideset
+      (Config    : in out PIO_SM_Config;
+       Bit_Count : Sideset_Bit_Count;
+       Optional  : Boolean;
+       Pindirs   : Boolean)
+   is
+   begin
+      Config.PINCTRL.SIDESET_COUNT := SM0_PINCTRL_SIDESET_COUNT_Field (Bit_Count);
+      Config.EXECCTRL.SIDE_EN := Optional;
+      Config.EXECCTRL.SIDE_PINDIR := Pindirs;
+   end Set_Sideset;
+
+   procedure Set_Clock_Frequency
+      (Config    : in out PIO_SM_Config;
+       Frequency : Hertz)
+   is
+      Div : Divider := Divider (Float (RP.Clock.Frequency (RP.Clock.SYS)) / Float (Frequency));
+   begin
+      Set_Clock_Divider (Config, Div);
+   end Set_Clock_Frequency;
 
    function Div_Integer
       (Div : Divider)
@@ -39,198 +99,264 @@ package body RP.PIO is
       return SM0_CLKDIV_FRAC_Field
    is (SM0_CLKDIV_FRAC_Field ((Div - Divider (Div_Integer (Div))) * 2 ** SM0_CLKDIV_FRAC_Field'Size));
 
-   procedure Initialize
+   procedure Set_Clock_Divider
+      (Config : in out PIO_SM_Config;
+       Div    : Divider)
    is
-      use RP2040_SVD.RESETS;
    begin
-      if RESETS_Periph.RESET_DONE.pio.Val /= 2#11# then
-         RESETS_Periph.RESET.pio.Val := 2#00#;
-         while RESETS_Periph.RESET_DONE.pio.Val /= 2#11# loop
-            null;
-         end loop;
+      Set_Clkdiv_Int_Frac (Config, Div_Integer (Div), Div_Fraction (Div));
+   end Set_Clock_Divider;
+
+   procedure Set_Clkdiv_Int_Frac
+      (Config   : in out PIO_SM_Config;
+       Div_Int  : UInt16;
+       Div_Frac : UInt8)
+   is
+   begin
+      Config.CLKDIV :=
+         (INT    => SM0_CLKDIV_INT_Field (Div_Int),
+          FRAC   => SM0_CLKDIV_FRAC_Field (Div_Frac),
+          others => 0);
+   end Set_Clkdiv_Int_Frac;
+
+   procedure Set_Wrap
+      (Config      : in out PIO_SM_Config;
+       Wrap_Target : PIO_Address;
+       Wrap        : PIO_Address)
+   is
+   begin
+      Config.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
+      Config.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
+   end Set_Wrap;
+
+   procedure Set_Jmp_Pin
+      (Config : in out PIO_SM_Config;
+       Pin    : GPIO_Pin)
+   is
+   begin
+      Config.EXECCTRL.JMP_PIN := SM0_EXECCTRL_JMP_PIN_Field (Pin);
+   end Set_Jmp_Pin;
+
+   procedure Set_In_Shift
+      (Config         : in out PIO_SM_Config;
+       Shift_Right    : Boolean;
+       Autopush       : Boolean;
+       Push_Threshold : Shift_Threshold)
+   is
+      Thresh : SM0_SHIFTCTRL_PUSH_THRESH_Field;
+   begin
+      Config.SHIFTCTRL.IN_SHIFTDIR := Shift_Right;
+      Config.SHIFTCTRL.AUTOPUSH := Autopush;
+      if Push_Threshold = 32 then
+         Thresh := 0;
+      else
+         Thresh := SM0_SHIFTCTRL_PUSH_THRESH_Field (Push_Threshold);
       end if;
-   end Initialize;
+      Config.SHIFTCTRL.PUSH_THRESH := Thresh;
+   end Set_In_Shift;
 
-   procedure Enable
-      (This : in out PIO_Device;
-       SM   : State_Machines)
+   procedure Set_Out_Shift
+      (Config         : in out PIO_SM_Config;
+       Shift_Right    : Boolean;
+       Autopull       : Boolean;
+       Pull_Threshold : Shift_Threshold)
+   is
+      Thresh : SM0_SHIFTCTRL_PULL_THRESH_Field;
+   begin
+      Config.SHIFTCTRL.OUT_SHIFTDIR := Shift_Right;
+      Config.SHIFTCTRL.AUTOPULL := Autopull;
+      if Pull_Threshold = 32 then
+         Thresh := 0;
+      else
+         Thresh := SM0_SHIFTCTRL_PULL_THRESH_Field (Pull_Threshold);
+      end if;
+      Config.SHIFTCTRL.PULL_THRESH := Thresh;
+   end Set_Out_Shift;
+
+   procedure Set_FIFO_Join
+      (Config  : in out PIO_SM_Config;
+       Join_TX : Boolean;
+       Join_RX : Boolean)
    is
    begin
-      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or Mask (SM);
-   end Enable;
+      Config.SHIFTCTRL.FJOIN_TX := Join_TX;
+      Config.SHIFTCTRL.FJOIN_RX := Join_RX;
+   end Set_FIFO_Join;
 
-   procedure Disable
-      (This : in out PIO_Device;
-       SM   : State_Machines)
+   procedure Set_Out_Special
+      (Config           : in out PIO_SM_Config;
+       Sticky           : Boolean;
+       Has_Enable_Pin   : Boolean;
+       Enable_Pin_Index : GPIO_Pin)
    is
    begin
-      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not Mask (SM);
-   end Disable;
+      Config.EXECCTRL.OUT_STICKY := Sticky;
+      Config.EXECCTRL.INLINE_OUT_EN := Has_Enable_Pin;
+      Config.EXECCTRL.OUT_EN_SEL := SM0_EXECCTRL_OUT_EN_SEL_Field (Enable_Pin_Index);
+   end Set_Out_Special;
 
-   procedure Enable
-      (This : in out PIO_Device;
-       SM   : State_Machine)
-   is
-      M : constant CTRL_SM_ENABLE_Field := CTRL_SM_ENABLE_Field (Shift_Left (UInt8 (1), Natural (SM)));
-   begin
-      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or M;
-   end Enable;
-
-   procedure Disable
-      (This : in out PIO_Device;
-       SM   : State_Machine)
-   is
-      M : constant CTRL_SM_ENABLE_Field := CTRL_SM_ENABLE_Field (Shift_Left (UInt8 (1), Natural (SM)));
-   begin
-      This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not M;
-   end Disable;
-
-   procedure Restart
-      (This : in out PIO_Device;
-       SM   : State_Machines)
+   procedure Set_MOV_Status
+      (Config     : in out PIO_SM_Config;
+       Status_Sel : PIO_MOV_Status_Type;
+       Status_N   : UInt4)
    is
    begin
-      This.Periph.CTRL.SM_RESTART := Mask (SM);
-   end Restart;
+      case Status_Sel is
+         when TX_Less_Than =>
+            Config.EXECCTRL.STATUS_SEL := TXLEVEL;
+         when RX_Less_Than =>
+            Config.EXECCTRL.STATUS_SEL := RXLEVEL;
+      end case;
+      Config.EXECCTRL.STATUS_N := Status_N;
+   end Set_MOV_Status;
 
-   procedure Configure
+   function Default_SM_Config
+      return PIO_SM_Config
+   is
+      C : PIO_SM_Config := (others => <>);
+   begin
+      Set_Clkdiv_Int_Frac (C, 1, 0);
+      Set_Wrap (C, 0, 31);
+      Set_In_Shift (C, True, False, 32);
+      Set_Out_Shift (C, True, False, 32);
+      return C;
+   end Default_SM_Config;
+
+   procedure Set_Config
       (This   : in out PIO_Device;
-       SM     : State_Machine;
-       Config : State_Machine_Configuration)
+       SM     : PIO_SM;
+       Config : PIO_SM_Config)
    is
-      P : SM_Register renames This.Periph.SM (SM);
    begin
-      Initialize;
-      P.CLKDIV :=
-         (INT    => Div_Integer (Config.Clock_Divider),
-          FRAC   => Div_Fraction (Config.Clock_Divider),
-          others => <>);
-      P.PINCTRL :=
-         (OUT_BASE      => SM0_PINCTRL_OUT_BASE_Field (Config.Out_Base.Pin),
-          OUT_COUNT     => SM0_PINCTRL_OUT_COUNT_Field (Config.Out_Count),
-          SET_BASE      => SM0_PINCTRL_SET_BASE_Field (Config.Set_Base.Pin),
-          SET_COUNT     => SM0_PINCTRL_SET_COUNT_Field (Config.Set_Count),
-          IN_BASE       => SM0_PINCTRL_IN_BASE_Field (Config.In_Base.Pin),
-          SIDESET_BASE  => SM0_PINCTRL_SIDESET_BASE_Field (Config.Sideset_Base.Pin),
-          SIDESET_COUNT => SM0_PINCTRL_SIDESET_COUNT_Field (Config.Sideset_Count));
-      P.EXECCTRL.SIDE_EN := Config.Sideset_Optional;
-      P.EXECCTRL.SIDE_PINDIR := Config.Sideset_Pindir;
-      P.EXECCTRL.JMP_PIN := SM0_EXECCTRL_JMP_PIN_Field (Config.Jmp_Pin.Pin);
-      P.SHIFTCTRL :=
-         (AUTOPULL     => Config.Autopull,
-          AUTOPUSH     => Config.Autopush,
-          PULL_THRESH  => Config.Pull_Threshold,
-          PUSH_THRESH  => Config.Push_Threshold,
-          OUT_SHIFTDIR => Config.Shift_Out_Right,
-          IN_SHIFTDIR  => Config.Shift_In_Right,
-          others       => <>);
-   end Configure;
-
-   function To_Divider
-      (Frequency : Hertz)
-       return Divider
-   is (Divider (Float (RP.Clock.Frequency (RP.Clock.SYS)) / Float (Frequency)));
+      This.Periph.SM (SM).CLKDIV := Config.CLKDIV;
+      This.Periph.SM (SM).EXECCTRL := Config.EXECCTRL;
+      This.Periph.SM (SM).SHIFTCTRL := Config.SHIFTCTRL;
+      This.Periph.SM (SM).PINCTRL := Config.PINCTRL;
+   end Set_Config;
 
    function GPIO_Function
-      (This : PIO_Device)
+      (PIO : PIO_Device)
       return RP.GPIO.GPIO_Function
    is
    begin
-      case This.Num is
-         when 0 =>
-            return RP.GPIO.PIO0;
-         when 1 =>
-            return RP.GPIO.PIO1;
+      case PIO.Num is
+         when 0 => return RP.GPIO.PIO0;
+         when 1 => return RP.GPIO.PIO1;
       end case;
    end GPIO_Function;
 
-   procedure Load
-      (This        : in out PIO_Device;
-       SM          : State_Machine;
-       Prog        : Program;
-       Wrap        : Program_Index;
-       Wrap_Target : Program_Index;
-       Offset      : Program_Index := Program_Index'First)
+   procedure Set_Enabled
+      (This    : in out PIO_Device;
+       SM      : PIO_SM;
+       Enabled : Boolean)
    is
-      P : access PIO_Peripheral renames This.Periph;
    begin
-      for I in Prog'Range loop
-         P.INSTR_MEM (Offset + (I - Prog'First)) := UInt32 (Prog (I));
-      end loop;
-      This.Periph.SM (SM).EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
-      This.Periph.SM (SM).EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
-      Execute (This, SM, Instruction (Offset)); --  Jump to the first instruction
-   end Load;
+      This.Periph.CTRL.SM_ENABLE := CTRL_SM_ENABLE_Field
+         (Shift_Left (UInt32 (1), Natural (SM)));
+   end Set_Enabled;
+
+   procedure Clear_FIFOs
+      (This : in out PIO_Device;
+       SM   : PIO_SM)
+   is
+   begin
+      This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX :=
+         This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX xor True;
+      This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX :=
+         This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX xor True;
+   end Clear_FIFOs;
+
+   procedure SM_Initialize
+      (This       : in out PIO_Device;
+       SM         : PIO_SM;
+       Initial_PC : PIO_Address;
+       Config     : PIO_SM_Config)
+   is
+   begin
+      Set_Enabled (This, SM, False);
+      Set_Config (This, SM, Config);
+      Clear_FIFOs (This, SM);
+
+      This.Periph.FDEBUG :=
+         (RXSTALL => 1,
+          RXUNDER => 1,
+          TXOVER  => 1,
+          TXSTALL => 1,
+          others  => <>);
+
+      This.Periph.CTRL.SM_RESTART := CTRL_SM_RESTART_Field
+         (Shift_Left (UInt32 (1), Natural (SM)));
+      This.Periph.CTRL.CLKDIV_RESTART := CTRL_CLKDIV_RESTART_Field
+         (Shift_Left (UInt32 (1), Natural (SM)));
+
+      Execute (This, SM, PIO_Instruction (Initial_PC));
+   end SM_Initialize;
+
+   procedure Set_Pin_Direction
+      (This      : in out PIO_Device;
+       SM        : PIO_SM;
+       Pin       : GPIO_Pin;
+       Direction : PIO_Pin_Direction)
+   is
+      Save : constant SM0_PINCTRL_Register := This.Periph.SM (SM).PINCTRL;
+      Instruction : PIO_Instruction;
+   begin
+      This.Periph.SM (SM).PINCTRL :=
+         (SET_COUNT => 1,
+          SET_BASE  => SM0_PINCTRL_SET_BASE_Field (Pin),
+          others    => <>);
+      case Direction is
+         when Output =>
+            Instruction := 16#e081#;
+         when Input =>
+            Instruction := 16#e080#;
+      end case;
+      Execute (This, SM, Instruction);
+      This.Periph.SM (SM).PINCTRL := Save;
+   end Set_Pin_Direction;
 
    procedure Execute
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Insn : Instruction)
+      (This        : in out PIO_Device;
+       SM          : PIO_SM;
+       Instruction : PIO_Instruction)
    is
    begin
-      This.Periph.SM (SM).INSTR.SM0_INSTR := SM0_INSTR_SM0_INSTR_Field (Insn);
+      This.Periph.SM (SM).INSTR.SM0_INSTR := Instruction;
    end Execute;
 
-   function Address
-      (This : PIO_Device;
-       SM   : State_Machine)
-      return Program_Index
-   is (Program_Index (This.Periph.SM (SM).ADDR.SM0_ADDR));
-
-   procedure Receive
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : out UInt32_Array)
+   procedure Load
+      (This        : in out PIO_Device;
+       Prog        : Program;
+       Offset      : PIO_Address)
    is
-      P : access PIO_Peripheral renames This.Periph;
    begin
-      for I in Data'Range loop
-         while P.FSTAT.RXFULL = 0 loop
-            null;
-         end loop;
-         Data (I) := P.RXF (SM);
+      for I in Prog'Range loop
+         This.Periph.INSTR_MEM (Offset + I - Prog'First) := UInt32 (Prog (I));
       end loop;
-   end Receive;
+   end Load;
 
-   procedure Receive
+   procedure Put
       (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : out UInt32)
-   is
-      P : access PIO_Peripheral renames This.Periph;
-   begin
-      while P.FSTAT.RXFULL = 0 loop
-         null;
-      end loop;
-      Data := P.RXF (SM);
-   end Receive;
-
-   procedure Transmit
-      (This : in out PIO_Device;
-       SM   : State_Machine;
-       Data : UInt32_Array)
-   is
-      P : access PIO_Peripheral renames This.Periph;
-   begin
-      for I in Data'Range loop
-         while P.FSTAT.TXEMPTY = 0 loop
-            null;
-         end loop;
-         P.TXF (SM) := Data (I);
-      end loop;
-   end Transmit;
-
-   procedure Transmit
-      (This : in out PIO_Device;
-       SM   : State_Machine;
+       SM   : PIO_SM;
        Data : UInt32)
    is
-      P : access PIO_Peripheral renames This.Periph;
    begin
-      while P.FSTAT.TXEMPTY = 0 loop
+      while This.Periph.FSTAT.TXEMPTY = 0 loop
          null;
       end loop;
       This.Periph.TXF (SM) := Data;
-   end Transmit;
+   end Put;
+
+   procedure Get
+      (This : in out PIO_Device;
+       SM   : PIO_SM;
+       Data : out UInt32)
+   is
+   begin
+      while This.Periph.FSTAT.RXFULL = 0 loop
+         null;
+      end loop;
+      Data := This.Periph.RXF (SM);
+   end Get;
 
 end RP.PIO;
