@@ -71,10 +71,10 @@ package body RP.GPIO is
                 others => <>);
          when Output =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
-               (PUE    => (Pull = Pull_Both or Pull = Pull_Up),
-                PDE    => (Pull = Pull_Both or Pull = Pull_Down),
-                IE     => True,
-                OD     => False,
+               (PUE      => (Pull = Pull_Both or Pull = Pull_Up),
+                PDE      => (Pull = Pull_Both or Pull = Pull_Down),
+                IE       => True,
+                OD       => False,
                 others => <>);
             SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
             SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;

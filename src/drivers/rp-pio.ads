@@ -27,7 +27,9 @@ package RP.PIO is
    subtype Sideset_Bit_Count is Natural range 0 .. 5;
 
    Divider_Fraction : constant := 1.0 / 2.0 ** SM0_CLKDIV_FRAC_Field'Size;
-   type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** SM0_CLKDIV_INT_Field'Size - Divider_Fraction);
+   type Divider is
+      delta Divider_Fraction
+      range Divider_Fraction .. (2.0 ** SM0_CLKDIV_INT_Field'Size - Divider_Fraction);
 
    procedure Enable
       (This : in out PIO_Device);

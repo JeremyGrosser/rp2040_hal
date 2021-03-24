@@ -76,7 +76,8 @@ package body RP.PIO is
       (Config    : in out PIO_SM_Config;
        Frequency : Hertz)
    is
-      Div : Divider := Divider (Float (RP.Clock.Frequency (RP.Clock.SYS)) / Float (Frequency));
+      Div : constant Divider :=
+         Divider (Float (RP.Clock.Frequency (RP.Clock.SYS)) / Float (Frequency));
    begin
       Set_Clock_Divider (Config, Div);
    end Set_Clock_Frequency;
@@ -341,7 +342,7 @@ package body RP.PIO is
        Data : UInt32)
    is
    begin
-      while This.Periph.FSTAT.TXEMPTY = 0 loop
+      while (UInt32 (This.Periph.FSTAT.TXFULL) and Shift_Left (1, Natural (SM))) /= 0 loop
          null;
       end loop;
       This.Periph.TXF (SM) := Data;
@@ -353,7 +354,7 @@ package body RP.PIO is
        Data : out UInt32)
    is
    begin
-      while This.Periph.FSTAT.RXFULL = 0 loop
+      while (UInt32 (This.Periph.FSTAT.RXEMPTY) and Shift_Left (1, Natural (SM))) = 0 loop
          null;
       end loop;
       Data := This.Periph.RXF (SM);
