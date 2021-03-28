@@ -15,7 +15,7 @@ package RP.ROM is
 
    --  2.8.3.1. Bootrom Functions
    function rom_hword_as_ptr
-      (Address : System.Address)
+      (Addr : System.Address)
       return System.Address;
 
    function rom_table_lookup

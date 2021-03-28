@@ -7,11 +7,11 @@
 package body RP.ROM is
    --  2.8.3.1. Bootrom Functions
    function rom_hword_as_ptr
-      (Address : System.Address)
+      (Addr : System.Address)
       return System.Address
    is
       Pointer : UInt16;
-      for Pointer'Address use Address;
+      for Pointer'Address use Addr;
    begin
       return System'To_Address (Pointer);
    end rom_hword_as_ptr;
