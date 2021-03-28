@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
+with RP2040_SVD.DMA;    use RP2040_SVD.DMA;
 with RP.Clock;
 
 package body RP.PIO is
@@ -363,6 +364,20 @@ package body RP.PIO is
       This.Periph.TXF (SM) := Data;
    end Put;
 
+   procedure Put
+      (This : in out PIO_Device;
+       SM   : PIO_SM;
+       Data : UInt32_Array)
+   is
+   begin
+      for D of Data loop
+         while (UInt32 (This.Periph.FSTAT.TXFULL) and Shift_Left (1, Natural (SM))) /= 0 loop
+            null;
+         end loop;
+         This.Periph.TXF (SM) := D;
+      end loop;
+   end Put;
+
    procedure Get
       (This : in out PIO_Device;
        SM   : PIO_SM;
@@ -374,5 +389,31 @@ package body RP.PIO is
       end loop;
       Data := This.Periph.RXF (SM);
    end Get;
+
+   procedure Get
+      (This : in out PIO_Device;
+       SM   : PIO_SM;
+       Data : out UInt32_Array)
+   is
+   begin
+      for I in Data'Range loop
+         while (UInt32 (This.Periph.FSTAT.RXEMPTY) and Shift_Left (1, Natural (SM))) = 0 loop
+            null;
+         end loop;
+         Data (I) := This.Periph.RXF (SM);
+      end loop;
+   end Get;
+
+   function TX_FIFO_Address
+      (This : PIO_Device;
+       SM   : PIO_SM)
+      return System.Address
+   is (This.Periph.TXF (SM)'Address);
+
+   function RX_FIFO_Address
+      (This : PIO_Device;
+       SM   : PIO_SM)
+      return System.Address
+   is (This.Periph.RXF (SM)'Address);
 
 end RP.PIO;

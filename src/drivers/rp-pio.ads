@@ -7,6 +7,7 @@ with RP2040_SVD.PIO; use RP2040_SVD.PIO;
 with RP2040_SVD;
 with RP.GPIO; use RP.GPIO;
 with HAL; use HAL;
+with System;
 
 package RP.PIO is
    type PIO_Peripheral is private;
@@ -166,10 +167,30 @@ package RP.PIO is
        SM   : PIO_SM;
        Data : UInt32);
 
+   procedure Put
+      (This : in out PIO_Device;
+       SM   : PIO_SM;
+       Data : UInt32_Array);
+
    procedure Get
       (This : in out PIO_Device;
        SM   : PIO_SM;
        Data : out UInt32);
+
+   procedure Get
+      (This : in out PIO_Device;
+       SM   : PIO_SM;
+       Data : out UInt32_Array);
+
+   function TX_FIFO_Address
+      (This : PIO_Device;
+       SM   : PIO_SM)
+      return System.Address;
+
+   function RX_FIFO_Address
+      (This : PIO_Device;
+       SM   : PIO_SM)
+      return System.Address;
 
 private
 
