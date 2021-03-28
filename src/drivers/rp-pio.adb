@@ -216,10 +216,20 @@ package body RP.PIO is
    is
       C : PIO_SM_Config := (others => <>);
    begin
-      Set_Clkdiv_Int_Frac (C, 1, 0);
-      Set_Wrap (C, 0, 31);
-      Set_In_Shift (C, True, False, 32);
-      Set_Out_Shift (C, True, False, 32);
+      Set_Clkdiv_Int_Frac (C,
+         Div_Int  => 1,
+         Div_Frac => 0);
+      Set_Wrap (C,
+         Wrap_Target => 0,
+         Wrap        => 31);
+      Set_In_Shift (C,
+         Shift_Right    => True,
+         Autopush       => False,
+         Push_Threshold => 32);
+      Set_Out_Shift (C,
+         Shift_Right    => True,
+         Autopull       => False,
+         Pull_Threshold => 32);
       return C;
    end Default_SM_Config;
 
@@ -251,9 +261,14 @@ package body RP.PIO is
        SM      : PIO_SM;
        Enabled : Boolean)
    is
-   begin
-      This.Periph.CTRL.SM_ENABLE := CTRL_SM_ENABLE_Field
+      Mask : constant CTRL_SM_ENABLE_Field := CTRL_SM_ENABLE_Field
          (Shift_Left (UInt32 (1), Natural (SM)));
+   begin
+      if Enabled then
+         This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or Mask;
+      else
+         This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not Mask;
+      end if;
    end Set_Enabled;
 
    procedure Clear_FIFOs

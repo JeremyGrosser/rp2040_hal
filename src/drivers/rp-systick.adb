@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with Cortex_M_SVD.SysTick;  use Cortex_M_SVD.SysTick;
-with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
 with System.Machine_Code;
 with RP.Clock;
 
@@ -12,7 +11,6 @@ package body RP.SysTick is
    procedure Enable
       (This : in out Delays)
    is
-      pragma Unreferenced (This);
    begin
       --  1ms ticks
       SysTick_Periph.RVR.RELOAD := SYST_RVR_RELOAD_Field
@@ -29,7 +27,6 @@ package body RP.SysTick is
    procedure Disable
       (This : in out Delays)
    is
-      pragma Unreferenced (This);
    begin
       SysTick_Periph.CSR.ENABLE := Disable;
    end Disable;
@@ -38,7 +35,6 @@ package body RP.SysTick is
       (This : in out Delays)
       return Boolean
    is
-      pragma Unreferenced (This);
    begin
       return SysTick_Periph.CSR.ENABLE = Enable;
    end Enabled;

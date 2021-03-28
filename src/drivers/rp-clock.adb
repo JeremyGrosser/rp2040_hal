@@ -3,9 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
-with RP2040_SVD.XOSC; use RP2040_SVD.XOSC;
-with RP2040_SVD.ROSC; use RP2040_SVD.ROSC;
+with RP2040_SVD.RESETS;
+with RP2040_SVD.XOSC;
+with RP2040_SVD.ROSC;
 with RP.Watchdog;
 
 package body RP.Clock is
@@ -16,6 +16,7 @@ package body RP.Clock is
    procedure Enable_XOSC
       (XOSC_Frequency : XOSC_Hertz)
    is
+      use RP2040_SVD.XOSC;
    begin
       XOSC_Periph.CTRL.FREQ_RANGE := Val_1_15MHZ;
       --  1 millisecond startup delay
@@ -27,6 +28,7 @@ package body RP.Clock is
    end Enable_XOSC;
 
    procedure Enable_ROSC is
+      use RP2040_SVD.ROSC;
    begin
       --  Just ensure that ROSC is enabled, don't reset it or change the
       --  frequency
@@ -45,7 +47,7 @@ package body RP.Clock is
        Post_Div_2    : PLL_Divider)
    is
       VCO     : constant Hertz := (Reference / Reference_Div) * VCO_Multiple;
-      ref_mhz : constant Natural := Reference / 1_000_000 / Reference_Div;
+      Ref_MHz : constant Natural := Reference / 1_000_000 / Reference_Div;
       FBDIV   : constant FBDIV_INT_FBDIV_INT_Field := FBDIV_INT_FBDIV_INT_Field
          (VCO / (Reference / Reference_Div));
    begin
@@ -53,8 +55,8 @@ package body RP.Clock is
          raise Invalid_PLL_Config with "FBDIV out of range";
       end if;
 
-      if ref_mhz > VCO / 16 then
-         raise Invalid_PLL_Config with "ref_mhz out of range";
+      if Ref_MHz > VCO / 16 then
+         raise Invalid_PLL_Config with "Ref_MHz out of range";
       end if;
 
       --  Ensure PLL is stopped before configuring
@@ -89,6 +91,7 @@ package body RP.Clock is
    procedure Initialize
       (XOSC_Frequency : XOSC_Hertz := 0)
    is
+      use RP2040_SVD.RESETS;
       Has_XOSC  : constant Boolean := XOSC_Frequency > 0;
       Reference : Hertz;
    begin
@@ -130,7 +133,7 @@ package body RP.Clock is
       --  Reset PLLs
       RESETS_Periph.RESET.pll_sys := False;
       RESETS_Periph.RESET.pll_usb := False;
-      while not RESETS_Periph.RESET_DONE.pll_sys or else not RESETS_Periph.RESET_DONE.pll_usb loop
+      while not RESETS_Periph.RESET_DONE.pll_sys or not RESETS_Periph.RESET_DONE.pll_usb loop
          null;
       end loop;
 

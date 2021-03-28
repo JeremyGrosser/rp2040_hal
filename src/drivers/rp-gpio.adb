@@ -4,8 +4,8 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
-with RP2040_SVD.Interrupts; use RP2040_SVD.Interrupts;
+with Cortex_M_SVD.NVIC;
+with RP2040_SVD.Interrupts;
 with RP2040_SVD.RESETS;     use RP2040_SVD.RESETS;
 with RP2040_SVD.SIO;        use RP2040_SVD.SIO;
 
@@ -15,10 +15,12 @@ package body RP.GPIO is
    is (GPIO_Pin_Mask (Shift_Left (UInt32 (1), GPIO_Pin'Pos (Pin))));
 
    procedure Enable is
+      use RP2040_SVD.Interrupts;
+      use Cortex_M_SVD.NVIC;
    begin
       RESETS_Periph.RESET.io_bank0 := False;
       RESETS_Periph.RESET.pads_bank0 := False;
-      while not RESETS_Periph.RESET_DONE.io_bank0 or else not RESETS_Periph.RESET_DONE.pads_bank0 loop
+      while not RESETS_Periph.RESET_DONE.io_bank0 or not RESETS_Periph.RESET_DONE.pads_bank0 loop
          null;
       end loop;
 

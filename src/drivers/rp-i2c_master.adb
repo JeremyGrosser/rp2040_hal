@@ -5,7 +5,7 @@
 --
 with HAL; use HAL;
 
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
+with RP2040_SVD.RESETS;
 with RP2040_SVD.I2C;    use RP2040_SVD.I2C;
 
 package body RP.I2C_Master is
@@ -39,6 +39,7 @@ package body RP.I2C_Master is
    procedure Enable (This     : in out I2C_Master_Port;
                      Baudrate : Hertz)
    is
+      use RP2040_SVD.RESETS;
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
       RP.Clock.Enable (RP.Clock.PERI);
@@ -85,9 +86,8 @@ package body RP.I2C_Master is
          LCNT    : constant UInt32 := Period - HCNT;
       begin
 
-         if HCNT > UInt32 (UInt16'Last) or else HCNT < 8
-           or else
-            LCNT > UInt32 (UInt16'Last) or else LCNT < 8
+         if HCNT > UInt32 (UInt16'Last) or HCNT < 8 or
+            LCNT > UInt32 (UInt16'Last) or LCNT < 8
          then
             raise Clock_Speed_Error;
          end if;
@@ -126,8 +126,7 @@ package body RP.I2C_Master is
          declare
             Stop : constant IC_DATA_CMD_STOP_Field :=
               (if Index = Data'Last
-                  and then
-                  This.Do_Stop_Sequence
+                 and This.Do_Stop_Sequence
                then ENABLE else DISABLE);
 
             Restart : constant IC_DATA_CMD_RESTART_Field :=
@@ -183,8 +182,7 @@ package body RP.I2C_Master is
          declare
             Stop : constant IC_DATA_CMD_STOP_Field :=
               (if Index = Data'Last
-                  and then
-                  This.Do_Stop_Sequence
+                  and This.Do_Stop_Sequence
                then ENABLE else DISABLE);
 
             Restart : constant IC_DATA_CMD_RESTART_Field :=

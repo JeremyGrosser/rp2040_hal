@@ -3,10 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.Interrupts; use RP2040_SVD.Interrupts;
-with RP2040_SVD.RESETS;     use RP2040_SVD.RESETS;
+with RP2040_SVD.Interrupts;
 with RP2040_SVD.TIMER;      use RP2040_SVD.TIMER;
-with Cortex_M_SVD.NVIC;     use Cortex_M_SVD.NVIC;
+with Cortex_M_SVD.NVIC;
 with System.Machine_Code;
 
 package body RP.Timer is
@@ -36,6 +35,8 @@ package body RP.Timer is
    procedure Enable
       (This : in out Delays)
    is
+      use RP2040_SVD.Interrupts;
+      use Cortex_M_SVD.NVIC;
    begin
       TIMER_Periph.INTE.ALARM_2 := True;
       NVIC_Periph.NVIC_ICPR := Shift_Left (1, TIMER_IRQ_2_Interrupt);

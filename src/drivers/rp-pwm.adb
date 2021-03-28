@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Cortex_M_SVD.NVIC; use Cortex_M_SVD.NVIC;
+with Cortex_M_SVD.NVIC;
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP2040_SVD.Interrupts;
 with RP.Clock;
@@ -190,6 +190,7 @@ package body RP.PWM is
       (Slice   : PWM_Slice;
        Handler : PWM_Interrupt_Handler)
    is
+      use Cortex_M_SVD.NVIC;
    begin
       Handlers (Slice) := Handler;
       NVIC_Periph.NVIC_ICPR := Shift_Left (1, RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
@@ -200,7 +201,7 @@ package body RP.PWM is
    procedure PWM_IRQ_WRAP_Interrupt is
    begin
       for Slice in PWM_Slice'Range loop
-         if PWM_Periph.INTS.CH.Arr (Natural (Slice)) and then Handlers (Slice) /= null then
+         if PWM_Periph.INTS.CH.Arr (Natural (Slice)) and Handlers (Slice) /= null then
             PWM_Periph.INTR.CH.Arr (Natural (Slice)) := True;
             Handlers (Slice).all;
          end if;

@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
+with RP2040_SVD.RESETS;
 with RP2040_SVD.SPI; use RP2040_SVD.SPI;
 with HAL; use HAL;
 
@@ -11,6 +11,7 @@ package body RP.SPI is
    procedure Enable
       (This : in out SPI_Port)
    is
+      use RP2040_SVD.RESETS;
    begin
       RP.Clock.Enable (RP.Clock.PERI);
 
