@@ -4,6 +4,7 @@ with System;
 with HAL;
 
 package RP.DMA is
+
    type DMA_Channel_Id is range 0 .. 11
       with Size => 4;
 
@@ -32,17 +33,18 @@ package RP.DMA is
        with Size => 6;
 
    type DMA_Configuration is record
-      High_Priority   : Boolean := False;
-      Data_Size       : Transfer_Width := Transfer_8;
-      Increment_Read  : Boolean := False;
-      Increment_Write : Boolean := False;
-      Ring_Size       : HAL.UInt4 := 0;
-      Ring_Wrap       : Ring_Wrap_Select := Wrap_Read;
-      Chain_To        : DMA_Channel_Id := 0;
-      Trigger         : DMA_Request_Trigger := PERMANENT;
-      Quiet           : Boolean := False;
-      Byte_Swap       : Boolean := False;
-      Sniff           : Boolean := False;
+      High_Priority   : Boolean := False;                   --  Schedule this channel before others
+      Data_Size       : Transfer_Width := Transfer_8;       --  Bits per transfer (byte, halfword, word)
+      Increment_Read  : Boolean := False;                   --  Increment read address after transfer
+      Increment_Write : Boolean := False;                   --  Increment write address after transfer
+      Ring_Size       : HAL.UInt4 := 0;                     --  Ring buffer size
+      Ring_Wrap       : Ring_Wrap_Select := Wrap_Read;      --  Read or write buffer is a ring buffer
+      Chain_To        : DMA_Channel_Id := 0;                --  Trigger another channel after transfer.
+                                                            --  Set to *this channel* to disable chaining.
+      Trigger         : DMA_Request_Trigger := PERMANENT;   --  Trigger a transfer on this signal
+      Quiet           : Boolean := False;                   --  Disable interrupts
+      Byte_Swap       : Boolean := False;                   --  Reverse byte order
+      Sniff           : Boolean := False;                   --  Send data to sniff checksum
    end record;
 
    type DMA_Status is record
@@ -57,28 +59,25 @@ package RP.DMA is
    procedure Enable;
 
    procedure Configure
+      (Channel : DMA_Channel_Id;
+       Config  : DMA_Configuration);
+
+   procedure Start
       (Channel  : DMA_Channel_Id;
-       Config   : DMA_Configuration;
        From, To : System.Address;
        Count    : HAL.UInt32);
 
-   procedure Start
-      (Channel : DMA_Channel_Id);
-
-   procedure Stop
-      (Channel : DMA_Channel_Id);
+   function Busy
+      (Channel : DMA_Channel_Id)
+      return Boolean;
 
    function Status
       (Channel : DMA_Channel_Id)
       return DMA_Status;
 
-   function Complete
-      (Channel : DMA_Channel_Id)
-      return Boolean;
-
 private
 
-   type DMA_CTRL_TRIG_Register is record
+   type DMA_CTRL_Register is record
       EN            : Boolean := False;
       HIGH_PRIORITY : Boolean := False;
       DATA_SIZE     : Transfer_Width := Transfer_8;
@@ -97,8 +96,9 @@ private
       AHB_ERROR     : Boolean := False;
    end record
       with Volatile_Full_Access,
-           Size => 32;
-   for DMA_CTRL_TRIG_Register use record
+           Object_Size => 32,
+           Bit_Order => System.Low_Order_First;
+   for DMA_CTRL_Register use record
       EN            at 0 range 0 .. 0;
       HIGH_PRIORITY at 0 range 1 .. 1;
       DATA_SIZE     at 0 range 2 .. 3;
@@ -119,56 +119,84 @@ private
 
    --  Enable the DMA peripheral
    type DMA_Channel_Register is record
-      READ_ADDR   : aliased System.Address;
-      WRITE_ADDR  : aliased System.Address;
-      TRANS_COUNT : aliased HAL.UInt32;
-      CTRL_TRIG   : aliased DMA_CTRL_TRIG_Register;
-   end record
-      with Size => 32 * 4;
+      READ_ADDR            : aliased System.Address;
+      WRITE_ADDR           : aliased System.Address;
+      TRANS_COUNT          : aliased HAL.UInt32;
+      CTRL_TRIG            : aliased DMA_CTRL_Register;
 
+      AL1_CTRL             : aliased DMA_CTRL_Register;
+      AL1_READ_ADDR        : aliased System.Address;
+      AL1_WRITE_ADDR       : aliased System.Address;
+      AL1_TRANS_COUNT_TRIG : aliased HAL.UInt32;
+
+      AL2_CTRL             : aliased DMA_CTRL_Register;
+      AL2_READ_ADDR        : aliased System.Address;
+      AL2_WRITE_ADDR_TRIG  : aliased System.Address;
+      AL2_TRANS_COUNT      : aliased HAL.UInt32;
+
+      AL3_CTRL             : aliased DMA_CTRL_Register;
+      AL3_READ_ADDR_TRIG   : aliased System.Address;
+      AL3_WRITE_ADDR       : aliased System.Address;
+      AL3_TRANS_COUNT      : aliased HAL.UInt32;
+   end record
+      with Volatile, Size => 512;
    for DMA_Channel_Register use record
-      READ_ADDR   at 16#00# range 0 .. 31;
-      WRITE_ADDR  at 16#04# range 0 .. 31;
-      TRANS_COUNT at 16#08# range 0 .. 31;
-      CTRL_TRIG   at 16#0C# range 0 .. 31;
+      READ_ADDR            at 16#00# range 0 .. 31;
+      WRITE_ADDR           at 16#04# range 0 .. 31;
+      TRANS_COUNT          at 16#08# range 0 .. 31;
+      CTRL_TRIG            at 16#0C# range 0 .. 31;
+
+      AL1_CTRL             at 16#10# range 0 .. 31;
+      AL1_READ_ADDR        at 16#14# range 0 .. 31;
+      AL1_WRITE_ADDR       at 16#18# range 0 .. 31;
+      AL1_TRANS_COUNT_TRIG at 16#1C# range 0 .. 31;
+
+      AL2_CTRL             at 16#20# range 0 .. 31;
+      AL2_READ_ADDR        at 16#24# range 0 .. 31;
+      AL2_WRITE_ADDR_TRIG  at 16#28# range 0 .. 31;
+      AL2_TRANS_COUNT      at 16#2C# range 0 .. 31;
+
+      AL3_CTRL             at 16#30# range 0 .. 31;
+      AL3_READ_ADDR_TRIG   at 16#34# range 0 .. 31;
+      AL3_WRITE_ADDR       at 16#38# range 0 .. 31;
+      AL3_TRANS_COUNT      at 16#3C# range 0 .. 31;
    end record;
 
    type DMA_Channel_Debug is record
       CTDREQ : aliased RP2040_SVD.DMA.CH0_DBG_CTDREQ_Register;
-      TCR    : aliased HAL.UInt32;
+      TCR    : HAL.UInt32;
    end record
-      with Size => 32 * 2;
+      with Volatile, Size => 64;
+   for DMA_Channel_Debug use record
+      CTDREQ at 16#00# range 0 .. 31;
+      TCR    at 16#04# range 0 .. 31;
+   end record;
 
    type DMA_IRQ is record
       INTE : aliased RP2040_SVD.DMA.INTE0_Register;
       INTF : aliased RP2040_SVD.DMA.INTF0_Register;
       INTS : aliased RP2040_SVD.DMA.INTS0_Register;
    end record
-      with Size => 3 * 32;
-
+      with Volatile, Size => 96;
    for DMA_IRQ use record
       INTE at 16#00# range 0 .. 31;
       INTF at 16#04# range 0 .. 31;
       INTS at 16#08# range 0 .. 31;
    end record;
 
-   type DMA_Channels is array (DMA_Channel_Id) of DMA_Channel_Register
-      with Pack, Size => 12 * 32 * 4;
+   type DMA_Channels is array (DMA_Channel_Id) of DMA_Channel_Register;
 
-   type DMA_Channels_Debug is array (DMA_Channel_Id) of DMA_Channel_Debug
-      with Pack, Size => 12 * 64;
+   type DMA_Channels_Debug is array (DMA_Channel_Id) of DMA_Channel_Debug;
 
-   type DMA_IRQs is array (0 .. 1) of DMA_IRQ
-      with Pack, Size => 2 * 3 * 32;
+   type DMA_IRQs is array (0 .. 1) of aliased DMA_IRQ;
 
-   type DMA_Timers is array (0 .. 1) of RP2040_SVD.DMA.TIMER_Register;
+   type DMA_Timers is array (0 .. 3) of RP2040_SVD.DMA.TIMER_Register;
 
    type DMA_Peripheral is record
       CH                 : DMA_Channels;
       INTR               : aliased RP2040_SVD.DMA.INTR_Register;
       IRQ                : DMA_IRQs;
-      TIMER0             : aliased RP2040_SVD.DMA.TIMER_Register;
-      TIMER1             : aliased RP2040_SVD.DMA.TIMER_Register;
+      TIMER              : DMA_Timers;
       MULTI_CHAN_TRIGGER : aliased RP2040_SVD.DMA.MULTI_CHAN_TRIGGER_Register;
       SNIFF_CTRL         : aliased RP2040_SVD.DMA.SNIFF_CTRL_Register;
       SNIFF_DATA         : aliased HAL.UInt32;
@@ -176,6 +204,20 @@ private
       CHAN_ABORT         : aliased RP2040_SVD.DMA.CHAN_ABORT_Register;
       N_CHANNELS         : aliased RP2040_SVD.DMA.N_CHANNELS_Register;
       CH_DBG             : DMA_Channels_Debug;
+   end record
+      with Size => 16#0ac8# * 8, Volatile;
+   for DMA_Peripheral use record
+      CH                 at 16#000# range 0 .. 6143;
+      INTR               at 16#400# range 0 .. 31;
+      IRQ                at 16#404# range 0 .. 191;
+      TIMER              at 16#420# range 0 .. 127;
+      MULTI_CHAN_TRIGGER at 16#430# range 0 .. 31;
+      SNIFF_CTRL         at 16#434# range 0 .. 31;
+      SNIFF_DATA         at 16#438# range 0 .. 31;
+      FIFO_LEVELS        at 16#440# range 0 .. 31;
+      CHAN_ABORT         at 16#444# range 0 .. 31;
+      N_CHANNELS         at 16#448# range 0 .. 31;
+      CH_DBG             at 16#800# range 0 .. 767;
    end record;
 
    DMA_Periph : aliased DMA_Peripheral
