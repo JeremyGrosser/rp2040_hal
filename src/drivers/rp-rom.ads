@@ -159,8 +159,4 @@ package RP.ROM is
    git_revision : access Interfaces.C.char_array
    with Import     => True,
         Address    => rom_data_lookup (rom_table_code ('G', 'R'));
-
-   fplib_start : System.Address
-   with Import     => True,
-        Address    => rom_data_lookup (rom_table_code ('F', 'S'));
 end RP.ROM;
