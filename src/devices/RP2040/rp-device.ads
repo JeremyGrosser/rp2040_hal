@@ -11,7 +11,6 @@ with RP.SPI;         use RP.SPI;
 with RP.I2C_Master;  use RP.I2C_Master;
 with RP.UART;        use RP.UART;
 with RP.PIO;         use RP.PIO;
-with RP.DMA;
 with RP.SysTick;
 with RP.Timer;
 
