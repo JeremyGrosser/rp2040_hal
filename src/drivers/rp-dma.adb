@@ -1,10 +1,6 @@
 with RP2040_SVD.RESETS;
-with System.Storage_Elements; use System.Storage_Elements;
 
 package body RP.DMA is
-   use HAL;
-   Readback_Error : exception;
-
    procedure Enable is
       use RP2040_SVD.RESETS;
    begin

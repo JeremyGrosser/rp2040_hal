@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
-with RP2040_SVD.DMA;    use RP2040_SVD.DMA;
 with RP.Clock;
 
 package body RP.PIO is

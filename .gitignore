@@ -3,3 +3,5 @@ lib/
 alire/
 *.swp
 alire.lock
+*.adt
+*.ali

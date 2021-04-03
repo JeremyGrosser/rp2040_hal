@@ -119,25 +119,25 @@ private
 
    --  Enable the DMA peripheral
    type DMA_Channel_Register is record
-      READ_ADDR            : aliased System.Address;
-      WRITE_ADDR           : aliased System.Address;
-      TRANS_COUNT          : aliased HAL.UInt32;
-      CTRL_TRIG            : aliased DMA_CTRL_Register;
+      READ_ADDR            : System.Address;
+      WRITE_ADDR           : System.Address;
+      TRANS_COUNT          : HAL.UInt32;
+      CTRL_TRIG            : DMA_CTRL_Register;
 
-      AL1_CTRL             : aliased DMA_CTRL_Register;
-      AL1_READ_ADDR        : aliased System.Address;
-      AL1_WRITE_ADDR       : aliased System.Address;
-      AL1_TRANS_COUNT_TRIG : aliased HAL.UInt32;
+      AL1_CTRL             : DMA_CTRL_Register;
+      AL1_READ_ADDR        : System.Address;
+      AL1_WRITE_ADDR       : System.Address;
+      AL1_TRANS_COUNT_TRIG : HAL.UInt32;
 
-      AL2_CTRL             : aliased DMA_CTRL_Register;
-      AL2_READ_ADDR        : aliased System.Address;
-      AL2_WRITE_ADDR_TRIG  : aliased System.Address;
-      AL2_TRANS_COUNT      : aliased HAL.UInt32;
+      AL2_CTRL             : DMA_CTRL_Register;
+      AL2_READ_ADDR        : System.Address;
+      AL2_WRITE_ADDR_TRIG  : System.Address;
+      AL2_TRANS_COUNT      : HAL.UInt32;
 
-      AL3_CTRL             : aliased DMA_CTRL_Register;
-      AL3_READ_ADDR_TRIG   : aliased System.Address;
-      AL3_WRITE_ADDR       : aliased System.Address;
-      AL3_TRANS_COUNT      : aliased HAL.UInt32;
+      AL3_CTRL             : DMA_CTRL_Register;
+      AL3_READ_ADDR_TRIG   : System.Address;
+      AL3_WRITE_ADDR       : System.Address;
+      AL3_TRANS_COUNT      : HAL.UInt32;
    end record
       with Volatile, Size => 512;
    for DMA_Channel_Register use record
@@ -205,7 +205,7 @@ private
       N_CHANNELS         : aliased RP2040_SVD.DMA.N_CHANNELS_Register;
       CH_DBG             : DMA_Channels_Debug;
    end record
-      with Size => 16#0ac8# * 8, Volatile;
+      with Volatile;
    for DMA_Peripheral use record
       CH                 at 16#000# range 0 .. 6143;
       INTR               at 16#400# range 0 .. 31;
