@@ -12,6 +12,7 @@ with RP.I2C_Master;  use RP.I2C_Master;
 with RP.UART;        use RP.UART;
 with RP.PIO;         use RP.PIO;
 with RP.Interpolator;
+with RP.USB_Device;
 with RP.SysTick;
 with RP.Timer;
 with RP.RTC;
@@ -43,6 +44,6 @@ package RP.Device is
 
    SysTick : aliased RP.SysTick.Delays;
    Timer   : aliased RP.Timer.Delays;
-
    RTC     : aliased RP.RTC.RTC_Device;
+   UDC     : aliased RP.USB_Device.USB_Device_Controller;
 end RP.Device;

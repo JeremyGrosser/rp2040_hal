@@ -1,5 +1,6 @@
 with "hal.gpr";
 with "cortex_m0.gpr";
+with "usb_embedded.gpr";
 
 project Rp2040_Hal is
 

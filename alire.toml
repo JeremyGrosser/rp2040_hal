@@ -12,3 +12,13 @@ website = "https://github.com/JeremyGrosser/rp2040_hal"
 [[depends-on]]
 cortex_m = "~0.3"
 hal = "~0.1"
+
+[[depends-on]]
+usb_embedded = "~0.1.0"
+
+[[pins]]  # Added by alr
+atomic = { url='https://github.com/Fabien-Chouteau/atomic#critical_sections' }
+bbqueue = { url='https://github.com/Fabien-Chouteau/bbqueue-spark' }
+
+[configuration.values]
+atomic.Backend = "armv6m"
