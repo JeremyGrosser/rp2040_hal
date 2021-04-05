@@ -1,5 +1,9 @@
+-- begin auto-gpr-with --
+--  This section was automatically added by Alire
 with "hal.gpr";
+-- end auto-gpr-with --
 with "cortex_m0.gpr";
+with "usb_embedded.gpr";
 
 project Rp2040_Hal is
 
