@@ -5,6 +5,7 @@
 --
 with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP.Clock;
+with Ada.Unchecked_Conversion;
 
 package body RP.PIO is
    procedure Enable
@@ -270,6 +271,28 @@ package body RP.PIO is
          This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not Mask;
       end if;
    end Set_Enabled;
+
+   procedure Set_Enabled
+      (This : in out PIO_Device;
+       SM   : PIO_SM_Mask)
+   is
+      function To_UInt4 is new Ada.Unchecked_Conversion
+         (Source => PIO_SM_Mask,
+          Target => UInt4);
+   begin
+      This.Periph.CTRL.SM_ENABLE := To_UInt4 (SM);
+   end Set_Enabled;
+
+   function Enabled
+      (This : PIO_Device)
+      return PIO_SM_Mask
+   is
+      function To_PIO_SM_Mask is new Ada.Unchecked_Conversion
+         (Source => UInt4,
+          Target => PIO_SM_Mask);
+   begin
+      return To_PIO_SM_Mask (This.Periph.CTRL.SM_ENABLE);
+   end Enabled;
 
    procedure Clear_FIFOs
       (This : in out PIO_Device;

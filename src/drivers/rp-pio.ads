@@ -18,6 +18,9 @@ package RP.PIO is
    is private;
 
    type PIO_SM is range 0 .. 3;
+   type PIO_SM_Mask is array (PIO_SM) of Boolean
+      with Pack, Size => 4;
+
    type PIO_SM_Config is private;
 
    subtype PIO_Address is Natural range 0 .. 31;
@@ -132,6 +135,14 @@ package RP.PIO is
       (This    : in out PIO_Device;
        SM      : PIO_SM;
        Enabled : Boolean);
+
+   procedure Set_Enabled
+      (This : in out PIO_Device;
+       SM   : PIO_SM_Mask);
+
+   function Enabled
+      (This : PIO_Device)
+      return PIO_SM_Mask;
 
    procedure Clear_FIFOs
       (This    : in out PIO_Device;
