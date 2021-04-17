@@ -33,7 +33,7 @@ package RP.PIO is
    Divider_Fraction : constant := 1.0 / 2.0 ** SM0_CLKDIV_FRAC_Field'Size;
    type Divider is
       delta Divider_Fraction
-      range Divider_Fraction .. (2.0 ** SM0_CLKDIV_INT_Field'Size - Divider_Fraction);
+      range 0.0 .. (2.0 ** SM0_CLKDIV_INT_Field'Size - Divider_Fraction);
 
    procedure Enable
       (This : in out PIO_Device);
