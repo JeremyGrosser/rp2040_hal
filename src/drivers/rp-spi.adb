@@ -8,8 +8,9 @@ with RP2040_SVD.SPI; use RP2040_SVD.SPI;
 with HAL; use HAL;
 
 package body RP.SPI is
-   procedure Enable
-      (This : in out SPI_Port)
+   procedure Configure
+      (This   : in out SPI_Port;
+       Config : SPI_Configuration)
    is
       use RP2040_SVD.RESETS;
    begin
@@ -27,15 +28,21 @@ package body RP.SPI is
       --  fSSPCLKOUT := fSSPCLK / (CPSDVSR * (1 + SCR);
 
       This.Periph.SSPCR0 :=
-         (DSS    => 2#0111#, --  8 bits
-          FRF    => 0,       --  Motorola format
+         (FRF    => 0,       --  Motorola format
           SCR    => 0,       --  No divider before Set_Speed is called
-          SPO    => False,   --  CPOL data is active low
-          SPH    => False,   --  CPHA latch on clock rising edge
+          SPO    => Config.Polarity = Active_High,
+          SPH    => Config.Phase = Falling_Edge,
           others => <>);
 
+      case Config.Data_Size is
+         when Data_Size_8b =>
+            This.Periph.SSPCR0.DSS := 2#0111#;
+         when Data_Size_16b =>
+            This.Periph.SSPCR0.DSS := 2#1111#;
+      end case;
+
       This.Periph.SSPCR1 :=
-         (MS     => False,   --  Master
+         (MS     => Config.Role = Slave,
           SSE    => False,
           others => <>);
 
@@ -45,8 +52,10 @@ package body RP.SPI is
           TXDMAE => True,
           others => <>);
 
+      This.Set_Speed (Config.Baud);
+
       This.Periph.SSPCR1.SSE := True;
-   end Enable;
+   end Configure;
 
    procedure Set_Speed
       (This : in out SPI_Port;
@@ -73,19 +82,6 @@ package body RP.SPI is
       This.Periph.SSPCPSR.CPSDVSR := SSPCPSR_CPSDVSR_Field (Prescale);
       This.Periph.SSPCR0.SCR := SSPCR0_SCR_Field (Postdiv - 1);
    end Set_Speed;
-
-   procedure Set_Data_Size
-      (This      : in out SPI_Port;
-       Data_Size : SPI_Data_Size)
-   is
-   begin
-      case Data_Size is
-         when Data_Size_8b =>
-            This.Periph.SSPCR0.DSS := 2#0111#;
-         when Data_Size_16b =>
-            This.Periph.SSPCR0.DSS := 2#1111#;
-      end case;
-   end Set_Data_Size;
 
    overriding
    function Data_Size
@@ -133,7 +129,7 @@ package body RP.SPI is
          while not This.Periph.SSPSR.TNF loop
             null;
          end loop;
-         This.Periph.SSPDR.DATA := SSPDR_DATA_Field (D);
+         This.Periph.SSPDR.DATA := D;
       end loop;
 
       while not This.Periph.SSPSR.TFE loop

@@ -15,18 +15,27 @@ is
        Periph : not null access RP2040_SVD.SPI.SPI_Peripheral) is
       new HAL.SPI.SPI_Port with private;
 
-   procedure Enable
-      (This : in out SPI_Port);
+   type SPI_Role is (Master, Slave);
+   type SPI_Polarity is (Active_Low, Active_High);
+   type SPI_Phase is (Rising_Edge, Falling_Edge);
+
+   type SPI_Configuration is record
+      Role      : SPI_Role := Master;
+      Baud      : Hertz := 1_000_000;
+      Data_Size : SPI_Data_Size := Data_Size_8b;
+      Polarity  : SPI_Polarity := Active_Low;
+      Phase     : SPI_Phase := Rising_Edge;
+   end record;
+
+   procedure Configure
+      (This   : in out SPI_Port;
+       Config : SPI_Configuration);
 
    procedure Set_Speed
       (This : in out SPI_Port;
        Baud : Hertz)
    with Pre => Baud < RP.Clock.Frequency (RP.Clock.PERI);
    Clock_Speed_Error : exception;
-
-   procedure Set_Data_Size
-      (This      : in out SPI_Port;
-       Data_Size : SPI_Data_Size);
 
    overriding
    function Data_Size
