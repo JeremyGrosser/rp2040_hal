@@ -34,7 +34,7 @@ is
    procedure Set_Speed
       (This : in out SPI_Port;
        Baud : Hertz)
-   with Pre => Baud < RP.Clock.Frequency (RP.Clock.PERI);
+   with Pre => Baud <= RP.Clock.Frequency (RP.Clock.PERI);
    Clock_Speed_Error : exception;
 
    overriding
