@@ -5,6 +5,7 @@
 --
 with RP2040_SVD.RESETS;
 with RP2040_SVD.SPI; use RP2040_SVD.SPI;
+with RP.Timer;
 with HAL; use HAL;
 
 package body RP.SPI is
@@ -83,6 +84,53 @@ package body RP.SPI is
       This.Periph.SSPCR0.SCR := SSPCR0_SCR_Field (Postdiv - 1);
    end Set_Speed;
 
+   function Transmit_Status
+      (This : SPI_Port)
+      return SPI_FIFO_Status
+   is
+      --  This is a bit dumb, but we want to avoid redefining the whole
+      --  SPI_Peripheral record just to change the status registers.
+      --
+      --  TFE   TNF   Returns     Notes
+      --   0     0    Full
+      --   0     1    Not_Full    some data in FIFO
+      --   1     0    Invalid     cannot be both Empty and Full
+      --   1     1    Empty
+      Flags : constant SSPSR_Register := This.Periph.SSPSR;
+   begin
+      if Flags.TFE = False and Flags.TNF = False then
+         return Full;
+      elsif Flags.TFE = False and Flags.TNF = True then
+         return Not_Full;
+      elsif Flags.TFE = True and Flags.TNF = True then
+         return Empty;
+      else
+         return Invalid;
+      end if;
+   end Transmit_Status;
+
+   function Receive_Status
+      (This : SPI_Port)
+      return SPI_FIFO_Status
+   is
+      --  RFF  RNE   Returns     Notes
+      --   0    0    Empty
+      --   0    1    Not_Full
+      --   1    0    Invalid     cannot be both Empty and Full
+      --   1    1    Full
+      Flags : constant SSPSR_Register := This.Periph.SSPSR;
+   begin
+      if Flags.RFF = False and Flags.RNE = False then
+         return Empty;
+      elsif Flags.RFF = False and Flags.RNE = True then
+         return Not_Full;
+      elsif Flags.RFF = True and Flags.RNE = True then
+         return Full;
+      else
+         return Invalid;
+      end if;
+   end Receive_Status;
+
    overriding
    function Data_Size
       (This : SPI_Port)
@@ -103,16 +151,30 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
+      use type RP.Timer.Time;
+      Deadline : RP.Timer.Time;
+      FIFO     : SPI_FIFO_Status;
    begin
+      if Timeout > 0 then
+         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+      end if;
+
       for D of Data loop
-         while not This.Periph.SSPSR.TNF loop
-            null;
+         loop
+            FIFO := Transmit_Status (This);
+            exit when FIFO = Empty or FIFO = Not_Full;
+
+            if FIFO = Invalid then
+               Status := Err_Error;
+               return;
+            end if;
+
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
          end loop;
          This.Periph.SSPDR.DATA := SSPDR_DATA_Field (D);
-      end loop;
-
-      while not This.Periph.SSPSR.TFE loop
-         null;
       end loop;
       Status := Ok;
    end Transmit;
@@ -124,16 +186,30 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
+      use type RP.Timer.Time;
+      Deadline : RP.Timer.Time;
+      FIFO     : SPI_FIFO_Status;
    begin
+      if Timeout > 0 then
+         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+      end if;
+
       for D of Data loop
-         while not This.Periph.SSPSR.TNF loop
-            null;
+         loop
+            FIFO := Transmit_Status (This);
+            exit when FIFO = Empty or FIFO = Not_Full;
+
+            if FIFO = Invalid then
+               Status := Err_Error;
+               return;
+            end if;
+
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
          end loop;
          This.Periph.SSPDR.DATA := D;
-      end loop;
-
-      while not This.Periph.SSPSR.TFE loop
-         null;
       end loop;
       Status := Ok;
    end Transmit;
@@ -145,10 +221,28 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
+      use type RP.Timer.Time;
+      Deadline : RP.Timer.Time;
+      FIFO     : SPI_FIFO_Status;
    begin
+      if Timeout > 0 then
+         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+      end if;
+
       for I in Data'Range loop
-         while not This.Periph.SSPSR.RNE loop
-            null;
+         loop
+            FIFO := Receive_Status (This);
+            exit when FIFO = Not_Full or FIFO = Full;
+
+            if FIFO = Invalid then
+               Status := Err_Error;
+               return;
+            end if;
+
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
          end loop;
          Data (I) := UInt8 (This.Periph.SSPDR.DATA);
       end loop;
@@ -162,10 +256,28 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
+      use type RP.Timer.Time;
+      Deadline : RP.Timer.Time;
+      FIFO     : SPI_FIFO_Status;
    begin
+      if Timeout > 0 then
+         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+      end if;
+
       for I in Data'Range loop
-         while not This.Periph.SSPSR.RNE loop
-            null;
+         loop
+            FIFO := Receive_Status (This);
+            exit when FIFO = Not_Full or FIFO = Full;
+
+            if FIFO = Invalid then
+               Status := Err_Error;
+               return;
+            end if;
+
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
          end loop;
          Data (I) := UInt16 (This.Periph.SSPDR.DATA);
       end loop;

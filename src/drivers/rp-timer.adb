@@ -55,6 +55,11 @@ package body RP.Timer is
       return Boolean
    is (TIMER_Periph.INTE.ALARM_2);
 
+   function Milliseconds
+      (T : Natural)
+      return Time
+   is ((Ticks_Per_Second / 1_000) * Time (T));
+
    procedure Delay_Until
       (This : in out Delays;
        T    : Time)

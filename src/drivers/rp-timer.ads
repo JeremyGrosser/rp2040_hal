@@ -29,6 +29,10 @@ is
    procedure Disable
       (This : in out Delays);
 
+   function Milliseconds
+      (T : Natural)
+      return Time;
+
    procedure Delay_Until
       (This : in out Delays;
        T    : Time)

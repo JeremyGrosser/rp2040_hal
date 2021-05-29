@@ -18,6 +18,7 @@ is
    type SPI_Role is (Master, Slave);
    type SPI_Polarity is (Active_Low, Active_High);
    type SPI_Phase is (Rising_Edge, Falling_Edge);
+   type SPI_FIFO_Status is (Empty, Not_Full, Full, Invalid);
 
    type SPI_Configuration is record
       Role      : SPI_Role := Master;
@@ -41,6 +42,14 @@ is
    function Data_Size
       (This : SPI_Port)
       return SPI_Data_Size;
+
+   function Transmit_Status
+      (This : SPI_Port)
+      return SPI_FIFO_Status;
+
+   function Receive_Status
+      (This : SPI_Port)
+      return SPI_FIFO_Status;
 
    overriding
    procedure Transmit
