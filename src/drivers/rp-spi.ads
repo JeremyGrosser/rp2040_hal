@@ -6,6 +6,7 @@
 with HAL.SPI; use HAL.SPI;
 with RP2040_SVD.SPI;
 with RP.Clock;
+with System;
 
 package RP.SPI
    with Elaborate_Body
@@ -50,6 +51,10 @@ is
    function Receive_Status
       (This : SPI_Port)
       return SPI_FIFO_Status;
+
+   function FIFO_Address
+      (This : SPI_Port)
+      return System.Address;
 
    overriding
    procedure Transmit

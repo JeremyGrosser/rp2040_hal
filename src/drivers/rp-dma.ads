@@ -67,6 +67,9 @@ package RP.DMA is
        From, To : System.Address;
        Count    : HAL.UInt32);
 
+   procedure Disable
+      (Channel : DMA_Channel_Id);
+
    function Busy
       (Channel : DMA_Channel_Id)
       return Boolean;

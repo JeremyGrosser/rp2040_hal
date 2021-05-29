@@ -131,6 +131,11 @@ package body RP.SPI is
       end if;
    end Receive_Status;
 
+   function FIFO_Address
+      (This : SPI_Port)
+      return System.Address
+   is (This.Periph.SSPDR'Address);
+
    overriding
    function Data_Size
       (This : SPI_Port)

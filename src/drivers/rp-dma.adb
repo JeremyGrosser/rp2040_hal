@@ -32,6 +32,13 @@ package body RP.DMA is
           others        => <>);
    end Configure;
 
+   procedure Disable
+      (Channel : DMA_Channel_Id)
+   is
+   begin
+      DMA_Periph.CH (Channel).AL1_CTRL.EN := False;
+   end Disable;
+
    procedure Start
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
