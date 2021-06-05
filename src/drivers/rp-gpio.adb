@@ -48,10 +48,12 @@ package body RP.GPIO is
    is (RESETS_Periph.RESET_DONE.io_bank0);
 
    procedure Configure
-      (This : in out GPIO_Point;
-       Mode : GPIO_Config_Mode;
-       Pull : GPIO_Pull_Mode := Floating;
-       Func : GPIO_Function := SIO)
+      (This      : in out GPIO_Point;
+       Mode      : GPIO_Config_Mode;
+       Pull      : GPIO_Pull_Mode := Floating;
+       Func      : GPIO_Function := SIO;
+       Schmitt   : Boolean := False;
+       Slew_Fast : Boolean := False)
    is
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
@@ -66,10 +68,12 @@ package body RP.GPIO is
       case Mode is
          when Input =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
-               (PUE    => (Pull = Pull_Both or Pull = Pull_Up),
-                PDE    => (Pull = Pull_Both or Pull = Pull_Down),
-                IE     => True,
-                OD     => True,
+               (PUE      => (Pull = Pull_Both or Pull = Pull_Up),
+                PDE      => (Pull = Pull_Both or Pull = Pull_Down),
+                IE       => True,
+                OD       => True,
+                SCHMITT  => Schmitt,
+                SLEWFAST => Slew_Fast,
                 others => <>);
          when Output =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
@@ -77,15 +81,19 @@ package body RP.GPIO is
                 PDE      => (Pull = Pull_Both or Pull = Pull_Down),
                 IE       => True,
                 OD       => False,
+                SCHMITT  => Schmitt,
+                SLEWFAST => Slew_Fast,
                 others => <>);
             SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
             SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
          when Analog =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
-               (PUE    => False,
-                PDE    => False,
-                IE     => True,
-                OD     => True,
+               (PUE      => False,
+                PDE      => False,
+                IE       => True,
+                OD       => True,
+                SCHMITT  => Schmitt,
+                SLEWFAST => Slew_Fast,
                 others => <>);
             IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL := HI_Z;
       end case;

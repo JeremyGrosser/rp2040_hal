@@ -58,10 +58,12 @@ is
    function Enabled return Boolean;
 
    procedure Configure
-      (This : in out GPIO_Point;
-       Mode : GPIO_Config_Mode;
-       Pull : GPIO_Pull_Mode := Floating;
-       Func : GPIO_Function := SIO);
+      (This      : in out GPIO_Point;
+       Mode      : GPIO_Config_Mode;
+       Pull      : GPIO_Pull_Mode := Floating;
+       Func      : GPIO_Function := SIO;
+       Schmitt   : Boolean := False;
+       Slew_Fast : Boolean := False);
    --  In Analog mode, Pull and Func are ignored and set to Floating and HI_Z
 
    function Get
