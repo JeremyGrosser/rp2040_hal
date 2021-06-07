@@ -7,6 +7,7 @@ with HAL; use HAL;
 
 with RP2040_SVD.RESETS;
 with RP2040_SVD.I2C;    use RP2040_SVD.I2C;
+with RP.Timer;
 
 package body RP.I2C_Master is
 
@@ -124,8 +125,12 @@ package body RP.I2C_Master is
       Status  : out I2C_Status;
       Timeout : Natural := 1_000)
    is
-      P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
+      use RP.Timer;
+      Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
+      P        : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
+
+      Status := Ok;
 
       --  Set address
       P.IC_ENABLE.ENABLE := DISABLED;
@@ -145,7 +150,10 @@ package body RP.I2C_Master is
          begin
 
             while P.IC_RAW_INTR_STAT.TX_EMPTY /= ACTIVE loop
-               null;
+               if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+                  Status := HAL.I2C.Err_Timeout;
+                  exit;
+               end if;
             end loop;
 
             P.IC_DATA_CMD := (DAT     => Data (Index),
@@ -164,12 +172,16 @@ package body RP.I2C_Master is
                   exit;
                end if;
 
+               if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+                  Status := HAL.I2C.Err_Timeout;
+                  exit;
+               end if;
+
                exit when P.IC_STATUS.TFE = EMPTY;
             end loop;
          end;
       end loop;
 
-      Status := Ok;
    end Master_Transmit;
 
    --------------------
@@ -184,8 +196,12 @@ package body RP.I2C_Master is
       Status  : out I2C_Status;
       Timeout : Natural := 1_000)
    is
-      P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
+      use RP.Timer;
+      Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
+      P        : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
+
+      Status := Ok;
 
       --  Set address
       P.IC_ENABLE.ENABLE := DISABLED;
@@ -221,6 +237,11 @@ package body RP.I2C_Master is
                   exit;
                end if;
 
+               if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+                  Status := HAL.I2C.Err_Timeout;
+                  exit;
+               end if;
+
                exit when P.IC_RXFLR.RXFLR /= 0;
             end loop;
 
@@ -228,7 +249,6 @@ package body RP.I2C_Master is
          end;
       end loop;
 
-      Status := Ok;
    end Master_Receive;
 
    ---------------
