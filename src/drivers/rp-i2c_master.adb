@@ -44,12 +44,11 @@ package body RP.I2C_Master is
    begin
       RP.Clock.Enable (RP.Clock.PERI);
 
-      if RESETS_Periph.RESET.i2c.Arr (This.Num) then
-         RESETS_Periph.RESET.i2c.Arr (This.Num) := False;
-         while not RESETS_Periph.RESET_DONE.i2c.Arr (This.Num) loop
-            null;
-         end loop;
-      end if;
+      RESETS_Periph.RESET.i2c.Arr (This.Num) := True;
+      RESETS_Periph.RESET.i2c.Arr (This.Num) := False;
+      while not RESETS_Periph.RESET_DONE.i2c.Arr (This.Num) loop
+         null;
+      end loop;
 
       P.IC_ENABLE := (ENABLE       => DISABLED,
                       ABORT_k      => DISABLE,
@@ -65,7 +64,7 @@ package body RP.I2C_Master is
                    IC_RESTART_EN             => ENABLED,
                    IC_SLAVE_DISABLE          => SLAVE_DISABLED,
                    STOP_DET_IFADDRESSED      => DISABLED,
-                   TX_EMPTY_CTRL             => DISABLED,
+                   TX_EMPTY_CTRL             => ENABLED,
                    RX_FIFO_FULL_HLD_CTRL     => DISABLED,
                    STOP_DET_IF_MASTER_ACTIVE => False,
                    others                    => <>);
@@ -80,10 +79,11 @@ package body RP.I2C_Master is
       declare
          --  This part is taken as is from the RP2040 SDK...
 
-         Freq_In : constant Hertz := RP.Clock.Frequency (RP.Clock.PERI);
+         Freq_In : constant Hertz := RP.Clock.Frequency (RP.Clock.SYS);
          Period  : constant UInt32 := UInt32 ((Freq_In + Baudrate / 2) / Baudrate);
-         HCNT    : constant UInt32 := Period * 3 / 5;
-         LCNT    : constant UInt32 := Period - HCNT;
+         LCNT    : constant UInt32 := Period * 3 / 5;
+         HCNT    : constant UInt32 := Period - LCNT;
+         SDA_Tx_Hold_Count : UInt32;
       begin
 
          if HCNT > UInt32 (UInt16'Last) or HCNT < 8 or
@@ -92,10 +92,21 @@ package body RP.I2C_Master is
             raise Clock_Speed_Error;
          end if;
 
+         if Baudrate < 1_000_000 then
+            SDA_Tx_Hold_Count := UInt32 (((Freq_In * 3) / 10_000_000) + 1);
+         else
+            SDA_Tx_Hold_Count := UInt32 (((Freq_In * 3) / 25_000_000) + 1);
+         end if;
+
+         if SDA_Tx_Hold_Count > LCNT - 2 then
+            raise Clock_Speed_Error;
+         end if;
+
          P.IC_FS_SCL_HCNT.IC_FS_SCL_HCNT := UInt16 (HCNT);
          P.IC_FS_SCL_LCNT.IC_FS_SCL_LCNT := UInt16 (LCNT);
          P.IC_FS_SPKLEN.IC_FS_SPKLEN :=
-           UInt8 (if LCNT < 10 then 1 else LCNT / 16);
+           UInt8 (if LCNT < 16 then 1 else LCNT / 16);
+         P.IC_SDA_HOLD.IC_SDA_TX_HOLD := UInt16 (SDA_Tx_Hold_Count);
       end;
 
       P.IC_ENABLE.ENABLE := ENABLED;
@@ -132,6 +143,10 @@ package body RP.I2C_Master is
             Restart : constant IC_DATA_CMD_RESTART_Field :=
               (if Index = Data'First then ENABLE else DISABLE);
          begin
+
+            while P.IC_RAW_INTR_STAT.TX_EMPTY /= ACTIVE loop
+               null;
+            end loop;
 
             P.IC_DATA_CMD := (DAT     => Data (Index),
                               CMD     => WRITE,
