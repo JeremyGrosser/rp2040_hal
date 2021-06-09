@@ -102,27 +102,23 @@ package body RP.PWM is
    end Set_Interval;
 
    procedure Set_Duty_Cycle
-      (Point  : PWM_Point;
-       Clocks : Period)
+      (Slice    : PWM_Slice;
+       Clocks_A : Period;
+       Clocks_B : Period)
    is
    begin
-      if Point.Channel = A then
-         PWM_Periph.CH (Point.Slice).CC.A := Clocks;
-      else
-         PWM_Periph.CH (Point.Slice).CC.B := Clocks;
-      end if;
+      PWM_Periph.CH (Slice).CC.A := Clocks_A;
+      PWM_Periph.CH (Slice).CC.B := Clocks_B;
    end Set_Duty_Cycle;
 
    procedure Set_Invert
-      (Point  : PWM_Point;
-       Invert : Boolean)
+      (Slice    : PWM_Slice;
+       Invert_A : Boolean;
+       Invert_B : Boolean)
    is
    begin
-      if Point.Channel = A then
-         PWM_Periph.CH (Point.Slice).CSR.A_INV := Invert;
-      else
-         PWM_Periph.CH (Point.Slice).CSR.B_INV := Invert;
-      end if;
+      PWM_Periph.CH (Slice).CSR.A_INV := Invert_A;
+      PWM_Periph.CH (Slice).CSR.B_INV := Invert_A;
    end Set_Invert;
 
    procedure Set_Phase_Correction

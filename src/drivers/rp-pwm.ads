@@ -68,8 +68,9 @@ package RP.PWM is
    --  the output is low if >= Clocks. This can be set independently for each
    --  channel in the slice.
    procedure Set_Duty_Cycle
-      (Point  : PWM_Point;
-       Clocks : Period);
+      (Slice    : PWM_Slice;
+       Clocks_A : Period;
+       Clocks_B : Period);
 
    procedure Enable
       (Slice : PWM_Slice);
@@ -88,8 +89,9 @@ package RP.PWM is
       return Boolean;
 
    procedure Set_Invert
-      (Point  : PWM_Point;
-       Invert : Boolean);
+      (Slice    : PWM_Slice;
+       Invert_A : Boolean;
+       Invert_B : Boolean);
 
    procedure Set_Phase_Correction
       (Slice   : PWM_Slice;
