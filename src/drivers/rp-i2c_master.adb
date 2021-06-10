@@ -5,9 +5,9 @@
 --
 with HAL; use HAL;
 
-with RP2040_SVD.RESETS;
 with RP2040_SVD.I2C;    use RP2040_SVD.I2C;
 with RP.Timer;
+with RP.Reset;
 
 package body RP.I2C_Master is
 
@@ -40,16 +40,14 @@ package body RP.I2C_Master is
    procedure Enable (This     : in out I2C_Master_Port;
                      Baudrate : Hertz)
    is
-      use RP2040_SVD.RESETS;
+      use RP.Reset;
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
       RP.Clock.Enable (RP.Clock.PERI);
-
-      RESETS_Periph.RESET.i2c.Arr (This.Num) := True;
-      RESETS_Periph.RESET.i2c.Arr (This.Num) := False;
-      while not RESETS_Periph.RESET_DONE.i2c.Arr (This.Num) loop
-         null;
-      end loop;
+      case This.Num is
+         when 0 => Reset_Peripheral (Reset_I2C0);
+         when 1 => Reset_Peripheral (Reset_I2C1);
+      end case;
 
       P.IC_ENABLE := (ENABLE       => DISABLED,
                       ABORT_k      => DISABLE,

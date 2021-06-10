@@ -129,6 +129,7 @@ is
 private
 
    GPIO_Interrupt_Handlers : array (GPIO_Pin) of Interrupt_Procedure := (others => null);
+   GPIO_Enabled : Boolean := False;
 
    procedure IO_IRQ_PROC0_Handler
       with Export => True,

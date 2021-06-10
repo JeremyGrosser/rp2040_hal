@@ -1,14 +1,10 @@
-with RP2040_SVD.RESETS;
+with RP.Reset;
 
 package body RP.DMA is
    procedure Enable is
-      use RP2040_SVD.RESETS;
+      use RP.Reset;
    begin
-      RESETS_Periph.RESET.dma := True;
-      RESETS_Periph.RESET.dma := False;
-      while not RESETS_Periph.RESET_DONE.dma loop
-         null;
-      end loop;
+      Reset_Peripheral (Reset_DMA);
    end Enable;
 
    procedure Configure

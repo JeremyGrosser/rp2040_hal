@@ -5,9 +5,9 @@
 --
 
 with Cortex_M_SVD.NVIC;
+with RP2040_SVD.SIO; use RP2040_SVD.SIO;
 with RP2040_SVD.Interrupts;
-with RP2040_SVD.RESETS;     use RP2040_SVD.RESETS;
-with RP2040_SVD.SIO;        use RP2040_SVD.SIO;
+with RP.Reset;
 
 package body RP.GPIO is
    function Pin_Mask (Pin : GPIO_Pin)
@@ -17,12 +17,10 @@ package body RP.GPIO is
    procedure Enable is
       use RP2040_SVD.Interrupts;
       use Cortex_M_SVD.NVIC;
+      use RP.Reset;
    begin
-      RESETS_Periph.RESET.io_bank0 := False;
-      RESETS_Periph.RESET.pads_bank0 := False;
-      while not RESETS_Periph.RESET_DONE.io_bank0 or not RESETS_Periph.RESET_DONE.pads_bank0 loop
-         null;
-      end loop;
+      Reset_Peripheral (Reset_IO_BANK0);
+      Reset_Peripheral (Reset_PADS_BANK0);
 
       --  Errata RP2040-E6
       --
@@ -41,11 +39,12 @@ package body RP.GPIO is
       IO_BANK_Periph.PROC1_INTE := (others => 0);
       NVIC_Periph.NVIC_ICPR := Shift_Left (1, IO_IRQ_BANK0_Interrupt);
       NVIC_Periph.NVIC_ISER := NVIC_Periph.NVIC_ISER or Shift_Left (1, IO_IRQ_BANK0_Interrupt);
+      GPIO_Enabled := True;
    end Enable;
 
    function Enabled
       return Boolean
-   is (RESETS_Periph.RESET_DONE.io_bank0);
+   is (GPIO_Enabled);
 
    procedure Configure
       (This      : in out GPIO_Point;

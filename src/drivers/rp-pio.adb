@@ -3,26 +3,27 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
-with RP.Clock;
 with Ada.Unchecked_Conversion;
+with RP.Clock;
+with RP.Reset;
 
 package body RP.PIO is
    procedure Enable
       (This : in out PIO_Device)
    is
+      use RP.Reset;
    begin
-      RESETS_Periph.RESET.pio.Arr (This.Num) := False;
-      while not RESETS_Periph.RESET_DONE.pio.Arr (This.Num) loop
-         null;
-      end loop;
+      case This.Num is
+         when 0 => Reset_Peripheral (Reset_PIO0);
+         when 1 => Reset_Peripheral (Reset_PIO1);
+      end case;
    end Enable;
 
    procedure Disable
       (This : in out PIO_Device)
    is
    begin
-      RESETS_Periph.RESET.pio.Arr (This.Num) := True;
+      This.Periph.CTRL.SM_ENABLE := 0;
    end Disable;
 
    procedure Set_Out_Pins

@@ -12,8 +12,10 @@ package RP.I2C_Master
    with Elaborate_Body
 is
 
+   subtype I2C_Number is Natural range 0 .. 1;
+
    type I2C_Master_Port
-      (Num    : Natural;
+      (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with private;
 
@@ -62,7 +64,7 @@ is
 private
 
    type I2C_Master_Port
-      (Num    : Natural;
+      (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with record
       Do_Stop_Sequence : Boolean := True;

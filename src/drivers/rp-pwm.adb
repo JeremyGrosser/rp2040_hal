@@ -4,19 +4,16 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with Cortex_M_SVD.NVIC;
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP2040_SVD.Interrupts;
 with RP.Clock;
+with RP.Reset;
 
 package body RP.PWM is
 
    procedure Initialize is
+      use RP.Reset;
    begin
-      RESETS_Periph.RESET.pwm := False;
-      while not RESETS_Periph.RESET_DONE.pwm loop
-         null;
-      end loop;
-
+      Reset_Peripheral (Reset_PWM);
       PWM_Periph.EN.CH.Val := 0;
       for Slice in PWM_Periph.CH'Range loop
          PWM_Periph.CH (Slice) := (others => <>);

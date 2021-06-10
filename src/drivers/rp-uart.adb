@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS;
+with RP.Reset;
 
 package body RP.UART is
 
@@ -11,16 +11,13 @@ package body RP.UART is
       (This     : in out UART_Port;
        Baudrate : Hertz)
    is
-      use RP2040_SVD.RESETS;
+      use RP.Reset;
    begin
       RP.Clock.Enable (RP.Clock.PERI);
-
-      if RESETS_Periph.RESET.uart.Arr (This.Num) then
-         RESETS_Periph.RESET.uart.Arr (This.Num) := False;
-         while not RESETS_Periph.RESET_DONE.uart.Arr (This.Num) loop
-            null;
-         end loop;
-      end if;
+      case This.Num is
+         when 0 => Reset_Peripheral (Reset_UART0);
+         when 1 => Reset_Peripheral (Reset_UART1);
+      end case;
 
       This.Periph.UARTDMACR :=
          (RXDMAE => True,

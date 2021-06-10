@@ -3,20 +3,17 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS; use RP2040_SVD.RESETS;
 with RP2040_SVD.ADC; use RP2040_SVD.ADC;
 with RP.GPIO; use RP.GPIO;
+with RP.Reset;
 
 package body RP.ADC is
    procedure Enable
    is
+      use RP.Reset;
    begin
       RP.Clock.Enable (RP.Clock.ADC);
-
-      RESETS_Periph.RESET.adc := False;
-      while not RESETS_Periph.RESET_DONE.adc loop
-         null;
-      end loop;
+      Reset_Peripheral (Reset_ADC);
 
       ADC_Periph.CS.EN := True;
       while not ADC_Periph.CS.READY loop
@@ -26,7 +23,7 @@ package body RP.ADC is
 
    function Enabled
       return Boolean
-   is (RESETS_Periph.RESET_DONE.adc);
+   is (ADC_Periph.CS.READY);
 
    procedure Configure
       (Channel : ADC_Channel)

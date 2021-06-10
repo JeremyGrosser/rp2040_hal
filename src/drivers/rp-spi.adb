@@ -3,9 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS;
 with RP2040_SVD.SPI; use RP2040_SVD.SPI;
 with RP.Timer;
+with RP.Reset;
 with HAL; use HAL;
 
 package body RP.SPI is
@@ -13,16 +13,13 @@ package body RP.SPI is
       (This   : in out SPI_Port;
        Config : SPI_Configuration)
    is
-      use RP2040_SVD.RESETS;
+      use RP.Reset;
    begin
       RP.Clock.Enable (RP.Clock.PERI);
-
-      if RESETS_Periph.RESET.spi.Arr (This.Num) then
-         RESETS_Periph.RESET.spi.Arr (This.Num) := False;
-         while not RESETS_Periph.RESET_DONE.spi.Arr (This.Num) loop
-            null;
-         end loop;
-      end if;
+      case This.Num is
+         when 0 => Reset_Peripheral (Reset_SPI0);
+         when 1 => Reset_Peripheral (Reset_SPI1);
+      end case;
 
       --  clk_peri   := clk_sys
       --  fSSPCLK    := clk_peri

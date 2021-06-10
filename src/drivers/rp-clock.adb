@@ -3,10 +3,10 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RESETS;
 with RP2040_SVD.XOSC;
 with RP2040_SVD.ROSC;
 with RP.Watchdog;
+with RP.Reset;
 
 package body RP.Clock is
    function CLK_SELECTED_Mask (SRC : CLK_CTRL_SRC_Field)
@@ -91,7 +91,7 @@ package body RP.Clock is
    procedure Initialize
       (XOSC_Frequency : XOSC_Hertz := 0)
    is
-      use RP2040_SVD.RESETS;
+      use RP.Reset;
       Has_XOSC  : constant Boolean := XOSC_Frequency > 0;
       Reference : Hertz;
    begin
@@ -131,11 +131,8 @@ package body RP.Clock is
       CLOCKS_Periph.CLK (REF).DIV := (INT => 1, FRAC => 0);
 
       --  Reset PLLs
-      RESETS_Periph.RESET.pll_sys := False;
-      RESETS_Periph.RESET.pll_usb := False;
-      while not RESETS_Periph.RESET_DONE.pll_sys or not RESETS_Periph.RESET_DONE.pll_usb loop
-         null;
-      end loop;
+      Reset_Peripheral (Reset_PLL_SYS);
+      Reset_Peripheral (Reset_PLL_USB);
 
       if Reference = 12_000_000 then
          --  PLL_SYS = (12_000_000 / 1 * 125 / 6 / 2) = 125_000_000

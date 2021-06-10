@@ -11,8 +11,9 @@ with System;
 package RP.SPI
    with Elaborate_Body
 is
+   subtype SPI_Number is Natural range 0 .. 1;
    type SPI_Port
-      (Num    : Natural;
+      (Num    : SPI_Number;
        Periph : not null access RP2040_SVD.SPI.SPI_Peripheral) is
       new HAL.SPI.SPI_Port with private;
 
@@ -87,7 +88,7 @@ is
 private
 
    type SPI_Port
-      (Num    : Natural;
+      (Num    : SPI_Number;
        Periph : not null access RP2040_SVD.SPI.SPI_Peripheral) is
       new HAL.SPI.SPI_Port with null record;
 

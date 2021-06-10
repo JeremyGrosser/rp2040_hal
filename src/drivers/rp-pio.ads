@@ -11,9 +11,9 @@ with System;
 
 package RP.PIO is
    type PIO_Peripheral is private;
-   subtype PIO_Peripheral_Index is Natural range 0 .. 1;
+   subtype PIO_Number is Natural range 0 .. 1;
    type PIO_Device
-      (Num    : PIO_Peripheral_Index;
+      (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
    is private;
 
@@ -266,7 +266,7 @@ private
            Volatile;
 
    type PIO_Device
-      (Num    : PIO_Peripheral_Index;
+      (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
    is null record;
 end RP.PIO;

@@ -11,8 +11,10 @@ package RP.UART
    with Elaborate_Body
 is
 
+   subtype UART_Number is Natural range 0 .. 1;
+
    type UART_Port
-      (Num    : Natural;
+      (Num    : UART_Number;
        Periph : not null access RP2040_SVD.UART.UART_Peripheral)
    is new HAL.UART.UART_Port with private;
 
@@ -57,7 +59,7 @@ is
 private
 
    type UART_Port
-      (Num    : Natural;
+      (Num    : UART_Number;
        Periph : not null access RP2040_SVD.UART.UART_Peripheral)
    is new HAL.UART.UART_Port with null record;
 
