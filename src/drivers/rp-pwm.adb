@@ -118,7 +118,7 @@ package body RP.PWM is
    is
    begin
       PWM_Periph.CH (Slice).CSR.A_INV := Channel_A;
-      PWM_Periph.CH (Slice).CSR.B_INV := Channel_A;
+      PWM_Periph.CH (Slice).CSR.B_INV := Channel_B;
    end Set_Invert;
 
    procedure Set_Phase_Correction
