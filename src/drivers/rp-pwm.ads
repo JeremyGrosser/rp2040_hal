@@ -38,6 +38,9 @@ package RP.PWM is
 
    type PWM_Interrupt_Handler is access procedure;
 
+   --  Initialize must be called before any other PWM configuration
+   procedure Initialize;
+
    function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
       return PWM_Point;

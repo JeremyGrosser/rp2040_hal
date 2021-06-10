@@ -9,6 +9,20 @@ with RP2040_SVD.Interrupts;
 with RP.Clock;
 
 package body RP.PWM is
+
+   procedure Initialize is
+   begin
+      RESETS_Periph.RESET.pwm := False;
+      while not RESETS_Periph.RESET_DONE.pwm loop
+         null;
+      end loop;
+
+      PWM_Periph.EN.CH.Val := 0;
+      for Slice in PWM_Periph.CH'Range loop
+         PWM_Periph.CH (Slice) := (others => <>);
+      end loop;
+   end Initialize;
+
    function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
       return PWM_Point
@@ -19,13 +33,6 @@ package body RP.PWM is
       (Slice : PWM_Slice)
    is
    begin
-      if not RESETS_Periph.RESET_DONE.pwm then
-         RESETS_Periph.RESET.pwm := False;
-         while not RESETS_Periph.RESET_DONE.pwm loop
-            null;
-         end loop;
-      end if;
-
       PWM_Periph.EN.CH.Arr (Natural (Slice)) := True;
    end Enable;
 
@@ -55,12 +62,6 @@ package body RP.PWM is
    is
       Mask : constant UInt8 := To_Mask (Slices);
    begin
-      if not RESETS_Periph.RESET_DONE.pwm then
-         RESETS_Periph.RESET.pwm := False;
-         while not RESETS_Periph.RESET_DONE.pwm loop
-            null;
-         end loop;
-      end if;
       PWM_Periph.EN.CH.Val := PWM_Periph.EN.CH.Val or Mask;
    end Enable;
 
@@ -69,12 +70,6 @@ package body RP.PWM is
    is
       Mask : constant UInt8 := To_Mask (Slices);
    begin
-      if not RESETS_Periph.RESET_DONE.pwm then
-         RESETS_Periph.RESET.pwm := False;
-         while not RESETS_Periph.RESET_DONE.pwm loop
-            null;
-         end loop;
-      end if;
       PWM_Periph.EN.CH.Val := PWM_Periph.EN.CH.Val and not Mask;
    end Disable;
 
@@ -154,19 +149,22 @@ package body RP.PWM is
        Div   : Divider)
    is
       use RP2040_SVD.PWM;
-   begin
-      PWM_Periph.CH (Slice).DIV :=
-         (INT    => CH0_DIV_INT_Field  (Div_Integer (Div)),
+      D : constant CH0_DIV_Register :=
+         (INT    => CH0_DIV_INT_Field (Div_Integer (Div)),
           FRAC   => CH0_DIV_FRAC_Field (Div_Fraction (Div)),
           others => <>);
+   begin
+      PWM_Periph.CH (Slice).DIV := D;
    end Set_Divider;
 
    procedure Set_Frequency
       (Slice     : PWM_Slice;
        Frequency : Hertz)
    is
+      clk_sys : constant Hertz := RP.Clock.Frequency (RP.Clock.SYS);
+      Div     : constant Divider := Divider (clk_sys / Frequency);
    begin
-      Set_Divider (Slice, Divider (RP.Clock.Frequency (RP.Clock.SYS) / Frequency));
+      Set_Divider (Slice, Div);
    end Set_Frequency;
 
    function Count
