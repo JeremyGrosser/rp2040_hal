@@ -13,6 +13,7 @@ with RP.UART;        use RP.UART;
 with RP.PIO;         use RP.PIO;
 with RP.SysTick;
 with RP.Timer;
+with RP.RTC;
 
 package RP.Device is
    SPI_0 : aliased SPI_Port (0, RP2040_SVD.SPI.SPI0_Periph'Access);
@@ -33,4 +34,6 @@ package RP.Device is
 
    SysTick : aliased RP.SysTick.Delays;
    Timer   : aliased RP.Timer.Delays;
+
+   RTC     : aliased RP.RTC.RTC_Device;
 end RP.Device;
