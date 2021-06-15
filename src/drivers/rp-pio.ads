@@ -15,7 +15,7 @@ package RP.PIO is
    type PIO_Device
       (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
-   is private;
+   is tagged private;
 
    type PIO_SM is range 0 .. 3;
    type PIO_SM_Mask is array (PIO_SM) of Boolean
@@ -268,5 +268,5 @@ private
    type PIO_Device
       (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
-   is null record;
+   is tagged null record;
 end RP.PIO;
