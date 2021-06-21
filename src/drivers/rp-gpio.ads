@@ -177,8 +177,8 @@ private
 
    type GPIO_Registers is array (GPIO_Pin) of GPIO_Register;
    type INT_Register is array (GPIO_Pin) of UInt4
-      with Size => 120,
-           Pack => True;
+      with Size           => 120,
+           Component_Size => 4;
 
    type IO_BANK is record
       GPIO              : aliased GPIO_Registers;
