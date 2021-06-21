@@ -44,7 +44,7 @@ package RP.ROM.Floating_Point is
       float2ufix64 : System.Address;
       float2double : System.Address;
    end record
-      with Pack, Size => 16#80# * 8;
+      with Size => 16#80# * 8;
 
    --  2.8.3.2. Fast Floating Point Library
    fplib_start : System.Address

@@ -4,7 +4,8 @@ with RP.Timer;
 package body RP.Reset is
 
    type RESET_Register is array (Reset_Id) of Boolean
-      with Pack, Size => 32;
+      with Component_Size => 1,
+           Size           => 32;
 
    type RESETS_Peripheral is record
       RESET      : aliased RESET_Register;

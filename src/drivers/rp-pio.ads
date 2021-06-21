@@ -19,7 +19,8 @@ package RP.PIO is
 
    type PIO_SM is range 0 .. 3;
    type PIO_SM_Mask is array (PIO_SM) of Boolean
-      with Pack, Size => 4;
+      with Component_Size => 1,
+           Size           => 4;
 
    type PIO_SM_Config is private;
 
@@ -221,7 +222,8 @@ private
    end record;
 
    type FIFO_Register is array (PIO_SM) of UInt32
-      with Pack, Volatile;
+      with Component_Size => 32,
+           Volatile;
 
    type INSTR_MEM_Register is array (PIO_Address) of UInt32
       with Volatile;
@@ -234,10 +236,11 @@ private
       INSTR     : aliased SM0_INSTR_Register;
       PINCTRL   : aliased SM0_PINCTRL_Register;
    end record
-      with Pack, Volatile;
+      with Size => 6 * 32,
+           Volatile;
 
    type SM_Register_Array is array (PIO_SM) of SM_Register
-      with Pack, Volatile;
+      with Volatile;
 
    type PIO_Peripheral is record
       CTRL              : aliased CTRL_Register;
