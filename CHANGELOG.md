@@ -1,3 +1,33 @@
+# rp2040_hal HEAD (unreleased)
+
+## New features
+
+### RTC driver
+The real time clock is now exposed by the [RP.RTC](src/drivers/rp-rtc.ads) package. It implements the [HAL.Real_Time_Clock](https://github.com/Fabien-Chouteau/hal/blob/master/src/hal-real_time_clock.ads) interface for getting and setting the date and time. An [example project](https://github.com/JeremyGrosser/pico_examples/blob/master/rtc/src/main.adb) demonstrates use of the RTC. RTC alarm interrupts are not yet implemented.
+
+## Breaking changes
+
+*None yet.*
+
+## Bugs fixed
+
+### Improper use of the Pack clause
+The `Pack` clause was used to enforce the memory layout of some records.
+
+> It is important to realize that pragma Pack must not be used to specify the exact representation of a data type, but to help the compiler to improve the efficiency of the generated code. [Source](https://en.wikibooks.org/wiki/Ada_Programming/Pragmas/Pack#Exact_data_representation)
+
+The Pack clause has been replaced with `Component_Size` and `Size` clauses where necessary. Thanks to [@onox](https://github.com/onox) for pointing this out!
+
+### Use of access PIO_Device as a type discriminant
+Projects depending on pico_bsp failed gnatprove in SPARK mode as the `Pico.Audio_I2S` package was using `not null access PIO_Device` as a discriminant. PIO_Device is now `tagged` and `Pico.Audio_I2S` uses `not null access PIO_Device'Class`, which is valid under SPARK. gnatprove still throws many warnings about side effects in the `rp2040_hal` drivers, but no fatal errors.
+
+## Known issues
+
+*None yet.*
+
+
+
+
 # rp2040_hal 0.4.0
 
 ## New features
