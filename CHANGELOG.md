@@ -5,6 +5,9 @@
 ### RTC driver
 The real time clock is now exposed by the [RP.RTC](src/drivers/rp-rtc.ads) package. It implements the [HAL.Real_Time_Clock](https://github.com/Fabien-Chouteau/hal/blob/master/src/hal-real_time_clock.ads) interface for getting and setting the date and time. An [example project](https://github.com/JeremyGrosser/pico_examples/blob/master/rtc/src/main.adb) demonstrates use of the RTC. RTC alarm interrupts are not yet implemented.
 
+### Interpolator driver
+The RP2040 has two interpolators per core embedded in the SIO peripheral. The [RP.Interpolator](src/drivers/rp-interpolator.ads) package make their registers available. Some of the registers in this block support single-cycle operation, so it would be counter productive to wrap them up in procedures that may not be inlined by the compiler. There are examples in the datasheet for working with the interpolators, but I'm still trying to wrap my head around it, so there is no example here yet.
+
 ## Breaking changes
 
 *None yet.*
