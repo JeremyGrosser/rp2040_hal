@@ -50,7 +50,7 @@ is
    --  Just so we're clear on the magnitude of these timings
    subtype Microseconds is Integer;
 
-   --  Duration of a single mark/space symbol for the current configuration
+   --  Duration of a single mark or space symbol for the current configuration
    function Symbol_Time
       (This : UART_Port)
       return Microseconds;
