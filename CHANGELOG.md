@@ -7,6 +7,8 @@
 
 The UART now has a `Send_Break` procedure, which holds TX in an active state (usually low) for at least two frame periods. Some protocols use the [UART break condition](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter#Break_condition) to indicate the start of a new packet.
 
+`RP.UART.Receive` now sets `Status = Busy` and returns immediately if a break condition is detected.
+
 UART Transmit and Receive procedures now return as soon as all words have been delivered to the FIFO. FIFO status is exposed by the Transmit_Status and Receive_Status functions. This interface is the same as the I2C and SPI drivers.
 
 The [uart_echo](https://github.com/JeremyGrosser/pico_examples/blob/master/uart_echo/src/main.adb) example has been updated to demonstrate these new features.

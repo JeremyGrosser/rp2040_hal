@@ -216,6 +216,9 @@ package body RP.UART is
          if This.Periph.UARTDR.FE or This.Periph.UARTDR.PE then
             Status := Err_Error;
             return;
+         elsif This.Periph.UARTDR.BE then
+            Status := Busy;
+            return;
          end if;
       end loop;
       Status := Ok;
