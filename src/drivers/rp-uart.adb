@@ -144,6 +144,11 @@ package body RP.UART is
       end if;
    end Receive_Status;
 
+   function FIFO_Address
+      (This : UART_Port)
+      return System.Address
+   is (This.Periph.UARTDR'Address);
+
    overriding
    function Data_Size
       (Port : UART_Port)

@@ -7,6 +7,7 @@ with RP2040_SVD.UART; use RP2040_SVD.UART;
 with HAL.UART; use HAL.UART;
 with HAL.Time;
 with RP.Clock;
+with System;
 
 package RP.UART
    with Elaborate_Body
@@ -77,6 +78,10 @@ is
    function Receive_Status
       (This : UART_Port)
       return UART_FIFO_Status;
+
+   function FIFO_Address
+      (This : UART_Port)
+      return System.Address;
 
    overriding
    function Data_Size
