@@ -66,13 +66,10 @@ package body RP.ADC is
       return Microvolts
    is
       use type Analog_Value;
-      Counts : constant Analog_Value := Read (Channel);
+      Conversion_Factor : constant Float := Float (VREF) / Float (Analog_Value'Last);
+      Counts            : constant Analog_Value := Read (Channel);
    begin
-      if Counts = 0 then
-         return 0;
-      else
-         return (VREF / (Microvolts (Analog_Value'Last) + 1)) * Microvolts (Counts);
-      end if;
+      return Microvolts (Conversion_Factor * Float (Counts));
    end Read_Microvolts;
 
    function Temperature
