@@ -47,12 +47,28 @@ is
       (This    : in out UART_Port;
        Enabled : Boolean);
 
-   --  Send a break by holding TX active for at least two frame periods. The
-   --  Delays implementation must support Delay_Microseconds. It's okay if
-   --  delays are longer, but they cannot be shorter.
+   --  Just so we're clear on the magnitude of these timings
+   subtype Microseconds is Integer;
+
+   --  Duration of a single mark/space symbol for the current configuration
+   function Symbol_Time
+      (This : UART_Port)
+      return Microseconds;
+
+   --  Duration of a single frame transmission for the current configuration
+   function Frame_Time
+      (This : UART_Port)
+      return Microseconds;
+
+   --  Send a break by holding TX active. The Delays implementation must
+   --  support Delay_Microseconds. It's okay if delays are longer, but they
+   --  cannot be shorter. If Start = True, an additional delay of one bit
+   --  period will be added before the break.
    procedure Send_Break
-      (This   : in out UART_Port;
-       Delays : HAL.Time.Any_Delays);
+      (This     : in out UART_Port;
+       Delays   : HAL.Time.Any_Delays;
+       Duration : Microseconds;
+       Start    : Boolean := True);
 
    function Transmit_Status
       (This : UART_Port)
@@ -120,19 +136,5 @@ private
       (Int  : UARTIBRD_BAUD_DIVINT_Field;
        Frac : UARTFBRD_BAUD_DIVFRAC_Field)
        return UART_Divider;
-
-   --  Just so we're clear on the magnitude of these delays
-   subtype Microseconds is Integer;
-
-   --  Duration of a single mark/space symbol for the current configuration
-   function Symbol_Time
-      (This : UART_Port)
-      return Microseconds;
-
-   --  Duration of a single frame transmission for the current
-   --  configuration
-   function Frame_Time
-      (This : UART_Port)
-      return Microseconds;
 
 end RP.UART;

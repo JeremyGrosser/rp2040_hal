@@ -81,8 +81,10 @@ package body RP.UART is
    end Frame_Time;
 
    procedure Send_Break
-      (This   : in out UART_Port;
-       Delays : HAL.Time.Any_Delays)
+      (This     : in out UART_Port;
+       Delays   : HAL.Time.Any_Delays;
+       Duration : Microseconds;
+       Start    : Boolean := True)
    is
    begin
       --  Wait for any in progress transmission to complete before setting up a break
@@ -90,12 +92,12 @@ package body RP.UART is
          null;
       end loop;
 
-      --  Wait for at least one Mark symbol before and after the break
-      Delays.Delay_Microseconds (This.Symbol_Time);
+      if Start then
+         Delays.Delay_Microseconds (This.Symbol_Time);
+      end if;
       This.Periph.UARTLCR_H.BRK := True;
-      Delays.Delay_Microseconds (This.Frame_Time * 2);
+      Delays.Delay_Microseconds (Duration);
       This.Periph.UARTLCR_H.BRK := False;
-      Delays.Delay_Microseconds (This.Symbol_Time);
    end Send_Break;
 
    function Transmit_Status
