@@ -65,7 +65,6 @@ package body RP.ADC is
        VREF    : Microvolts := 3_300_000)
       return Microvolts
    is
-      use type Analog_Value;
       Conversion_Factor : constant Float := Float (VREF) / Float (Analog_Value'Last);
       Counts            : constant Analog_Value := Read (Channel);
    begin
