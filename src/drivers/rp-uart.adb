@@ -4,16 +4,19 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP.Reset;
+with RP.Timer;
 
 package body RP.UART is
 
-   procedure Enable
-      (This     : in out UART_Port;
-       Baudrate : Hertz)
+   procedure Configure
+      (This  : in out UART_Port;
+       Config : UART_Configuration)
    is
       use RP.Reset;
+      use HAL;
+      Word_Length : constant UInt2 := UInt2
+         (Config.Word_Size - UART_Word_Size'First);
    begin
-      RP.Clock.Enable (RP.Clock.PERI);
       case This.Num is
          when 0 => Reset_Peripheral (Reset_UART0);
          when 1 => Reset_Peripheral (Reset_UART1);
@@ -26,17 +29,20 @@ package body RP.UART is
 
       declare
          Div : constant UART_Divider := UART_Divider
-            (Float (RP.Clock.Frequency (RP.Clock.PERI)) / Float (Baudrate * 16));
+            (Float (RP.Clock.Frequency (RP.Clock.PERI)) / Float (Config.Baud * 16));
       begin
          This.Periph.UARTIBRD.BAUD_DIVINT := Div_Integer (Div);
          This.Periph.UARTFBRD.BAUD_DIVFRAC := Div_Fraction (Div);
       end;
 
       This.Periph.UARTLCR_H :=
-         (WLEN => 2#11#, --  8-bit words
-          PEN  => False, --  No parity
-          STP2 => False, --  1 stop bit
-          FEN  => True,  --  FIFO buffer enabled
+         (WLEN   => Word_Length,
+          PEN    => Config.Parity,
+          EPS    => Config.Parity_Type = Even,
+          STP2   => (Config.Stop_Bits = 2),
+          SPS    => False, --  Stick parity is disabled by default
+          FEN    => True,  --  FIFO buffer is always enabled
+          BRK    => False, --  Don't send break initially
           others => <>);
 
       This.Periph.UARTCR :=
@@ -44,7 +50,97 @@ package body RP.UART is
           TXE    => True,
           RXE    => True,
           others => <>);
-   end Enable;
+
+      This.Config := Config;
+   end Configure;
+
+   procedure Set_Stick_Parity
+      (This    : in out UART_Port;
+       Enabled : Boolean)
+   is
+   begin
+      This.Periph.UARTLCR_H.SPS := True;
+   end Set_Stick_Parity;
+
+   function Symbol_Time
+      (This : UART_Port)
+      return Microseconds
+   is ((1_000_000 / Integer (This.Config.Baud)) + 1);
+
+   function Frame_Time
+      (This : UART_Port)
+      return Integer
+   is
+      Start_Bits  : constant Integer := 1;
+      Data_Bits   : constant Integer := Integer (This.Config.Word_Size) * This.Config.Frame_Length;
+      Parity_Bits : constant Integer := (if This.Config.Parity then 1 else 0);
+      Stop_Bits   : constant Integer := Integer (This.Config.Stop_Bits);
+      Frame_Bits  : constant Integer := Start_Bits + Data_Bits + Parity_Bits + Stop_Bits;
+   begin
+      return Frame_Bits * This.Symbol_Time;
+   end Frame_Time;
+
+   procedure Send_Break
+      (This   : in out UART_Port;
+       Delays : HAL.Time.Any_Delays)
+   is
+   begin
+      --  Wait for any in progress transmission to complete before setting up a break
+      while This.Transmit_Status /= Empty loop
+         null;
+      end loop;
+
+      --  Wait for at least one Mark symbol before and after the break
+      Delays.Delay_Microseconds (This.Symbol_Time);
+      This.Periph.UARTLCR_H.BRK := True;
+      Delays.Delay_Microseconds (This.Frame_Time * 2);
+      This.Periph.UARTLCR_H.BRK := False;
+      Delays.Delay_Microseconds (This.Symbol_Time);
+   end Send_Break;
+
+   function Transmit_Status
+      (This : UART_Port)
+      return UART_FIFO_Status
+   is
+      --  TXFE TXFF
+      --  0    0     Not_Full
+      --  0    1     Full
+      --  1    0     Empty
+      --  1    1     Invalid
+      Flags : constant UARTFR_Register := This.Periph.UARTFR;
+   begin
+      if Flags.TXFE = False and Flags.TXFF = False then
+         return Not_Full;
+      elsif Flags.TXFE = False and Flags.TXFF = True then
+         return Full;
+      elsif Flags.TXFE = True and Flags.TXFF = False then
+         return Empty;
+      else
+         return Invalid;
+      end if;
+   end Transmit_Status;
+
+   function Receive_Status
+      (This : UART_Port)
+      return UART_FIFO_Status
+   is
+      --  RXFE RXFF
+      --  0    0     Not_Full
+      --  0    1     Full
+      --  1    0     Empty
+      --  1    1     Invalid
+      Flags : constant UARTFR_Register := This.Periph.UARTFR;
+   begin
+      if Flags.RXFE = False and Flags.RXFF = False then
+         return Not_Full;
+      elsif Flags.RXFE = False and Flags.RXFF = True then
+         return Full;
+      elsif Flags.RXFE = True and Flags.RXFF = False then
+         return Empty;
+      else
+         return Invalid;
+      end if;
+   end Receive_Status;
 
    overriding
    function Data_Size
@@ -59,15 +155,29 @@ package body RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000)
    is
+      use type RP.Timer.Time;
+      Deadline : RP.Timer.Time;
+      FIFO     : UART_FIFO_Status;
    begin
+      if Timeout > 0 then
+         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+      end if;
+
       for D of Data loop
-         while This.Periph.UARTFR.TXFF loop
-            null;
+         loop
+            FIFO := Transmit_Status (This);
+            exit when FIFO = Empty or FIFO = Not_Full;
+            if FIFO = Invalid then
+               Status := Err_Error;
+               return;
+            end if;
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
          end loop;
+
          This.Periph.UARTDR.DATA := D;
-      end loop;
-      while This.Periph.UARTFR.BUSY loop
-         null;
       end loop;
       Status := Ok;
    end Transmit;
@@ -79,11 +189,29 @@ package body RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000)
    is
+      use type RP.Timer.Time;
+      Deadline : RP.Timer.Time;
+      FIFO     : UART_FIFO_Status;
    begin
+      if Timeout > 0 then
+         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+      end if;
+
       for I in Data'Range loop
-         while This.Periph.UARTFR.RXFE loop
-            null;
+         loop
+            FIFO := Receive_Status (This);
+            exit when FIFO = Not_Full or FIFO = Full;
+            if FIFO = Invalid then
+               Status := Err_Error;
+               return;
+            end if;
+
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
          end loop;
+
          Data (I) := This.Periph.UARTDR.DATA;
          if This.Periph.UARTDR.FE or This.Periph.UARTDR.PE then
             Status := Err_Error;
@@ -100,8 +228,10 @@ package body RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000)
    is
+      pragma Unreferenced (Data);
    begin
-      null;
+      --  9-bit data is not supported by this hardware
+      Status := Err_Error;
    end Transmit;
 
    overriding
@@ -111,8 +241,10 @@ package body RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000)
    is
+      pragma Unreferenced (Data);
    begin
-      null;
+      --  9-bit data is not supported by this hardware
+      Status := Err_Error;
    end Receive;
 
    function Div_Integer

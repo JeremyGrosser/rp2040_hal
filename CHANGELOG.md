@@ -2,6 +2,15 @@
 
 ## New features
 
+### UART enhancements
+[RP.UART](src/drivers/rp-uart.ads) now allows configuration of baud, word size, parity, and stop bits via the UART_Configuration record. The default values for the UART_Configuration record represent the typical `115200 8n1` setup.
+
+The UART now has a `Send_Break` procedure, which holds TX in an active state (usually low) for at least two frame periods. Some protocols use the [UART break condition](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter#Break_condition) to indicate the start of a new packet.
+
+UART Transmit and Receive procedures now return as soon as all words have been delivered to the FIFO. FIFO status is exposed by the Transmit_Status and Receive_Status functions. This interface is the same as the I2C and SPI drivers.
+
+The [uart_echo](https://github.com/JeremyGrosser/pico_examples/blob/master/uart_echo/src/main.adb) example has been updated to demonstrate these new features.
+
 ### RTC driver
 The real time clock is now exposed by the [RP.RTC](src/drivers/rp-rtc.ads) package. It implements the [HAL.Real_Time_Clock](https://github.com/Fabien-Chouteau/hal/blob/master/src/hal-real_time_clock.ads) interface for getting and setting the date and time. An [example project](https://github.com/JeremyGrosser/pico_examples/blob/master/rtc/src/main.adb) demonstrates use of the RTC. RTC alarm interrupts are not yet implemented.
 
@@ -10,7 +19,8 @@ The RP2040 has two interpolators per core embedded in the SIO peripheral. The [R
 
 ## Breaking changes
 
-*None yet.*
+### UART.Enable is replaced with UART.Configure
+To match the nomenclature of the other serial drivers (SPI, I2C), [RP.UART](src/drivers/rp-uart.ads) now has a Configure procedure instead of Enable.
 
 ## Bugs fixed
 
@@ -23,6 +33,12 @@ The Pack clause has been replaced with `Component_Size` and `Size` clauses where
 
 ### Use of access PIO_Device as a type discriminant
 Projects depending on pico_bsp failed gnatprove in SPARK mode as the `Pico.Audio_I2S` package was using `not null access PIO_Device` as a discriminant. PIO_Device is now `tagged` and `Pico.Audio_I2S` uses `not null access PIO_Device'Class`, which is valid under SPARK. gnatprove still throws many warnings about side effects in the `rp2040_hal` drivers, but no fatal errors.
+
+### RP.ADC.Read_Microvolts was rounding incorrectly
+`Read_Microvolts` was using Integer arithmetic to calculate `VREF / Analog_Value'Last`, which does not divide evenly for common VREF values. When that value was multiplied by an ADC reading, Read_Microvolts would return lower than expected results. Read_Microvolts now uses floating point to multiply ADC counts before converting the return value to Integer.
+
+### UART Transmit and Receive did not respect Timeout
+The UART driver has been modified to use RP.Timer to implement timeouts and monitor FIFO status, similar to RP.SPI and RP.I2C.
 
 ## Known issues
 

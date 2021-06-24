@@ -5,12 +5,12 @@
 --
 with RP2040_SVD.UART; use RP2040_SVD.UART;
 with HAL.UART; use HAL.UART;
+with HAL.Time;
 with RP.Clock;
 
 package RP.UART
    with Elaborate_Body
 is
-
    subtype UART_Number is Natural range 0 .. 1;
 
    type UART_Port
@@ -18,10 +18,49 @@ is
        Periph : not null access RP2040_SVD.UART.UART_Peripheral)
    is new HAL.UART.UART_Port with private;
 
-   procedure Enable
-      (This     : in out UART_Port;
-       Baudrate : Hertz)
+   subtype UART_Word_Size is Integer range 5 .. 8;
+   subtype UART_Stop_Bits is Integer range 1 .. 2;
+   type UART_Parity_Type is (Even, Odd);
+
+   --  Default configuration is 115200 8n1
+   --  https://en.wikipedia.org/wiki/8-N-1
+   type UART_Configuration is record
+      Baud         : Hertz := 115_200;
+      Word_Size    : UART_Word_Size := 8;
+      Parity       : Boolean := False;
+      Stop_Bits    : UART_Stop_Bits := 1;
+      Parity_Type  : UART_Parity_Type := Even; --  has no effect when Parity = False
+      Frame_Length : Positive := 1; --  Words per frame. Used to calculate break timing.
+   end record;
+
+   type UART_FIFO_Status is (Empty, Not_Full, Full, Invalid);
+
+   procedure Configure
+      (This   : in out UART_Port;
+       Config : UART_Configuration)
       with Pre => RP.Clock.Frequency (RP.Clock.PERI) > 3_686_400;
+
+   --  If parity is enabled, the parity bit may be forced high using this
+   --  procedure. Stick parity is used in some protocols to indicate the
+   --  beginning of a new message.
+   procedure Set_Stick_Parity
+      (This    : in out UART_Port;
+       Enabled : Boolean);
+
+   --  Send a break by holding TX active for at least two frame periods. The
+   --  Delays implementation must support Delay_Microseconds. It's okay if
+   --  delays are longer, but they cannot be shorter.
+   procedure Send_Break
+      (This   : in out UART_Port;
+       Delays : HAL.Time.Any_Delays);
+
+   function Transmit_Status
+      (This : UART_Port)
+      return UART_FIFO_Status;
+
+   function Receive_Status
+      (This : UART_Port)
+      return UART_FIFO_Status;
 
    overriding
    function Data_Size
@@ -61,7 +100,9 @@ private
    type UART_Port
       (Num    : UART_Number;
        Periph : not null access RP2040_SVD.UART.UART_Peripheral)
-   is new HAL.UART.UART_Port with null record;
+   is new HAL.UART.UART_Port with record
+      Config : UART_Configuration;
+   end record;
 
    UART_Fraction : constant := 1.0 / 2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size;
    type UART_Divider is delta UART_Fraction
@@ -79,5 +120,19 @@ private
       (Int  : UARTIBRD_BAUD_DIVINT_Field;
        Frac : UARTFBRD_BAUD_DIVFRAC_Field)
        return UART_Divider;
+
+   --  Just so we're clear on the magnitude of these delays
+   subtype Microseconds is Integer;
+
+   --  Duration of a single mark/space symbol for the current configuration
+   function Symbol_Time
+      (This : UART_Port)
+      return Microseconds;
+
+   --  Duration of a single frame transmission for the current
+   --  configuration
+   function Frame_Time
+      (This : UART_Port)
+      return Microseconds;
 
 end RP.UART;
