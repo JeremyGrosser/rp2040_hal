@@ -28,6 +28,7 @@ is
       Data_Size : SPI_Data_Size := Data_Size_8b;
       Polarity  : SPI_Polarity := Active_Low;
       Phase     : SPI_Phase := Rising_Edge;
+      Blocking  : Boolean := True; --  Wait for Transmit FIFO to be empty before returning
    end record;
 
    procedure Configure
@@ -89,7 +90,9 @@ private
 
    type SPI_Port
       (Num    : SPI_Number;
-       Periph : not null access RP2040_SVD.SPI.SPI_Peripheral) is
-      new HAL.SPI.SPI_Port with null record;
+       Periph : not null access RP2040_SVD.SPI.SPI_Peripheral)
+   is new HAL.SPI.SPI_Port with record
+      Blocking : Boolean := True;
+   end record;
 
 end RP.SPI;

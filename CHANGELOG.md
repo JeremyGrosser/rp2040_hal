@@ -42,6 +42,9 @@ Projects depending on pico_bsp failed gnatprove in SPARK mode as the `Pico.Audio
 ### UART Transmit and Receive did not respect Timeout
 The UART driver has been modified to use RP.Timer to implement timeouts and monitor FIFO status, similar to RP.SPI and RP.I2C.
 
+### SPI Transmit was nonblocking
+The SPI Transmit procedure would return immediately after the last byte was written to the FIFO, but before the FIFO became empty. This behavior breaks some drivers that depend on all bytes being clocked out before proceeding. A configuration flag for Blocking behavior has been added and defaults to True.
+
 ## Known issues
 
 *None yet.*
