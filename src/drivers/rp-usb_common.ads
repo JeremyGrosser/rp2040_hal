@@ -64,8 +64,14 @@ package RP.USB_Common is
    USB_Periph : aliased USB_Peripheral
       with Import, Address => RP2040_SVD.USBCTRL_REGS_Base;
 
+   --  The first 0x180 bytes of USB_DPRAM contain endpoint control registers,
+   --  their layout depends on whether the controller is operating in device or
+   --  host mode.
    USB_DPRAM_Base : constant System.Address := System'To_Address (16#50100000#);
-   USB_DPRAM      : aliased System.Storage_Elements.Storage_Array (0 .. 4095)
-      with Import, Address => USB_DPRAM_Base;
+
+   --  USB data buffer offsets and lengths depend on endpoint configurations.
+   --  Buffers will usually be 64 bytes, but may be up to 1024 bytes in some
+   --  modes.
+   USB_DATA_Base : constant System.Address := System'To_Address (16#50100180#);
 
 end RP.USB_Common;

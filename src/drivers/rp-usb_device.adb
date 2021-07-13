@@ -17,7 +17,7 @@ package body RP.USB_Device is
       Reset_Peripheral (Reset_USBCTRL);
 
       --  Clear DPRAM
-      USB_DPRAM := (others => 0);
+      --  USB_DPRAM := (others => 0);
 
       --  Enable interrupts
       NVIC_Periph.NVIC_ICPR := Shift_Left (1, USBCTRL_Interrupt);
