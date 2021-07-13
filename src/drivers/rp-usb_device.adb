@@ -16,8 +16,9 @@ package body RP.USB_Device is
       RP.Clock.Enable (RP.Clock.USB);
       Reset_Peripheral (Reset_USBCTRL);
 
-      --  Clear DPRAM
-      --  USB_DPRAM := (others => 0);
+      --  Clear endpoint control registers
+      USB_EP.SETUP := (others => 0);
+      USB_EP.EP_CONTROL := (others => (others => <>));
 
       --  Enable interrupts
       NVIC_Periph.NVIC_ICPR := Shift_Left (1, USBCTRL_Interrupt);
@@ -52,9 +53,7 @@ package body RP.USB_Device is
           SETUP_REQ   => True,
           others      => <>);
 
-      --  TODO Setup endpoints
-
-      --  Pullup USB_DP
+      --  Pullup USB_DP to indicate full speed
       USB_Periph.SIE_CTRL :=
          (PULLUP_EN => True,
           others    => <>);
@@ -113,7 +112,16 @@ package body RP.USB_Device is
        Ep       : USB.EP_Addr;
        Typ      : USB.EP_Type;
        Max_Size : UInt16)
-   is null;
+   is
+   begin
+      USB_EP.EP_CONTROL (Ep.Num)(Ep.Dir) :=
+         (ENABLE  => True,
+          EP_TYPE => Typ,
+          BASE    => This.Next_Base,
+          others  => <>);
+      This.Next_Base := This.Next_Base + Max_Size;
+      USB_EP.EP_BUFFER (Ep.Num)(Ep.Dir).LENGTH_0 := UInt9 (Max_Size);
+   end EP_Setup;
 
    overriding
    procedure EP_Ready_For_Data

@@ -1,5 +1,6 @@
-with HAL; use HAL;
+with System.Storage_Elements;
 with System;
+with HAL; use HAL;
 
 with RP.USB_Common; use RP.USB_Common;
 with USB.HAL.Device;
@@ -82,7 +83,9 @@ package RP.USB_Device is
 private
 
    type USB_Device_Controller
-   is new USB.HAL.Device.USB_Device_Controller with null record;
+   is new USB.HAL.Device.USB_Device_Controller with record
+      Next_Base : UInt16 := 16#180#;
+   end record;
 
    --  The first 0x100 bytes of USB_DPRAM contain configuration data
 
@@ -95,7 +98,7 @@ private
       EP_TYPE    : USB.EP_Type := USB.Control;
       INT_STALL  : Boolean := False;
       INT_NAK    : Boolean := False;
-      BASE       : UInt8 := 0;
+      BASE       : UInt16 := 0; --  low 8 bits must be 0
    end record
       with Size => 32;
 
@@ -107,16 +110,13 @@ private
       EP_TYPE    at 0 range 26 .. 27;
       INT_STALL  at 0 range 17 .. 17;
       INT_NAK    at 0 range 16 .. 16;
-      BASE       at 0 range 6 .. 15;
+      BASE       at 0 range 0 .. 15;
    end record;
 
-   type USB_EP_CONTROL_Registers is record
-      EP_IN  : USB_EP_CONTROL_Register;
-      EP_OUT : USB_EP_CONTROL_Register;
-   end record
-      with Size => 64;
+   type USB_EP_CONTROL_Registers is array (USB.EP_Dir) of USB_EP_CONTROL_Register
+      with Component_Size => 32, Size => 64;
 
-   type USB_EP_CONTROL_Array is array (1 .. 15) of USB_EP_CONTROL_Registers
+   type USB_EP_CONTROL_Array is array (USB.EP_Id range 1 .. 15) of USB_EP_CONTROL_Registers
       with Component_Size => 64, Size => 960;
 
    --  USB_EP_BUFFER (1) is only valid when DOUBLE = True in the corresponding USB_EP_CONTROL register
@@ -153,13 +153,10 @@ private
       LENGTH_0      at 0 range 0 .. 9;
    end record;
 
-   type USB_EP_BUFFER_Registers is record
-      EP_IN  : USB_EP_BUFFER_Register;
-      EP_OUT : USB_EP_BUFFER_Register;
-   end record
-      with Size => 64;
+   type USB_EP_BUFFER_Registers is array (USB.EP_Dir) of USB_EP_BUFFER_Register
+      with Component_Size => 32;
 
-   type USB_EP_BUFFER_Array is array (0 .. 15) of USB_EP_BUFFER_Registers
+   type USB_EP_BUFFER_Array is array (USB.EP_Id) of USB_EP_BUFFER_Registers
       with Component_Size => 64,
            Size => 1024;
 
@@ -167,21 +164,21 @@ private
       SETUP        : aliased UInt8_Array (1 .. 8);
       EP_CONTROL   : aliased USB_EP_CONTROL_Array;
       EP_BUFFER    : aliased USB_EP_BUFFER_Array;
-      EP0_BUFFER_0 : aliased UInt8_Array (0 .. 63);
-      EP0_BUFFER_1 : aliased UInt8_Array (0 .. 63);
    end record
       with Volatile,
-           Size => 16#180# * 8;
+           Size => 16#100# * 8;
 
    for USB_EP_Registers use record
       SETUP        at 16#00# range 0 .. 63;
       EP_CONTROL   at 16#08# range 0 .. 959;
       EP_BUFFER    at 16#80# range 0 .. 1023;
-      EP0_BUFFER_0 at 16#100# range 0 .. 511;
-      EP0_BUFFER_1 at 16#140# range 0 .. 511;
    end record;
 
    USB_EP : USB_EP_Registers
       with Import, Address => USB_DPRAM_Base;
+
+   use System.Storage_Elements;
+   USB_EP0_BUFFER : UInt8_Array (0 .. 63)
+      with Import, Address => USB_DPRAM_Base + 16#100#;
 
 end RP.USB_Device;
