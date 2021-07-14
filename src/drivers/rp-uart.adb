@@ -199,6 +199,7 @@ package body RP.UART is
       use type RP.Timer.Time;
       Deadline : RP.Timer.Time;
       FIFO     : UART_FIFO_Status;
+      DR       : UARTDR_Register;
    begin
       if Timeout > 0 then
          Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
@@ -219,12 +220,15 @@ package body RP.UART is
             end if;
          end loop;
 
-         Data (I) := This.Periph.UARTDR.DATA;
-         if This.Periph.UARTDR.FE or This.Periph.UARTDR.PE then
-            Status := Err_Error;
-            return;
-         elsif This.Periph.UARTDR.BE then
+         --  Read the whole UARTDR at once so that we get the flags
+         --  synchronized with the DATA read.
+         DR := This.Periph.UARTDR;
+         Data (I) := DR.DATA;
+         if DR.BE then
             Status := Busy;
+            return;
+         elsif DR.FE or DR.PE then
+            Status := Err_Error;
             return;
          end if;
       end loop;
