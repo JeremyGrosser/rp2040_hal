@@ -17,7 +17,6 @@ package body RP.USB_Device is
       Reset_Peripheral (Reset_USBCTRL);
 
       --  Clear endpoint control registers
-      USB_EP.SETUP := (others => 0);
       USB_EP.EP_CONTROL := (others => (others => <>));
 
       --  Enable interrupts
@@ -69,8 +68,15 @@ package body RP.USB_Device is
       (This : in out USB_Device_Controller)
        return USB.HAL.Device.UDC_Event
    is
-      Event : constant USB.HAL.Device.UDC_Event := (others => <>);
+      use USB.HAL.Device;
+      Event : UDC_Event := (others => <>);
    begin
+      if USB_Periph.SIE_STATUS.SETUP_REC then
+         USB_Periph.SIE_STATUS.SETUP_REC := True;
+         return (Kind   => Setup_Request,
+                 Req    => USB_EP.SETUP,
+                 Req_EP => 0);
+      end if;
       return Event;
    end Poll;
 

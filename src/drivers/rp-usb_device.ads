@@ -87,7 +87,7 @@ private
       Next_Base : UInt16 := 16#180#;
    end record;
 
-   --  The first 0x100 bytes of USB_DPRAM contain configuration data
+   --  The first 0x100 bytes of USB_DPSRAM contain configuration data
 
    --  4.1.2.5.2. Endpoint control register
    type USB_EP_CONTROL_Register is record
@@ -161,7 +161,7 @@ private
            Size => 1024;
 
    type USB_EP_Registers is record
-      SETUP        : aliased UInt8_Array (1 .. 8);
+      SETUP        : aliased USB.Setup_Data;
       EP_CONTROL   : aliased USB_EP_CONTROL_Array;
       EP_BUFFER    : aliased USB_EP_BUFFER_Array;
    end record
@@ -175,10 +175,10 @@ private
    end record;
 
    USB_EP : USB_EP_Registers
-      with Import, Address => USB_DPRAM_Base;
+      with Import, Address => USB_DPSRAM_Base;
 
    use System.Storage_Elements;
    USB_EP0_BUFFER : UInt8_Array (0 .. 63)
-      with Import, Address => USB_DPRAM_Base + 16#100#;
+      with Import, Address => USB_DPSRAM_Base + 16#100#;
 
 end RP.USB_Device;
