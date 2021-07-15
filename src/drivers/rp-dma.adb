@@ -64,4 +64,35 @@ package body RP.DMA is
         AHB_Error   => DMA_Periph.CH (Channel).AL1_CTRL.AHB_ERROR,
         Transfers_Remaining => Natural (DMA_Periph.CH (Channel).AL2_TRANS_COUNT)));
 
+   procedure Enable_Checksum
+      (Channel   : DMA_Channel_Id;
+       Algorithm : Checksum_Algorithm;
+       Byte_Swap : Boolean := False;
+       Reversed  : Boolean := False;
+       Inverted  : Boolean := False)
+   is
+   begin
+      DMA_Periph.SNIFF_CTRL :=
+         (EN      => True,
+          DMACH   => RP2040_SVD.DMA.SNIFF_CTRL_DMACH_Field (Channel),
+          CALC    => RP2040_SVD.DMA.SNIFF_CTRL_CALC_Field'Val
+            (Checksum_Algorithm'Pos (Algorithm)),
+          BSWAP   => Byte_Swap,
+          OUT_REV => Reversed,
+          OUT_INV => Inverted,
+          others  => <>);
+      DMA_Periph.CH (Channel).AL1_CTRL.SNIFF_EN := True;
+   end Enable_Checksum;
+
+   procedure Set_Checksum
+      (Value : HAL.UInt32)
+   is
+   begin
+      DMA_Periph.SNIFF_DATA := Value;
+   end Set_Checksum;
+
+   function Checksum
+      return HAL.UInt32
+   is (DMA_Periph.SNIFF_DATA);
+
 end RP.DMA;

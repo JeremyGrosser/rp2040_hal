@@ -78,6 +78,27 @@ package RP.DMA is
       (Channel : DMA_Channel_Id)
       return DMA_Status;
 
+   type Checksum_Algorithm is
+      (CRC_32,  --  CRC-32 (IEEE802.3 polynomial)
+       CRC_32R, --  CRC-32 (IEEE802.3 polynomial) with bit reversed data
+       CRC_16,  --  CRC-16-CCITT
+       CRC_16R, --  CRC-16-CCITT with bit reversed data
+       EVEN,    --  XOR reduction over all data. == 1 if total 1 population count is odd
+       SUM);    --  Calculate a simple 32-bit checksum (addition with 32 bit accumulator)
+
+   procedure Enable_Checksum
+      (Channel   : DMA_Channel_Id;
+       Algorithm : Checksum_Algorithm;
+       Byte_Swap : Boolean := False;
+       Reversed  : Boolean := False;
+       Inverted  : Boolean := False);
+
+   procedure Set_Checksum
+      (Value : HAL.UInt32);
+
+   function Checksum
+      return HAL.UInt32;
+
 private
 
    type DMA_CTRL_Register is record
