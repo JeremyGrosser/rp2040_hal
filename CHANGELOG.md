@@ -24,6 +24,9 @@ The RP2040 has two interpolators per core embedded in the SIO peripheral. The [R
 ### UART.Enable is replaced with UART.Configure
 To match the nomenclature of the other serial drivers (SPI, I2C), [RP.UART](src/drivers/rp-uart.ads) now has a Configure procedure instead of Enable.
 
+### I2C addresses should include the R/W bit
+The RP.I2C driver was expecting 7-bit I2C addresses to not include the R/W bit in the LSB. This was inconsistent with the other HAL.I2C implementations and would result in incorrect I2C addressing. Now, 7-bit I2C addresses should be represented as a UInt8 with the LSB set to 0. If this breaks your code, shift your I2C address left by one bit.
+
 ## Bugs fixed
 
 ### Improper use of the Pack clause
