@@ -67,7 +67,8 @@ private
       (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with record
-      Do_Stop_Sequence : Boolean := True;
+      No_Stop : Boolean := False;
+      Restart_On_Next : Boolean := False;
    end record;
 
 end RP.I2C_Master;

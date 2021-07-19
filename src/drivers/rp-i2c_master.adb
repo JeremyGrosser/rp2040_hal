@@ -109,6 +109,8 @@ package body RP.I2C_Master is
       end;
 
       P.IC_ENABLE.ENABLE := ENABLED;
+
+      This.Restart_On_Next := False;
    end Enable;
 
    ---------------------
@@ -126,26 +128,37 @@ package body RP.I2C_Master is
       use RP.Timer;
       Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
       P        : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
+      Unused   : Boolean;
    begin
 
       Status := Ok;
 
       --  Set address
       P.IC_ENABLE.ENABLE := DISABLED;
-      P.IC_TAR.IC_TAR := Addr;
+
+      --  HAL.I2C uses addresses that include the R/W bit, we remove it before
+      --  setting the address register of the RP2040.
+      P.IC_TAR.IC_TAR := Addr / 2;
+
       P.IC_ENABLE.ENABLE := ENABLED;
 
       for Index in Data'Range loop
 
          declare
             Stop : constant IC_DATA_CMD_STOP_Field :=
-              (if Index = Data'Last
-                 and This.Do_Stop_Sequence
+              (if Index = Data'Last and then not This.No_Stop
                then ENABLE else DISABLE);
 
             Restart : constant IC_DATA_CMD_RESTART_Field :=
-              (if Index = Data'First then ENABLE else DISABLE);
+              (if Index = Data'First and then This.Restart_On_Next
+               then ENABLE else DISABLE);
          begin
+
+            P.IC_DATA_CMD := (DAT     => Data (Index),
+                              CMD     => WRITE,
+                              STOP    => Stop,
+                              RESTART => Restart,
+                              others  => <>);
 
             while P.IC_RAW_INTR_STAT.TX_EMPTY /= ACTIVE loop
                if Timeout > 0 and then RP.Timer.Clock >= Deadline then
@@ -154,32 +167,40 @@ package body RP.I2C_Master is
                end if;
             end loop;
 
-            P.IC_DATA_CMD := (DAT     => Data (Index),
-                              CMD     => WRITE,
-                              STOP    => Stop,
-                              RESTART => Restart,
-                              others  => <>);
-
-            loop
+            if Status /= HAL.I2C.Err_Timeout then
                if P.IC_TX_ABRT_SOURCE /= No_Err then
                   if P.IC_TX_ABRT_SOURCE.ARB_LOST = ABRT_LOST_GENERATED then
                      Status := HAL.I2C.Busy;
                   else
                      Status := HAL.I2C.Err_Error;
                   end if;
+
+                  --  Read to clear
+                  Unused := P.IC_CLR_TX_ABRT.CLR_TX_ABRT;
                   exit;
                end if;
 
-               if Timeout > 0 and then RP.Timer.Clock >= Deadline then
-                  Status := HAL.I2C.Err_Timeout;
-                  exit;
+               if Status /= Ok
+                 or else
+                   (Index = Data'Last and then not This.No_Stop)
+               then
+
+                  --  Wait for stop bit
+                  loop
+                     exit when P.IC_RAW_INTR_STAT.STOP_DET = ACTIVE;
+                  end loop;
+
+                  --  Read to clear
+                  Unused := P.IC_CLR_STOP_DET.CLR_STOP_DET;
                end if;
 
-               exit when P.IC_STATUS.TFE = EMPTY;
-            end loop;
+            end if;
          end;
+
+         exit when Status /= Ok;
       end loop;
 
+      This.Restart_On_Next := This.No_Stop;
    end Master_Transmit;
 
    --------------------
@@ -197,25 +218,30 @@ package body RP.I2C_Master is
       use RP.Timer;
       Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
       P        : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
+      Unused   : Boolean;
    begin
 
       Status := Ok;
 
       --  Set address
       P.IC_ENABLE.ENABLE := DISABLED;
-      P.IC_TAR.IC_TAR := Addr;
+
+      --  HAL.I2C uses addresses that include the R/W bit, we remove it before
+      --  setting the address register of the RP2040.
+      P.IC_TAR.IC_TAR := Addr / 2;
+
       P.IC_ENABLE.ENABLE := ENABLED;
 
       for Index in Data'Range loop
 
          declare
             Stop : constant IC_DATA_CMD_STOP_Field :=
-              (if Index = Data'Last
-                  and This.Do_Stop_Sequence
+              (if Index = Data'Last and then not This.No_Stop
                then ENABLE else DISABLE);
 
             Restart : constant IC_DATA_CMD_RESTART_Field :=
-              (if Index = Data'First then ENABLE else DISABLE);
+              (if Index = Data'First and then This.Restart_On_Next
+               then ENABLE else DISABLE);
          begin
 
             --  Trigger read
@@ -232,6 +258,9 @@ package body RP.I2C_Master is
                   else
                      Status := HAL.I2C.Err_Error;
                   end if;
+
+                  --  Read to clear
+                  Unused := P.IC_CLR_TX_ABRT.CLR_TX_ABRT;
                   exit;
                end if;
 
@@ -243,10 +272,15 @@ package body RP.I2C_Master is
                exit when P.IC_RXFLR.RXFLR /= 0;
             end loop;
 
-            Data (Index) := P.IC_DATA_CMD.DAT;
+            if Status /= Ok then
+               exit;
+            else
+               Data (Index) := P.IC_DATA_CMD.DAT;
+            end if;
          end;
       end loop;
 
+      This.Restart_On_Next := This.No_Stop;
    end Master_Receive;
 
    ---------------
@@ -265,8 +299,7 @@ package body RP.I2C_Master is
    is
    begin
 
-      This.Do_Stop_Sequence := False;
-
+      This.No_Stop := True;
       case Mem_Addr_Size is
          when Memory_Size_8b =>
             This.Master_Transmit (Addr    => Addr,
@@ -281,7 +314,7 @@ package body RP.I2C_Master is
                                   Timeout => Timeout);
       end case;
 
-      This.Do_Stop_Sequence := True;
+      This.No_Stop := False;
 
       if Status /= Ok then
          return;
@@ -307,7 +340,7 @@ package body RP.I2C_Master is
       Timeout       : Natural := 1_000)
    is
    begin
-      This.Do_Stop_Sequence := False;
+      This.No_Stop := True;
 
       case Mem_Addr_Size is
          when Memory_Size_8b =>
@@ -323,7 +356,7 @@ package body RP.I2C_Master is
                                   Timeout => Timeout);
       end case;
 
-      This.Do_Stop_Sequence := True;
+      This.No_Stop := False;
 
       if Status /= Ok then
          return;
