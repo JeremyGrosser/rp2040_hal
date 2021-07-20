@@ -1,4 +1,4 @@
-# rp2040_hal HEAD (unreleased)
+# rp2040_hal 0.5.0
 
 ## New features
 
@@ -47,11 +47,6 @@ The UART driver has been modified to use RP.Timer to implement timeouts and moni
 
 ### SPI Transmit was nonblocking
 The SPI Transmit procedure would return immediately after the last byte was written to the FIFO, but before the FIFO became empty. This behavior breaks some drivers that depend on all bytes being clocked out before proceeding. A configuration flag for Blocking behavior has been added and defaults to True.
-
-## Known issues
-
-*None yet.*
-
 
 
 
