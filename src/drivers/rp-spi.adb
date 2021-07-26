@@ -225,6 +225,16 @@ package body RP.SPI is
          end loop;
          This.Periph.SSPDR.DATA := D;
       end loop;
+
+      if This.Blocking then
+         while This.Transmit_Status /= Empty loop
+            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               Status := Err_Timeout;
+               return;
+            end if;
+         end loop;
+      end if;
+
       Status := Ok;
    end Transmit;
 

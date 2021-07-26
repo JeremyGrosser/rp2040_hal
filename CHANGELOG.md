@@ -1,3 +1,13 @@
+# rp2040_hal UNRELEASED
+
+## Bugs fixed
+
+### 16-bit RP.SPI.Transmit did not respect the Blocking configuration option
+
+[Issue #3](https://github.com/JeremyGrosser/rp2040_hal/issues/3)
+
+If Blocking was set in the SPI_Configuration and the 16-bit version of the Transmit procedure was used, Transmit would return before all data was clocked out. Thanks to [@hgrodriguez](https://github.com/hgrodriguez) for discovering this 
+
 # rp2040_hal 0.5.0
 
 ## New features
