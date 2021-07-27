@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD.RTC; use RP2040_SVD.RTC;
 with HAL; use HAL;
 with RP.Clock;

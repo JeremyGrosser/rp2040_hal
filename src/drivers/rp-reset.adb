@@ -1,3 +1,8 @@
+--
+--  Copyright 2021 (C) Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD;
 with RP.Timer;
 
