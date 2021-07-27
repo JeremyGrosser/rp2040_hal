@@ -9,7 +9,4 @@ jobs:
 workflows:
   build:
     jobs:
-      - alr-build:
-        filters:
-          branches:
-            only: master
+      - alr-build
