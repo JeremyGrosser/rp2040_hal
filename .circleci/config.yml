@@ -1,0 +1,15 @@
+version: 2.1
+jobs:
+  alr-build:
+    docker:
+      - image: synack/ada-builder:20210612
+    steps:
+      - checkout
+      - run: alr build
+workflows:
+  build:
+    jobs:
+      - alr-build:
+        filters:
+          branches:
+            only: master
