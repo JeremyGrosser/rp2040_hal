@@ -13,11 +13,13 @@ package body RP.PWM is
    procedure Initialize is
       use RP.Reset;
    begin
+      RP.Clock.Enable (RP.Clock.PERI);
       Reset_Peripheral (Reset_PWM);
       PWM_Periph.EN.CH.Val := 0;
       for Slice in PWM_Periph.CH'Range loop
          PWM_Periph.CH (Slice) := (others => <>);
       end loop;
+      Initialized := True;
    end Initialize;
 
    function To_PWM

@@ -39,7 +39,10 @@ package RP.PWM is
    type PWM_Interrupt_Handler is access procedure;
 
    --  Initialize must be called before any other PWM configuration
-   procedure Initialize;
+   Initialized : Boolean := False;
+
+   procedure Initialize
+      with Post => Initialized;
 
    function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
@@ -47,25 +50,28 @@ package RP.PWM is
 
    procedure Set_Mode
       (Slice : PWM_Slice;
-       Mode  : PWM_Divider_Mode);
+       Mode  : PWM_Divider_Mode)
+   with Pre => Initialized;
 
    --  clk_sys gets divided by Divider
    procedure Set_Divider
       (Slice : PWM_Slice;
-       Div   : Divider);
+       Div   : Divider)
+   with Pre => Initialized;
 
    --  Set_Frequency is a convenience method that calculates the correct
    --  divider for the target frequency
    procedure Set_Frequency
       (Slice     : PWM_Slice;
        Frequency : Hertz)
-       with Pre => Frequency > 0;
+       with Pre => Initialized and Frequency > 0;
 
    --  on each divided clock cycle, a counter is incremented toward Clocks and
    --  wraps around when it matches this value
    procedure Set_Interval
       (Slice  : PWM_Slice;
-       Clocks : Period);
+       Clocks : Period)
+   with Pre => Initialized;
 
    --  on each divided clock cycle, the counter is compared with this value and
    --  the output is low if >= Clocks. This can be set independently for each
@@ -73,19 +79,24 @@ package RP.PWM is
    procedure Set_Duty_Cycle
       (Slice     : PWM_Slice;
        Channel_A : Period;
-       Channel_B : Period);
+       Channel_B : Period)
+   with Pre => Initialized;
 
    procedure Enable
-      (Slice : PWM_Slice);
+      (Slice : PWM_Slice)
+   with Pre => Initialized;
 
    procedure Disable
-      (Slice : PWM_Slice);
+      (Slice : PWM_Slice)
+   with Pre => Initialized;
 
    procedure Enable
-      (Slices : PWM_Slice_Array);
+      (Slices : PWM_Slice_Array)
+   with Pre => Initialized;
 
    procedure Disable
-      (Slices : PWM_Slice_Array);
+      (Slices : PWM_Slice_Array)
+   with Pre => Initialized;
 
    function Enabled
       (Slice : PWM_Slice)
@@ -94,11 +105,13 @@ package RP.PWM is
    procedure Set_Invert
       (Slice     : PWM_Slice;
        Channel_A : Boolean;
-       Channel_B : Boolean);
+       Channel_B : Boolean)
+    with Pre => Initialized;
 
    procedure Set_Phase_Correction
       (Slice   : PWM_Slice;
-       Enabled : Boolean);
+       Enabled : Boolean)
+    with Pre => Initialized;
 
    procedure Advance_Phase
       (Slice : PWM_Slice)
@@ -115,11 +128,13 @@ package RP.PWM is
 
    procedure Set_Count
       (Slice : PWM_Slice;
-       Value : Period);
+       Value : Period)
+   with Pre => Initialized;
 
    procedure Attach
       (Slice   : PWM_Slice;
-       Handler : PWM_Interrupt_Handler);
+       Handler : PWM_Interrupt_Handler)
+   with Pre => Initialized;
 
 private
 

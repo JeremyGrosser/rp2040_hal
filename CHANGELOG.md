@@ -1,5 +1,7 @@
 # rp2040_hal UNRELEASED
 
+## Breaking changes
+
 ## Bugs fixed
 
 ### 16-bit RP.SPI.Transmit did not respect the Blocking configuration option
@@ -7,6 +9,10 @@
 [Issue #3](https://github.com/JeremyGrosser/rp2040_hal/issues/3)
 
 If Blocking was set in the SPI_Configuration and the 16-bit version of the Transmit procedure was used, Transmit would return before all data was clocked out. Thanks to [@hgrodriguez](https://github.com/hgrodriguez) for discovering this 
+
+### RP.PWM did not check that Initialize was called first
+
+If RP.PWM.Initialize was not called before configuring PWM slices, the configuration would succeed but would generate no output. An `Initialized` variable has been added to RP.PWM along with a precondition on all procedures that modify PWM slices to ensure that `Initialized` is True. If you forget to call RP.PWM.Initialize, your program will crash on the first run.
 
 # rp2040_hal 0.5.0
 
