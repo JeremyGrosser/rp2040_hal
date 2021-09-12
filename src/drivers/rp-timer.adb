@@ -86,14 +86,13 @@ package body RP.Timer is
       (This : in out Delays;
        Us   : Integer)
    is
-      T : constant UInt32 := TIMER_Periph.TIMERAWL + UInt32 (Us);
+      Start : constant UInt32 := TIMER_Periph.TIMERAWL;
    begin
-      if Us <= 0 then
-         return;
+      if Us > 0 then
+         while Integer (TIMER_Periph.TIMERAWL - Start) < Us loop
+            null;
+         end loop;
       end if;
-      loop
-         exit when TIMER_Periph.TIMERAWL >= T;
-      end loop;
    end Delay_Microseconds;
 
    overriding
