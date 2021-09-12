@@ -38,11 +38,12 @@ is
        T    : Time)
        with Pre => Enabled (This);
 
+   --  Microsecond delays are assumed to be relatively short and are
+   --  implemented with a polling loop rather than interrupts
    overriding
    procedure Delay_Microseconds
       (This : in out Delays;
-       Us   : Integer)
-       with Pre => Enabled (This);
+       Us   : Integer);
 
    overriding
    procedure Delay_Milliseconds

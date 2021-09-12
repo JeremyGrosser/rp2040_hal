@@ -91,10 +91,8 @@ package body RP.Timer is
       if Us <= 0 then
          return;
       end if;
-      TIMER_Periph.ALARM2 := T;
       loop
-         System.Machine_Code.Asm ("wfi", Volatile => True);
-         exit when TIMER_Periph.INTS.ALARM_2 or TIMER_Periph.TIMERAWL >= T;
+         exit when TIMER_Periph.TIMERAWL >= T;
       end loop;
    end Delay_Microseconds;
 
