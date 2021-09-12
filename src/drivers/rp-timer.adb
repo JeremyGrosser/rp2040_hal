@@ -12,6 +12,8 @@ package body RP.Timer is
    function Clock
       return Time
    is
+      --  This implementation uses the non-latching TIMERAWH and TIMERAWL
+      --  registers in order to be safe for concurrent access.
       Next_High : UInt32;
       High      : UInt32;
       Low       : UInt32;
@@ -86,10 +88,10 @@ package body RP.Timer is
       (This : in out Delays;
        Us   : Integer)
    is
-      Start : constant UInt32 := TIMER_Periph.TIMERAWL;
+      Deadline : constant UInt64 := UInt64 (Clock) + UInt64 (Us);
    begin
       if Us > 0 then
-         while Integer (TIMER_Periph.TIMERAWL - Start) < Us loop
+         while UInt64 (Clock) < Deadline loop
             null;
          end loop;
       end if;
