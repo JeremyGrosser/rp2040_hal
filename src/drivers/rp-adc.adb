@@ -74,12 +74,16 @@ package body RP.ADC is
    function Temperature
       (Ref_Temp : Celsius := 27;
        Vbe      : Microvolts := 706_000;
-       Slope    : Microvolts := 1_721)
+       Slope    : Microvolts := 1_721;
+       VREF     : Microvolts := 3_300_000)
       return Celsius
    is
+      Temp : Celsius;
    begin
       ADC_Periph.CS.TS_EN := True;
-      return Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor) - Vbe) / Slope);
+      Temp := Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor, VREF) - Vbe) / Slope);
+      ADC_Periph.CS.TS_EN := False;
+      return Temp;
    end Temperature;
 
    function To_ADC_Channel
