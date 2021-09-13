@@ -5,7 +5,7 @@ jobs:
       - image: synack/ada-builder:20210913
     steps:
       - checkout
-      - run: alr toolchain --non-interactive --select gnat_arm_elf && alr build
+      - run: alr toolchain --disable-assistant --select gnat_arm_elf && alr build
 workflows:
   build:
     jobs:
