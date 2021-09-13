@@ -28,6 +28,13 @@ package RP.Clock is
    procedure Enable
       (CID : Clock_Id);
 
+   procedure Disable
+      (CID : Clock_Id);
+
+   function Enabled
+      (CID : Clock_Id)
+      return Boolean;
+
    function Frequency
       (CID : Clock_Id)
        return Hertz;

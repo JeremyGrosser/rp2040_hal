@@ -197,6 +197,18 @@ package body RP.Clock is
       CLOCKS_Periph.CLK (CID).CTRL.ENABLE := True;
    end Enable;
 
+   procedure Disable
+      (CID : Clock_Id)
+   is
+   begin
+      CLOCKS_Periph.CLK (CID).CTRL.ENABLE := False;
+   end Disable;
+
+   function Enabled
+      (CID : Clock_Id)
+      return Boolean
+   is (CLOCKS_Periph.CLK (CID).CTRL.ENABLE);
+
    function Frequency
       (CID : Clock_Id)
       return Hertz
