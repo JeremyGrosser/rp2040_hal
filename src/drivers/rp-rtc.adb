@@ -29,16 +29,33 @@ package body RP.RTC is
       RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
          (RP.Clock.Frequency (RP.Clock.RTC));
 
-      RTC_Periph.CTRL.RTC_ENABLE := True;
-      while not This.Running loop
-         null;
-      end loop;
+      This.Resume;
    end Initialize;
 
    function Running
       (This : RTC_Device)
       return Boolean
-   is (RTC_Periph.CTRL.RTC_ACTIVE);
+   is (RP.Clock.Enabled (RP.Clock.RTC) and RTC_Periph.CTRL.RTC_ACTIVE);
+
+   procedure Pause
+      (This : in out RTC_Device)
+   is
+   begin
+      RTC_Periph.CTRL.RTC_ENABLE := False;
+      while This.Running loop
+         null;
+      end loop;
+   end Pause;
+
+   procedure Resume
+      (This : in out RTC_Device)
+   is
+   begin
+      RTC_Periph.CTRL.RTC_ENABLE := True;
+      while not This.Running loop
+         null;
+      end loop;
+   end Resume;
 
    overriding
    procedure Set
@@ -46,13 +63,11 @@ package body RP.RTC is
        Time : RTC_Time;
        Date : RTC_Date)
    is
+      Was_Running : constant Boolean := This.Running;
    begin
-      This.Initialize;
-
-      RTC_Periph.CTRL.RTC_ENABLE := False;
-      while This.Running loop
-         null;
-      end loop;
+      if Was_Running then
+         This.Pause;
+      end if;
 
       RTC_Periph.SETUP_0 :=
          (DAY    => SETUP_0_DAY_Field (Date.Day),
@@ -67,10 +82,9 @@ package body RP.RTC is
           others => <>);
       RTC_Periph.CTRL.LOAD := True;
 
-      RTC_Periph.CTRL.RTC_ENABLE := True;
-      while not This.Running loop
-         null;
-      end loop;
+      if Was_Running then
+         This.Resume;
+      end if;
    end Set;
 
    overriding
