@@ -1,17 +1,29 @@
 # rp2040_hal UNRELEASED
 
+## New features
+
+### Clocks can be disabled
+To save power, peripheral clocks can be disabled with `RP.Clock.Disable`. Some peripherals may exhibit unexpected behavior if their clocks are disabled. Use at your own risk.
+
+### RTC can be paused
+The `RP.RTC.Pause` and `RP.RTC.Resume` procedures stop and start the RTC. This is useful if you want the RTC to stop ticking while a user is setting the time. Preconditions requiring the clock to be running have been removed from the RTC procedures. `RP.RTC.Initialize` still needs to be called at least once, but can be skipped if `RP.RTC.Running` returns `True`, implying that the RTC is already Initialized.
+
+### Continuous integration
+A CircleCI project has been setup to compile `rp2040_hal` upon commit and email the author if the build fails. This is not meant to replace actual user testing on real hardware. This is just a quick check for broken builds.
+
 ## Breaking changes
+
+### Delay_Microseconds no longer uses interrupts
+`RP.Timer.Delay_Microseconds` now polls the timer registers in a busy loop, rather than setting up an alarm interrupt. This should make shorter (< 10 microsecond) delays more accurate as interrupt latency is no longer a factor. `RP.Timer.Delay_Until` can still be used to perform interrupt-based delays with microsecond precision.
 
 ## Bugs fixed
 
 ### 16-bit RP.SPI.Transmit did not respect the Blocking configuration option
-
 [Issue #3](https://github.com/JeremyGrosser/rp2040_hal/issues/3)
 
 If Blocking was set in the SPI_Configuration and the 16-bit version of the Transmit procedure was used, Transmit would return before all data was clocked out. Thanks to [@hgrodriguez](https://github.com/hgrodriguez) for discovering this 
 
 ### RP.PWM did not check that Initialize was called first
-
 If RP.PWM.Initialize was not called before configuring PWM slices, the configuration would succeed but would generate no output. An `Initialized` variable has been added to RP.PWM along with a precondition on all procedures that modify PWM slices to ensure that `Initialized` is True. If you forget to call RP.PWM.Initialize, your program will crash on the first run.
 
 # rp2040_hal 0.5.0
