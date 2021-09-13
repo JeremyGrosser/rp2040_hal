@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   alr-build:
     docker:
-      - image: synack/ada-builder:20210612
+      - image: synack/ada-builder:20210913
     steps:
       - checkout
       - run: alr build
