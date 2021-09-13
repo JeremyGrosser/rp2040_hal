@@ -1,4 +1,4 @@
-# rp2040_hal UNRELEASED
+# rp2040_hal 0.6.0
 
 ## New features
 

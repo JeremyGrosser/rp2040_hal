@@ -16,7 +16,7 @@ project Rp2040_Hal is
    for Create_Missing_Dirs use "True";
 
    for Library_Name use "rp2040_hal";
-   for Library_Version use "0.3.0";
+   for Library_Version use "0.6.0";
    for Library_Dir use "lib";
 
    type Library_Type_Type is ("relocatable", "static", "static-pic");
