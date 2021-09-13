@@ -26,6 +26,9 @@ If Blocking was set in the SPI_Configuration and the 16-bit version of the Trans
 ### RP.PWM did not check that Initialize was called first
 If RP.PWM.Initialize was not called before configuring PWM slices, the configuration would succeed but would generate no output. An `Initialized` variable has been added to RP.PWM along with a precondition on all procedures that modify PWM slices to ensure that `Initialized` is True. If you forget to call RP.PWM.Initialize, your program will crash on the first run.
 
+### RP.ADC.Temperature could return incorrect data
+If `RP.ADC.Configure (Temperature_Sensor)` was not called before `RP.ADC.Temperature`, incorrect temperature readings would be returned. `RP.ADC.Temperature` now ensures the temperature sensor is configured on every call, eliminating the need to call Configure for the temperature sensor.
+
 # rp2040_hal 0.5.0
 
 ## New features

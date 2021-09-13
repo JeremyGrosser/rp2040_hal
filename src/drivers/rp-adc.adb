@@ -78,6 +78,7 @@ package body RP.ADC is
       return Celsius
    is
    begin
+      ADC_Periph.CS.TS_EN := True;
       return Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor) - Vbe) / Slope);
    end Temperature;
 
