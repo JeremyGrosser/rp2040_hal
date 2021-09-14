@@ -197,8 +197,7 @@ package RP2040_SVD.ROSC is
    end record;
 
    --  set to 0xaa0 + div where\n div = 0 divides by 32\n div = 1-31 divides by
-   --  div\n any other value sets div=0 and therefore divides by 32\n this
-   --  register resets to div=16
+   --  div\n any other value sets div=31\n this register resets to div=16
    type DIV_DIV_Field is
      (--  Reset value for the field
       DIV_DIV_Field_Reset,
@@ -211,8 +210,7 @@ package RP2040_SVD.ROSC is
    --  Controls the output divider
    type DIV_Register is record
       --  set to 0xaa0 + div where\n div = 0 divides by 32\n div = 1-31 divides
-      --  by div\n any other value sets div=0 and therefore divides by 32\n
-      --  this register resets to div=16
+      --  by div\n any other value sets div=31\n this register resets to div=16
       DIV            : DIV_DIV_Field := DIV_DIV_Field_Reset;
       --  unspecified
       Reserved_12_31 : HAL.UInt20 := 16#0#;
@@ -237,7 +235,7 @@ package RP2040_SVD.ROSC is
       FLIP           : Boolean := False;
       --  enable the phase-shifted output\n this can be changed on-the-fly
       ENABLE         : Boolean := True;
-      --  set to 0xaa0\n any other value enables the output with shift=0
+      --  set to 0xaa\n any other value enables the output with shift=0
       PASSWD         : PHASE_PASSWD_Field := 16#0#;
       --  unspecified
       Reserved_12_31 : HAL.UInt20 := 16#0#;
@@ -269,7 +267,7 @@ package RP2040_SVD.ROSC is
       Reserved_17_23 : HAL.UInt7 := 16#0#;
       --  Write data bit of one shall clear (set to zero) the corresponding bit
       --  in the field. An invalid value has been written to CTRL_ENABLE or
-      --  CTRL_FREQ_RANGE or FRFEQA or FREQB or DORMANT
+      --  CTRL_FREQ_RANGE or FREQA or FREQB or DIV or PHASE or DORMANT
       BADWRITE       : Boolean := False;
       --  unspecified
       Reserved_25_30 : HAL.UInt6 := 16#0#;

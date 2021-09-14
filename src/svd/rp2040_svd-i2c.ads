@@ -11,6 +11,7 @@ pragma Restrictions (No_Elaboration_Code);
 with HAL;
 with System;
 
+--  DW_apb_i2c address block
 package RP2040_SVD.I2C is
    pragma Preelaborate;
 
@@ -814,18 +815,6 @@ package RP2040_SVD.I2C is
      (INACTIVE => 0,
       ACTIVE => 1);
 
-   --  See IC_RAW_INTR_STAT for a detailed description of R_MASTER_ON_HOLD
-   --  bit.\n\n Reset value: 0x0
-   type IC_INTR_STAT_R_MASTER_ON_HOLD_Field is
-     (--  R_MASTER_ON_HOLD interrupt is inactive
-      INACTIVE,
-      --  R_MASTER_ON_HOLD interrupt is active
-      ACTIVE)
-     with Size => 1;
-   for IC_INTR_STAT_R_MASTER_ON_HOLD_Field use
-     (INACTIVE => 0,
-      ACTIVE => 1);
-
    --  I2C Interrupt Status Register\n\n Each bit in this register has a
    --  corresponding mask bit in the IC_INTR_MASK register. These bits are
    --  cleared by reading the matching interrupt clear register. The unmasked
@@ -834,68 +823,64 @@ package RP2040_SVD.I2C is
    type IC_INTR_STAT_Register is record
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_RX_UNDER bit.\n\n Reset value: 0x0
-      R_RX_UNDER       : IC_INTR_STAT_R_RX_UNDER_Field;
+      R_RX_UNDER     : IC_INTR_STAT_R_RX_UNDER_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_RX_OVER bit.\n\n Reset value: 0x0
-      R_RX_OVER        : IC_INTR_STAT_R_RX_OVER_Field;
+      R_RX_OVER      : IC_INTR_STAT_R_RX_OVER_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_RX_FULL bit.\n\n Reset value: 0x0
-      R_RX_FULL        : IC_INTR_STAT_R_RX_FULL_Field;
+      R_RX_FULL      : IC_INTR_STAT_R_RX_FULL_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_TX_OVER bit.\n\n Reset value: 0x0
-      R_TX_OVER        : IC_INTR_STAT_R_TX_OVER_Field;
+      R_TX_OVER      : IC_INTR_STAT_R_TX_OVER_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_TX_EMPTY bit.\n\n Reset value: 0x0
-      R_TX_EMPTY       : IC_INTR_STAT_R_TX_EMPTY_Field;
+      R_TX_EMPTY     : IC_INTR_STAT_R_TX_EMPTY_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_RD_REQ bit.\n\n Reset value: 0x0
-      R_RD_REQ         : IC_INTR_STAT_R_RD_REQ_Field;
+      R_RD_REQ       : IC_INTR_STAT_R_RD_REQ_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_TX_ABRT bit.\n\n Reset value: 0x0
-      R_TX_ABRT        : IC_INTR_STAT_R_TX_ABRT_Field;
+      R_TX_ABRT      : IC_INTR_STAT_R_TX_ABRT_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_RX_DONE bit.\n\n Reset value: 0x0
-      R_RX_DONE        : IC_INTR_STAT_R_RX_DONE_Field;
+      R_RX_DONE      : IC_INTR_STAT_R_RX_DONE_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_ACTIVITY bit.\n\n Reset value: 0x0
-      R_ACTIVITY       : IC_INTR_STAT_R_ACTIVITY_Field;
+      R_ACTIVITY     : IC_INTR_STAT_R_ACTIVITY_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_STOP_DET bit.\n\n Reset value: 0x0
-      R_STOP_DET       : IC_INTR_STAT_R_STOP_DET_Field;
+      R_STOP_DET     : IC_INTR_STAT_R_STOP_DET_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_START_DET bit.\n\n Reset value: 0x0
-      R_START_DET      : IC_INTR_STAT_R_START_DET_Field;
+      R_START_DET    : IC_INTR_STAT_R_START_DET_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_GEN_CALL bit.\n\n Reset value: 0x0
-      R_GEN_CALL       : IC_INTR_STAT_R_GEN_CALL_Field;
+      R_GEN_CALL     : IC_INTR_STAT_R_GEN_CALL_Field;
       --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
       --  R_RESTART_DET bit.\n\n Reset value: 0x0
-      R_RESTART_DET    : IC_INTR_STAT_R_RESTART_DET_Field;
-      --  Read-only. See IC_RAW_INTR_STAT for a detailed description of
-      --  R_MASTER_ON_HOLD bit.\n\n Reset value: 0x0
-      R_MASTER_ON_HOLD : IC_INTR_STAT_R_MASTER_ON_HOLD_Field;
+      R_RESTART_DET  : IC_INTR_STAT_R_RESTART_DET_Field;
       --  unspecified
-      Reserved_14_31   : HAL.UInt18;
+      Reserved_13_31 : HAL.UInt19;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
 
    for IC_INTR_STAT_Register use record
-      R_RX_UNDER       at 0 range 0 .. 0;
-      R_RX_OVER        at 0 range 1 .. 1;
-      R_RX_FULL        at 0 range 2 .. 2;
-      R_TX_OVER        at 0 range 3 .. 3;
-      R_TX_EMPTY       at 0 range 4 .. 4;
-      R_RD_REQ         at 0 range 5 .. 5;
-      R_TX_ABRT        at 0 range 6 .. 6;
-      R_RX_DONE        at 0 range 7 .. 7;
-      R_ACTIVITY       at 0 range 8 .. 8;
-      R_STOP_DET       at 0 range 9 .. 9;
-      R_START_DET      at 0 range 10 .. 10;
-      R_GEN_CALL       at 0 range 11 .. 11;
-      R_RESTART_DET    at 0 range 12 .. 12;
-      R_MASTER_ON_HOLD at 0 range 13 .. 13;
-      Reserved_14_31   at 0 range 14 .. 31;
+      R_RX_UNDER     at 0 range 0 .. 0;
+      R_RX_OVER      at 0 range 1 .. 1;
+      R_RX_FULL      at 0 range 2 .. 2;
+      R_TX_OVER      at 0 range 3 .. 3;
+      R_TX_EMPTY     at 0 range 4 .. 4;
+      R_RD_REQ       at 0 range 5 .. 5;
+      R_TX_ABRT      at 0 range 6 .. 6;
+      R_RX_DONE      at 0 range 7 .. 7;
+      R_ACTIVITY     at 0 range 8 .. 8;
+      R_STOP_DET     at 0 range 9 .. 9;
+      R_START_DET    at 0 range 10 .. 10;
+      R_GEN_CALL     at 0 range 11 .. 11;
+      R_RESTART_DET  at 0 range 12 .. 12;
+      Reserved_13_31 at 0 range 13 .. 31;
    end record;
 
    --  This bit masks the R_RX_UNDER interrupt in IC_INTR_STAT register.\n\n
@@ -1054,101 +1039,83 @@ package RP2040_SVD.I2C is
      (ENABLED => 0,
       DISABLED => 1);
 
-   --  This M_MASTER_ON_HOLD_read_only bit masks the R_MASTER_ON_HOLD interrupt
-   --  in IC_INTR_STAT register.\n\n Reset value: 0x0
-   type IC_INTR_MASK_M_MASTER_ON_HOLD_READ_ONLY_Field is
-     (--  MASTER_ON_HOLD interrupt is masked
-      ENABLED,
-      --  MASTER_ON_HOLD interrupt is unmasked
-      DISABLED)
-     with Size => 1;
-   for IC_INTR_MASK_M_MASTER_ON_HOLD_READ_ONLY_Field use
-     (ENABLED => 0,
-      DISABLED => 1);
-
    --  I2C Interrupt Mask Register.\n\n These bits mask their corresponding
    --  interrupt status bits. This register is active low; a value of 0 masks
    --  the interrupt, whereas a value of 1 unmasks the interrupt.
    type IC_INTR_MASK_Register is record
       --  This bit masks the R_RX_UNDER interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_RX_UNDER                 : IC_INTR_MASK_M_RX_UNDER_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_RX_UNDER     : IC_INTR_MASK_M_RX_UNDER_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RX_OVER interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_RX_OVER                  : IC_INTR_MASK_M_RX_OVER_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_RX_OVER      : IC_INTR_MASK_M_RX_OVER_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RX_FULL interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_RX_FULL                  : IC_INTR_MASK_M_RX_FULL_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_RX_FULL      : IC_INTR_MASK_M_RX_FULL_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_TX_OVER interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_TX_OVER                  : IC_INTR_MASK_M_TX_OVER_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_TX_OVER      : IC_INTR_MASK_M_TX_OVER_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_TX_EMPTY interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_TX_EMPTY                 : IC_INTR_MASK_M_TX_EMPTY_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_TX_EMPTY     : IC_INTR_MASK_M_TX_EMPTY_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RD_REQ interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_RD_REQ                   : IC_INTR_MASK_M_RD_REQ_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_RD_REQ       : IC_INTR_MASK_M_RD_REQ_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_TX_ABRT interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_TX_ABRT                  : IC_INTR_MASK_M_TX_ABRT_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_TX_ABRT      : IC_INTR_MASK_M_TX_ABRT_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RX_DONE interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_RX_DONE                  : IC_INTR_MASK_M_RX_DONE_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_RX_DONE      : IC_INTR_MASK_M_RX_DONE_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_ACTIVITY interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x0
-      M_ACTIVITY                 : IC_INTR_MASK_M_ACTIVITY_Field :=
-                                    RP2040_SVD.I2C.ENABLED;
+      M_ACTIVITY     : IC_INTR_MASK_M_ACTIVITY_Field :=
+                        RP2040_SVD.I2C.ENABLED;
       --  This bit masks the R_STOP_DET interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x0
-      M_STOP_DET                 : IC_INTR_MASK_M_STOP_DET_Field :=
-                                    RP2040_SVD.I2C.ENABLED;
+      M_STOP_DET     : IC_INTR_MASK_M_STOP_DET_Field :=
+                        RP2040_SVD.I2C.ENABLED;
       --  This bit masks the R_START_DET interrupt in IC_INTR_STAT
       --  register.\n\n Reset value: 0x0
-      M_START_DET                : IC_INTR_MASK_M_START_DET_Field :=
-                                    RP2040_SVD.I2C.ENABLED;
+      M_START_DET    : IC_INTR_MASK_M_START_DET_Field :=
+                        RP2040_SVD.I2C.ENABLED;
       --  This bit masks the R_GEN_CALL interrupt in IC_INTR_STAT register.\n\n
       --  Reset value: 0x1
-      M_GEN_CALL                 : IC_INTR_MASK_M_GEN_CALL_Field :=
-                                    RP2040_SVD.I2C.DISABLED;
+      M_GEN_CALL     : IC_INTR_MASK_M_GEN_CALL_Field :=
+                        RP2040_SVD.I2C.DISABLED;
       --  This bit masks the R_RESTART_DET interrupt in IC_INTR_STAT
       --  register.\n\n Reset value: 0x0
-      M_RESTART_DET              : IC_INTR_MASK_M_RESTART_DET_Field :=
-                                    RP2040_SVD.I2C.ENABLED;
-      --  Read-only. This M_MASTER_ON_HOLD_read_only bit masks the
-      --  R_MASTER_ON_HOLD interrupt in IC_INTR_STAT register.\n\n Reset value:
-      --  0x0
-      M_MASTER_ON_HOLD_READ_ONLY : IC_INTR_MASK_M_MASTER_ON_HOLD_READ_ONLY_Field :=
-                                    RP2040_SVD.I2C.ENABLED;
+      M_RESTART_DET  : IC_INTR_MASK_M_RESTART_DET_Field :=
+                        RP2040_SVD.I2C.ENABLED;
       --  unspecified
-      Reserved_14_31             : HAL.UInt18 := 16#0#;
+      Reserved_13_31 : HAL.UInt19 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
 
    for IC_INTR_MASK_Register use record
-      M_RX_UNDER                 at 0 range 0 .. 0;
-      M_RX_OVER                  at 0 range 1 .. 1;
-      M_RX_FULL                  at 0 range 2 .. 2;
-      M_TX_OVER                  at 0 range 3 .. 3;
-      M_TX_EMPTY                 at 0 range 4 .. 4;
-      M_RD_REQ                   at 0 range 5 .. 5;
-      M_TX_ABRT                  at 0 range 6 .. 6;
-      M_RX_DONE                  at 0 range 7 .. 7;
-      M_ACTIVITY                 at 0 range 8 .. 8;
-      M_STOP_DET                 at 0 range 9 .. 9;
-      M_START_DET                at 0 range 10 .. 10;
-      M_GEN_CALL                 at 0 range 11 .. 11;
-      M_RESTART_DET              at 0 range 12 .. 12;
-      M_MASTER_ON_HOLD_READ_ONLY at 0 range 13 .. 13;
-      Reserved_14_31             at 0 range 14 .. 31;
+      M_RX_UNDER     at 0 range 0 .. 0;
+      M_RX_OVER      at 0 range 1 .. 1;
+      M_RX_FULL      at 0 range 2 .. 2;
+      M_TX_OVER      at 0 range 3 .. 3;
+      M_TX_EMPTY     at 0 range 4 .. 4;
+      M_RD_REQ       at 0 range 5 .. 5;
+      M_TX_ABRT      at 0 range 6 .. 6;
+      M_RX_DONE      at 0 range 7 .. 7;
+      M_ACTIVITY     at 0 range 8 .. 8;
+      M_STOP_DET     at 0 range 9 .. 9;
+      M_START_DET    at 0 range 10 .. 10;
+      M_GEN_CALL     at 0 range 11 .. 11;
+      M_RESTART_DET  at 0 range 12 .. 12;
+      Reserved_13_31 at 0 range 13 .. 31;
    end record;
 
    --  Set if the processor attempts to read the receive buffer when it is
@@ -1381,19 +1348,6 @@ package RP2040_SVD.I2C is
      (INACTIVE => 0,
       ACTIVE => 1);
 
-   --  Indicates whether master is holding the bus and TX FIFO is empty.
-   --  Enabled only when I2C_DYNAMIC_TAR_UPDATE=1 and
-   --  IC_EMPTYFIFO_HOLD_MASTER_EN=1.\n\n Reset value: 0x0
-   type IC_RAW_INTR_STAT_MASTER_ON_HOLD_Field is
-     (--  MASTER_ON_HOLD interrupt is inactive
-      INACTIVE,
-      --  MASTER_ON_HOLD interrupt is active
-      ACTIVE)
-     with Size => 1;
-   for IC_RAW_INTR_STAT_MASTER_ON_HOLD_Field use
-     (INACTIVE => 0,
-      ACTIVE => 1);
-
    --  I2C Raw Interrupt Status Register\n\n Unlike the IC_INTR_STAT register,
    --  these bits are not masked so they always show the true status of the
    --  DW_apb_i2c.
@@ -1515,12 +1469,8 @@ package RP2040_SVD.I2C is
       --  addressed slave when the RESTART is issued, therefore DW_apb_i2c does
       --  not generate the RESTART_DET interrupt.\n\n Reset value: 0x0
       RESTART_DET    : IC_RAW_INTR_STAT_RESTART_DET_Field;
-      --  Read-only. Indicates whether master is holding the bus and TX FIFO is
-      --  empty. Enabled only when I2C_DYNAMIC_TAR_UPDATE=1 and
-      --  IC_EMPTYFIFO_HOLD_MASTER_EN=1.\n\n Reset value: 0x0
-      MASTER_ON_HOLD : IC_RAW_INTR_STAT_MASTER_ON_HOLD_Field;
       --  unspecified
-      Reserved_14_31 : HAL.UInt18;
+      Reserved_13_31 : HAL.UInt19;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -1539,8 +1489,7 @@ package RP2040_SVD.I2C is
       START_DET      at 0 range 10 .. 10;
       GEN_CALL       at 0 range 11 .. 11;
       RESTART_DET    at 0 range 12 .. 12;
-      MASTER_ON_HOLD at 0 range 13 .. 13;
-      Reserved_14_31 at 0 range 14 .. 31;
+      Reserved_13_31 at 0 range 13 .. 31;
    end record;
 
    subtype IC_RX_TL_RX_TL_Field is HAL.UInt8;
@@ -2111,8 +2060,8 @@ package RP2040_SVD.I2C is
    --  to this register succeed only when IC_ENABLE[0]=0.\n\n The values in
    --  this register are in units of ic_clk period. The value programmed in
    --  IC_SDA_TX_HOLD must be greater than the minimum hold time in each mode
-   --  one cycle in master mode, seven cycles in slave mode for the value to be
-   --  implemented.\n\n The programmed SDA hold time during transmit
+   --  (one cycle in master mode, seven cycles in slave mode) for the value to
+   --  be implemented.\n\n The programmed SDA hold time during transmit
    --  (IC_SDA_TX_HOLD) cannot exceed at any time the duration of the low part
    --  of scl. Therefore the programmed value cannot be larger than
    --  N_SCL_LOW-2, where N_SCL_LOW is the duration of the low part of the scl
@@ -3061,8 +3010,8 @@ package RP2040_SVD.I2C is
       --  slave mode.\n\n Writes to this register succeed only when
       --  IC_ENABLE[0]=0.\n\n The values in this register are in units of
       --  ic_clk period. The value programmed in IC_SDA_TX_HOLD must be greater
-      --  than the minimum hold time in each mode one cycle in master mode,
-      --  seven cycles in slave mode for the value to be implemented.\n\n The
+      --  than the minimum hold time in each mode (one cycle in master mode,
+      --  seven cycles in slave mode) for the value to be implemented.\n\n The
       --  programmed SDA hold time during transmit (IC_SDA_TX_HOLD) cannot
       --  exceed at any time the duration of the low part of scl. Therefore the
       --  programmed value cannot be larger than N_SCL_LOW-2, where N_SCL_LOW
@@ -3200,8 +3149,6 @@ package RP2040_SVD.I2C is
    --  DW_apb_i2c address block
    I2C0_Periph : aliased I2C_Peripheral
      with Import, Address => I2C0_Base;
-
-   --  DW_apb_i2c address block
    I2C1_Periph : aliased I2C_Peripheral
      with Import, Address => I2C1_Base;
 

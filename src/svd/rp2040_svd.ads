@@ -47,6 +47,7 @@ package RP2040_SVD is
    VREG_AND_CHIP_RESET_Base : constant System.Address := System'To_Address (16#40064000#);
    TBMAN_Base : constant System.Address := System'To_Address (16#4006C000#);
    DMA_Base : constant System.Address := System'To_Address (16#50000000#);
+   USBCTRL_DPRAM_Base : constant System.Address := System'To_Address (16#50100000#);
    USBCTRL_REGS_Base : constant System.Address := System'To_Address (16#50110000#);
    PIO0_Base : constant System.Address := System'To_Address (16#50200000#);
    PIO1_Base : constant System.Address := System'To_Address (16#50300000#);

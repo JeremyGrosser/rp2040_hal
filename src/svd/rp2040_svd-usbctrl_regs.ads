@@ -365,70 +365,102 @@ package RP2040_SVD.USBCTRL_REGS is
    --  possible for 2 buffers to be completed, so clearing the buffer status
    --  bit may instantly re set it on the next clock cycle.
    type BUFF_STATUS_Register is record
-      --  Read-only.
-      EP0_IN   : Boolean;
-      --  Read-only.
-      EP0_OUT  : Boolean;
-      --  Read-only.
-      EP1_IN   : Boolean;
-      --  Read-only.
-      EP1_OUT  : Boolean;
-      --  Read-only.
-      EP2_IN   : Boolean;
-      --  Read-only.
-      EP2_OUT  : Boolean;
-      --  Read-only.
-      EP3_IN   : Boolean;
-      --  Read-only.
-      EP3_OUT  : Boolean;
-      --  Read-only.
-      EP4_IN   : Boolean;
-      --  Read-only.
-      EP4_OUT  : Boolean;
-      --  Read-only.
-      EP5_IN   : Boolean;
-      --  Read-only.
-      EP5_OUT  : Boolean;
-      --  Read-only.
-      EP6_IN   : Boolean;
-      --  Read-only.
-      EP6_OUT  : Boolean;
-      --  Read-only.
-      EP7_IN   : Boolean;
-      --  Read-only.
-      EP7_OUT  : Boolean;
-      --  Read-only.
-      EP8_IN   : Boolean;
-      --  Read-only.
-      EP8_OUT  : Boolean;
-      --  Read-only.
-      EP9_IN   : Boolean;
-      --  Read-only.
-      EP9_OUT  : Boolean;
-      --  Read-only.
-      EP10_IN  : Boolean;
-      --  Read-only.
-      EP10_OUT : Boolean;
-      --  Read-only.
-      EP11_IN  : Boolean;
-      --  Read-only.
-      EP11_OUT : Boolean;
-      --  Read-only.
-      EP12_IN  : Boolean;
-      --  Read-only.
-      EP12_OUT : Boolean;
-      --  Read-only.
-      EP13_IN  : Boolean;
-      --  Read-only.
-      EP13_OUT : Boolean;
-      --  Read-only.
-      EP14_IN  : Boolean;
-      --  Read-only.
-      EP14_OUT : Boolean;
-      --  Read-only.
-      EP15_IN  : Boolean;
-      --  Read-only.
-      EP15_OUT : Boolean;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP0_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP0_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP1_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP1_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP2_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP2_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP3_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP3_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP4_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP4_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP5_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP5_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP6_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP6_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP7_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP7_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP8_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP8_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP9_IN   : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP9_OUT  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP10_IN  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP10_OUT : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP11_IN  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP11_OUT : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP12_IN  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP12_OUT : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP13_IN  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP13_OUT : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP14_IN  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP14_OUT : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP15_IN  : Boolean := False;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      EP15_OUT : Boolean := False;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -1214,7 +1246,7 @@ package RP2040_SVD.USBCTRL_REGS is
       ERROR_CRC            : Boolean;
       --  Read-only. Source: SIE_STATUS.STALL_REC
       STALL                : Boolean;
-      --  Read-only. Source: SIE_STATUS.VBUS_DETECT
+      --  Read-only. Source: SIE_STATUS.VBUS_DETECTED
       VBUS_DETECT          : Boolean;
       --  Read-only. Source: SIE_STATUS.BUS_RESET
       BUS_RESET            : Boolean;
@@ -1297,7 +1329,7 @@ package RP2040_SVD.USBCTRL_REGS is
       ERROR_CRC            : Boolean := False;
       --  Source: SIE_STATUS.STALL_REC
       STALL                : Boolean := False;
-      --  Source: SIE_STATUS.VBUS_DETECT
+      --  Source: SIE_STATUS.VBUS_DETECTED
       VBUS_DETECT          : Boolean := False;
       --  Source: SIE_STATUS.BUS_RESET
       BUS_RESET            : Boolean := False;
@@ -1380,7 +1412,7 @@ package RP2040_SVD.USBCTRL_REGS is
       ERROR_CRC            : Boolean := False;
       --  Source: SIE_STATUS.STALL_REC
       STALL                : Boolean := False;
-      --  Source: SIE_STATUS.VBUS_DETECT
+      --  Source: SIE_STATUS.VBUS_DETECTED
       VBUS_DETECT          : Boolean := False;
       --  Source: SIE_STATUS.BUS_RESET
       BUS_RESET            : Boolean := False;
@@ -1464,7 +1496,7 @@ package RP2040_SVD.USBCTRL_REGS is
       ERROR_CRC            : Boolean;
       --  Read-only. Source: SIE_STATUS.STALL_REC
       STALL                : Boolean;
-      --  Read-only. Source: SIE_STATUS.VBUS_DETECT
+      --  Read-only. Source: SIE_STATUS.VBUS_DETECTED
       VBUS_DETECT          : Boolean;
       --  Read-only. Source: SIE_STATUS.BUS_RESET
       BUS_RESET            : Boolean;

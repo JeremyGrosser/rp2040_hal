@@ -11,6 +11,7 @@ pragma Restrictions (No_Elaboration_Code);
 with HAL;
 with System;
 
+--  Programmable IO block
 package RP2040_SVD.PIO is
    pragma Preelaborate;
 
@@ -24,16 +25,36 @@ package RP2040_SVD.PIO is
 
    --  PIO control register
    type CTRL_Register is record
-      --  Enable state machine
+      --  Enable/disable each of the four state machines by writing 1/0 to each
+      --  of these four bits. When disabled, a state machine will cease
+      --  executing instructions, except those written directly to SMx_INSTR by
+      --  the system. Multiple bits can be set/cleared at once to run/halt
+      --  multiple state machines simultaneously.
       SM_ENABLE      : CTRL_SM_ENABLE_Field := 16#0#;
       --  After a write operation all bits in the field are cleared (set to
-      --  zero). Clear internal SM state which is otherwise difficult to
-      --  access\n (e.g. shift counters). Self-clearing.
+      --  zero). Write 1 to instantly clear internal SM state which may be
+      --  otherwise difficult to access and will affect future execution.\n\n
+      --  Specifically, the following are cleared: input and output shift
+      --  counters; the contents of the input shift register; the delay
+      --  counter; the waiting-on-IRQ state; any stalled instruction written to
+      --  SMx_INSTR or run by OUT/MOV EXEC; any pin write left asserted due to
+      --  OUT_STICKY.
       SM_RESTART     : CTRL_SM_RESTART_Field := 16#0#;
       --  After a write operation all bits in the field are cleared (set to
-      --  zero). Force clock dividers to restart their count and clear
-      --  fractional\n accumulators. Restart multiple dividers to synchronise
-      --  them.
+      --  zero). Restart a state machine's clock divider from an initial phase
+      --  of 0. Clock dividers are free-running, so once started, their output
+      --  (including fractional jitter) is completely determined by the
+      --  integer/fractional divisor configured in SMx_CLKDIV. This means that,
+      --  if multiple clock dividers with the same divisor are restarted
+      --  simultaneously, by writing multiple 1 bits to this field, the
+      --  execution clocks of those state machines will run in precise
+      --  lockstep.\n\n Note that setting/clearing SM_ENABLE does not stop the
+      --  clock divider from running, so once multiple state machines' clocks
+      --  are synchronised, it is safe to disable/reenable a state machine,
+      --  whilst keeping the clock dividers in sync.\n\n Note also that
+      --  CLKDIV_RESTART can be written to whilst the state machine is running,
+      --  and this is useful to resynchronise clock dividers after the divisors
+      --  (SMx_CLKDIV) have been changed on-the-fly.
       CLKDIV_RESTART : CTRL_CLKDIV_RESTART_Field := 16#0#;
       --  unspecified
       Reserved_12_31 : HAL.UInt20 := 16#0#;
@@ -94,24 +115,34 @@ package RP2040_SVD.PIO is
    --  FIFO debug register
    type FDEBUG_Register is record
       --  Write data bit of one shall clear (set to zero) the corresponding bit
-      --  in the field. State machine has stalled on full RX FIFO. Write 1 to
-      --  clear.
+      --  in the field. State machine has stalled on full RX FIFO during a
+      --  blocking PUSH, or an IN with autopush enabled. This flag is also set
+      --  when a nonblocking PUSH to a full FIFO took place, in which case the
+      --  state machine has dropped data. Write 1 to clear.
       RXSTALL        : FDEBUG_RXSTALL_Field := 16#0#;
       --  unspecified
       Reserved_4_7   : HAL.UInt4 := 16#0#;
       --  Write data bit of one shall clear (set to zero) the corresponding bit
-      --  in the field. RX FIFO underflow has occurred. Write 1 to clear.
+      --  in the field. RX FIFO underflow (i.e. read-on-empty by the system)
+      --  has occurred. Write 1 to clear. Note that read-on-empty does not
+      --  perturb the state of the FIFO in any way, but the data returned by
+      --  reading from an empty FIFO is undefined, so this flag generally only
+      --  becomes set due to some kind of software error.
       RXUNDER        : FDEBUG_RXUNDER_Field := 16#0#;
       --  unspecified
       Reserved_12_15 : HAL.UInt4 := 16#0#;
       --  Write data bit of one shall clear (set to zero) the corresponding bit
-      --  in the field. TX FIFO overflow has occurred. Write 1 to clear.
+      --  in the field. TX FIFO overflow (i.e. write-on-full by the system) has
+      --  occurred. Write 1 to clear. Note that write-on-full does not alter
+      --  the state or contents of the FIFO in any way, but the data that the
+      --  system attempted to write is dropped, so if this flag is set, your
+      --  software has quite likely dropped some data on the floor.
       TXOVER         : FDEBUG_TXOVER_Field := 16#0#;
       --  unspecified
       Reserved_20_23 : HAL.UInt4 := 16#0#;
       --  Write data bit of one shall clear (set to zero) the corresponding bit
-      --  in the field. State machine has stalled on empty TX FIFO. Write 1 to
-      --  clear.
+      --  in the field. State machine has stalled on empty TX FIFO during a
+      --  blocking PULL, or an OUT with autopull enabled. Write 1 to clear.
       TXSTALL        : FDEBUG_TXSTALL_Field := 16#0#;
       --  unspecified
       Reserved_28_31 : HAL.UInt4 := 16#0#;
@@ -174,7 +205,14 @@ package RP2040_SVD.PIO is
 
    subtype IRQ_IRQ_Field is HAL.UInt8;
 
-   --  Interrupt request register. Write 1 to clear
+   --  State machine IRQ flags register. Write 1 to clear. There are 8 state
+   --  machine IRQ flags, which can be set, cleared, and waited on by the state
+   --  machines. There's no fixed association between flags and state machines
+   --  -- any state machine can use any flag.\n\n Any of the 8 flags can be
+   --  used for timing synchronisation between state machines, using IRQ and
+   --  WAIT instructions. The lower four of these flags are also routed out to
+   --  system-level interrupt requests, alongside FIFO status interrupts -- see
+   --  e.g. IRQ0_INTE.
    type IRQ_Register is record
       --  Write data bit of one shall clear (set to zero) the corresponding bit
       --  in the field.
@@ -193,9 +231,9 @@ package RP2040_SVD.PIO is
    subtype IRQ_FORCE_IRQ_FORCE_Field is HAL.UInt8;
 
    --  Writing a 1 to each of these bits will forcibly assert the corresponding
-   --  IRQ.\n Note this is different to the INTF register: writing here affects
-   --  PIO internal\n state. INTF just asserts the processor-facing IRQ signal
-   --  for testing ISRs,\n and is not visible to the state machines.
+   --  IRQ. Note this is different to the INTF register: writing here affects
+   --  PIO internal state. INTF just asserts the processor-facing IRQ signal
+   --  for testing ISRs, and is not visible to the state machines.
    type IRQ_FORCE_Register is record
       --  Write-only.
       IRQ_FORCE     : IRQ_FORCE_IRQ_FORCE_Field := 16#0#;
@@ -762,15 +800,15 @@ package RP2040_SVD.PIO is
    subtype SM0_CLKDIV_FRAC_Field is HAL.UInt8;
    subtype SM0_CLKDIV_INT_Field is HAL.UInt16;
 
-   --  Clock divider register for state machine 0\n Frequency = clock freq /
+   --  Clock divisor register for state machine 0\n Frequency = clock freq /
    --  (CLKDIV_INT + CLKDIV_FRAC / 256)
    type SM0_CLKDIV_Register is record
       --  unspecified
       Reserved_0_7 : HAL.UInt8 := 16#0#;
-      --  Fractional part of clock divider
+      --  Fractional part of clock divisor
       FRAC         : SM0_CLKDIV_FRAC_Field := 16#0#;
-      --  Effective frequency is sysclk/int.\n Value of 0 is interpreted as max
-      --  possible value
+      --  Effective frequency is sysclk/(int + frac/256).\n Value of 0 is
+      --  interpreted as 65536. If INT is 0, FRAC must also be 0.
       INT          : SM0_CLKDIV_INT_Field := 16#1#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -805,7 +843,8 @@ package RP2040_SVD.PIO is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM0_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM0_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
+      STATUS_SEL    : SM0_EXECCTRL_STATUS_SEL_Field :=
+                       RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -827,14 +866,18 @@ package RP2040_SVD.PIO is
       --  The GPIO number to use as condition for JMP PIN. Unaffected by input
       --  mapping.
       JMP_PIN       : SM0_EXECCTRL_JMP_PIN_Field := 16#0#;
-      --  Side-set data is asserted to pin OEs instead of pin values
+      --  If 1, side-set data is asserted to pin directions, instead of pin
+      --  values
       SIDE_PINDIR   : Boolean := False;
-      --  If 1, the delay MSB is used as side-set enable, rather than a\n
-      --  side-set data bit. This allows instructions to perform side-set
-      --  optionally,\n rather than on every instruction.
+      --  If 1, the MSB of the Delay/Side-set instruction field is used as
+      --  side-set enable, rather than a side-set data bit. This allows
+      --  instructions to perform side-set optionally, rather than on every
+      --  instruction, but the maximum possible side-set width is reduced from
+      --  5 to 4. Note that the value of PINCTRL_SIDESET_COUNT is inclusive of
+      --  this enable bit.
       SIDE_EN       : Boolean := False;
-      --  Read-only. An instruction written to SMx_INSTR is stalled, and
-      --  latched by the\n state machine. Will clear once the instruction
+      --  Read-only. If 1, an instruction written to SMx_INSTR is stalled, and
+      --  latched by the state machine. Will clear to 0 once this instruction
       --  completes.
       EXEC_STALLED  : Boolean := False;
    end record
@@ -864,20 +907,24 @@ package RP2040_SVD.PIO is
    type SM0_SHIFTCTRL_Register is record
       --  unspecified
       Reserved_0_15 : HAL.UInt16 := 16#0#;
-      --  Push automatically when the input shift register is filled
+      --  Push automatically when the input shift register is filled, i.e. on
+      --  an IN instruction which causes the input shift counter to reach or
+      --  exceed PUSH_THRESH.
       AUTOPUSH      : Boolean := False;
-      --  Pull automatically when the output shift register is emptied
+      --  Pull automatically when the output shift register is emptied, i.e. on
+      --  or following an OUT instruction which causes the output shift counter
+      --  to reach or exceed PULL_THRESH.
       AUTOPULL      : Boolean := False;
       --  1 = shift input shift register to right (data enters from left). 0 =
       --  to left.
       IN_SHIFTDIR   : Boolean := True;
       --  1 = shift out of output shift register to right. 0 = to left.
       OUT_SHIFTDIR  : Boolean := True;
-      --  Number of bits shifted into RXSR before autopush or conditional
-      --  push.\n Write 0 for value of 32.
+      --  Number of bits shifted into ISR before autopush, or conditional push
+      --  (PUSH IFFULL), will take place.\n Write 0 for value of 32.
       PUSH_THRESH   : SM0_SHIFTCTRL_PUSH_THRESH_Field := 16#0#;
-      --  Number of bits shifted out of TXSR before autopull or conditional
-      --  pull.\n Write 0 for value of 32.
+      --  Number of bits shifted out of OSR before autopull, or conditional
+      --  pull (PULL IFEMPTY), will take place.\n Write 0 for value of 32.
       PULL_THRESH   : SM0_SHIFTCTRL_PULL_THRESH_Field := 16#0#;
       --  When 1, TX FIFO steals the RX FIFO's storage, and becomes twice as
       --  deep.\n RX FIFO is disabled as a result (always reads as both full
@@ -922,9 +969,9 @@ package RP2040_SVD.PIO is
 
    subtype SM0_INSTR_SM0_INSTR_Field is HAL.UInt16;
 
-   --  Instruction currently being executed by state machine 0\n Write to
-   --  execute an instruction immediately (including jumps) and then resume
-   --  execution.
+   --  Read to see the instruction currently addressed by state machine 0's
+   --  program counter\n Write to execute an instruction immediately (including
+   --  jumps) and then resume execution.
    type SM0_INSTR_Register is record
       SM0_INSTR      : SM0_INSTR_SM0_INSTR_Field := 16#0#;
       --  unspecified
@@ -948,20 +995,35 @@ package RP2040_SVD.PIO is
 
    --  State machine pin control
    type SM0_PINCTRL_Register is record
-      --  The virtual pin corresponding to OUT bit 0
+      --  The lowest-numbered pin that will be affected by an OUT PINS, OUT
+      --  PINDIRS or MOV PINS instruction. The data written to this pin will
+      --  always be the least-significant bit of the OUT or MOV data.
       OUT_BASE      : SM0_PINCTRL_OUT_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to SET bit 0
+      --  The lowest-numbered pin that will be affected by a SET PINS or SET
+      --  PINDIRS instruction. The data written to this pin is the
+      --  least-significant bit of the SET data.
       SET_BASE      : SM0_PINCTRL_SET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to delay field bit 0
+      --  The lowest-numbered pin that will be affected by a side-set
+      --  operation. The MSBs of an instruction's side-set/delay field (up to
+      --  5, determined by SIDESET_COUNT) are used for side-set data, with the
+      --  remaining LSBs used for delay. The least-significant bit of the
+      --  side-set portion is the bit written to this pin, with
+      --  more-significant bits written to higher-numbered pins.
       SIDESET_BASE  : SM0_PINCTRL_SIDESET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to IN bit 0
+      --  The pin which is mapped to the least-significant bit of a state
+      --  machine's IN data bus. Higher-numbered pins are mapped to
+      --  consecutively more-significant data bits, with a modulo of 32 applied
+      --  to pin number.
       IN_BASE       : SM0_PINCTRL_IN_BASE_Field := 16#0#;
-      --  The number of pins asserted by an OUT. Value of 0 -> 32 pins
+      --  The number of pins asserted by an OUT PINS, OUT PINDIRS or MOV PINS
+      --  instruction. In the range 0 to 32 inclusive.
       OUT_COUNT     : SM0_PINCTRL_OUT_COUNT_Field := 16#0#;
-      --  The number of pins asserted by a SET. Max of 5
+      --  The number of pins asserted by a SET. In the range 0 to 5 inclusive.
       SET_COUNT     : SM0_PINCTRL_SET_COUNT_Field := 16#5#;
-      --  The number of delay bits co-opted for side-set. Inclusive of the
-      --  enable bit, if present.
+      --  The number of MSBs of the Delay/Side-set instruction field which are
+      --  used for side-set. Inclusive of the enable bit, if present. Minimum
+      --  of 0 (all delay bits, no side-set) and maximum of 5 (all side-set, no
+      --  delay).
       SIDESET_COUNT : SM0_PINCTRL_SIDESET_COUNT_Field := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -980,15 +1042,15 @@ package RP2040_SVD.PIO is
    subtype SM1_CLKDIV_FRAC_Field is HAL.UInt8;
    subtype SM1_CLKDIV_INT_Field is HAL.UInt16;
 
-   --  Clock divider register for state machine 1\n Frequency = clock freq /
+   --  Clock divisor register for state machine 1\n Frequency = clock freq /
    --  (CLKDIV_INT + CLKDIV_FRAC / 256)
    type SM1_CLKDIV_Register is record
       --  unspecified
       Reserved_0_7 : HAL.UInt8 := 16#0#;
-      --  Fractional part of clock divider
+      --  Fractional part of clock divisor
       FRAC         : SM1_CLKDIV_FRAC_Field := 16#0#;
-      --  Effective frequency is sysclk/int.\n Value of 0 is interpreted as max
-      --  possible value
+      --  Effective frequency is sysclk/(int + frac/256).\n Value of 0 is
+      --  interpreted as 65536. If INT is 0, FRAC must also be 0.
       INT          : SM1_CLKDIV_INT_Field := 16#1#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -1023,7 +1085,8 @@ package RP2040_SVD.PIO is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM1_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM1_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
+      STATUS_SEL    : SM1_EXECCTRL_STATUS_SEL_Field :=
+                       RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -1045,14 +1108,18 @@ package RP2040_SVD.PIO is
       --  The GPIO number to use as condition for JMP PIN. Unaffected by input
       --  mapping.
       JMP_PIN       : SM1_EXECCTRL_JMP_PIN_Field := 16#0#;
-      --  Side-set data is asserted to pin OEs instead of pin values
+      --  If 1, side-set data is asserted to pin directions, instead of pin
+      --  values
       SIDE_PINDIR   : Boolean := False;
-      --  If 1, the delay MSB is used as side-set enable, rather than a\n
-      --  side-set data bit. This allows instructions to perform side-set
-      --  optionally,\n rather than on every instruction.
+      --  If 1, the MSB of the Delay/Side-set instruction field is used as
+      --  side-set enable, rather than a side-set data bit. This allows
+      --  instructions to perform side-set optionally, rather than on every
+      --  instruction, but the maximum possible side-set width is reduced from
+      --  5 to 4. Note that the value of PINCTRL_SIDESET_COUNT is inclusive of
+      --  this enable bit.
       SIDE_EN       : Boolean := False;
-      --  Read-only. An instruction written to SMx_INSTR is stalled, and
-      --  latched by the\n state machine. Will clear once the instruction
+      --  Read-only. If 1, an instruction written to SMx_INSTR is stalled, and
+      --  latched by the state machine. Will clear to 0 once this instruction
       --  completes.
       EXEC_STALLED  : Boolean := False;
    end record
@@ -1082,20 +1149,24 @@ package RP2040_SVD.PIO is
    type SM1_SHIFTCTRL_Register is record
       --  unspecified
       Reserved_0_15 : HAL.UInt16 := 16#0#;
-      --  Push automatically when the input shift register is filled
+      --  Push automatically when the input shift register is filled, i.e. on
+      --  an IN instruction which causes the input shift counter to reach or
+      --  exceed PUSH_THRESH.
       AUTOPUSH      : Boolean := False;
-      --  Pull automatically when the output shift register is emptied
+      --  Pull automatically when the output shift register is emptied, i.e. on
+      --  or following an OUT instruction which causes the output shift counter
+      --  to reach or exceed PULL_THRESH.
       AUTOPULL      : Boolean := False;
       --  1 = shift input shift register to right (data enters from left). 0 =
       --  to left.
       IN_SHIFTDIR   : Boolean := True;
       --  1 = shift out of output shift register to right. 0 = to left.
       OUT_SHIFTDIR  : Boolean := True;
-      --  Number of bits shifted into RXSR before autopush or conditional
-      --  push.\n Write 0 for value of 32.
+      --  Number of bits shifted into ISR before autopush, or conditional push
+      --  (PUSH IFFULL), will take place.\n Write 0 for value of 32.
       PUSH_THRESH   : SM1_SHIFTCTRL_PUSH_THRESH_Field := 16#0#;
-      --  Number of bits shifted out of TXSR before autopull or conditional
-      --  pull.\n Write 0 for value of 32.
+      --  Number of bits shifted out of OSR before autopull, or conditional
+      --  pull (PULL IFEMPTY), will take place.\n Write 0 for value of 32.
       PULL_THRESH   : SM1_SHIFTCTRL_PULL_THRESH_Field := 16#0#;
       --  When 1, TX FIFO steals the RX FIFO's storage, and becomes twice as
       --  deep.\n RX FIFO is disabled as a result (always reads as both full
@@ -1140,9 +1211,9 @@ package RP2040_SVD.PIO is
 
    subtype SM1_INSTR_SM1_INSTR_Field is HAL.UInt16;
 
-   --  Instruction currently being executed by state machine 1\n Write to
-   --  execute an instruction immediately (including jumps) and then resume
-   --  execution.
+   --  Read to see the instruction currently addressed by state machine 1's
+   --  program counter\n Write to execute an instruction immediately (including
+   --  jumps) and then resume execution.
    type SM1_INSTR_Register is record
       SM1_INSTR      : SM1_INSTR_SM1_INSTR_Field := 16#0#;
       --  unspecified
@@ -1166,20 +1237,35 @@ package RP2040_SVD.PIO is
 
    --  State machine pin control
    type SM1_PINCTRL_Register is record
-      --  The virtual pin corresponding to OUT bit 0
+      --  The lowest-numbered pin that will be affected by an OUT PINS, OUT
+      --  PINDIRS or MOV PINS instruction. The data written to this pin will
+      --  always be the least-significant bit of the OUT or MOV data.
       OUT_BASE      : SM1_PINCTRL_OUT_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to SET bit 0
+      --  The lowest-numbered pin that will be affected by a SET PINS or SET
+      --  PINDIRS instruction. The data written to this pin is the
+      --  least-significant bit of the SET data.
       SET_BASE      : SM1_PINCTRL_SET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to delay field bit 0
+      --  The lowest-numbered pin that will be affected by a side-set
+      --  operation. The MSBs of an instruction's side-set/delay field (up to
+      --  5, determined by SIDESET_COUNT) are used for side-set data, with the
+      --  remaining LSBs used for delay. The least-significant bit of the
+      --  side-set portion is the bit written to this pin, with
+      --  more-significant bits written to higher-numbered pins.
       SIDESET_BASE  : SM1_PINCTRL_SIDESET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to IN bit 0
+      --  The pin which is mapped to the least-significant bit of a state
+      --  machine's IN data bus. Higher-numbered pins are mapped to
+      --  consecutively more-significant data bits, with a modulo of 32 applied
+      --  to pin number.
       IN_BASE       : SM1_PINCTRL_IN_BASE_Field := 16#0#;
-      --  The number of pins asserted by an OUT. Value of 0 -> 32 pins
+      --  The number of pins asserted by an OUT PINS, OUT PINDIRS or MOV PINS
+      --  instruction. In the range 0 to 32 inclusive.
       OUT_COUNT     : SM1_PINCTRL_OUT_COUNT_Field := 16#0#;
-      --  The number of pins asserted by a SET. Max of 5
+      --  The number of pins asserted by a SET. In the range 0 to 5 inclusive.
       SET_COUNT     : SM1_PINCTRL_SET_COUNT_Field := 16#5#;
-      --  The number of delay bits co-opted for side-set. Inclusive of the
-      --  enable bit, if present.
+      --  The number of MSBs of the Delay/Side-set instruction field which are
+      --  used for side-set. Inclusive of the enable bit, if present. Minimum
+      --  of 0 (all delay bits, no side-set) and maximum of 5 (all side-set, no
+      --  delay).
       SIDESET_COUNT : SM1_PINCTRL_SIDESET_COUNT_Field := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -1198,15 +1284,15 @@ package RP2040_SVD.PIO is
    subtype SM2_CLKDIV_FRAC_Field is HAL.UInt8;
    subtype SM2_CLKDIV_INT_Field is HAL.UInt16;
 
-   --  Clock divider register for state machine 2\n Frequency = clock freq /
+   --  Clock divisor register for state machine 2\n Frequency = clock freq /
    --  (CLKDIV_INT + CLKDIV_FRAC / 256)
    type SM2_CLKDIV_Register is record
       --  unspecified
       Reserved_0_7 : HAL.UInt8 := 16#0#;
-      --  Fractional part of clock divider
+      --  Fractional part of clock divisor
       FRAC         : SM2_CLKDIV_FRAC_Field := 16#0#;
-      --  Effective frequency is sysclk/int.\n Value of 0 is interpreted as max
-      --  possible value
+      --  Effective frequency is sysclk/(int + frac/256).\n Value of 0 is
+      --  interpreted as 65536. If INT is 0, FRAC must also be 0.
       INT          : SM2_CLKDIV_INT_Field := 16#1#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -1241,7 +1327,8 @@ package RP2040_SVD.PIO is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM2_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM2_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
+      STATUS_SEL    : SM2_EXECCTRL_STATUS_SEL_Field :=
+                       RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -1263,14 +1350,18 @@ package RP2040_SVD.PIO is
       --  The GPIO number to use as condition for JMP PIN. Unaffected by input
       --  mapping.
       JMP_PIN       : SM2_EXECCTRL_JMP_PIN_Field := 16#0#;
-      --  Side-set data is asserted to pin OEs instead of pin values
+      --  If 1, side-set data is asserted to pin directions, instead of pin
+      --  values
       SIDE_PINDIR   : Boolean := False;
-      --  If 1, the delay MSB is used as side-set enable, rather than a\n
-      --  side-set data bit. This allows instructions to perform side-set
-      --  optionally,\n rather than on every instruction.
+      --  If 1, the MSB of the Delay/Side-set instruction field is used as
+      --  side-set enable, rather than a side-set data bit. This allows
+      --  instructions to perform side-set optionally, rather than on every
+      --  instruction, but the maximum possible side-set width is reduced from
+      --  5 to 4. Note that the value of PINCTRL_SIDESET_COUNT is inclusive of
+      --  this enable bit.
       SIDE_EN       : Boolean := False;
-      --  Read-only. An instruction written to SMx_INSTR is stalled, and
-      --  latched by the\n state machine. Will clear once the instruction
+      --  Read-only. If 1, an instruction written to SMx_INSTR is stalled, and
+      --  latched by the state machine. Will clear to 0 once this instruction
       --  completes.
       EXEC_STALLED  : Boolean := False;
    end record
@@ -1300,20 +1391,24 @@ package RP2040_SVD.PIO is
    type SM2_SHIFTCTRL_Register is record
       --  unspecified
       Reserved_0_15 : HAL.UInt16 := 16#0#;
-      --  Push automatically when the input shift register is filled
+      --  Push automatically when the input shift register is filled, i.e. on
+      --  an IN instruction which causes the input shift counter to reach or
+      --  exceed PUSH_THRESH.
       AUTOPUSH      : Boolean := False;
-      --  Pull automatically when the output shift register is emptied
+      --  Pull automatically when the output shift register is emptied, i.e. on
+      --  or following an OUT instruction which causes the output shift counter
+      --  to reach or exceed PULL_THRESH.
       AUTOPULL      : Boolean := False;
       --  1 = shift input shift register to right (data enters from left). 0 =
       --  to left.
       IN_SHIFTDIR   : Boolean := True;
       --  1 = shift out of output shift register to right. 0 = to left.
       OUT_SHIFTDIR  : Boolean := True;
-      --  Number of bits shifted into RXSR before autopush or conditional
-      --  push.\n Write 0 for value of 32.
+      --  Number of bits shifted into ISR before autopush, or conditional push
+      --  (PUSH IFFULL), will take place.\n Write 0 for value of 32.
       PUSH_THRESH   : SM2_SHIFTCTRL_PUSH_THRESH_Field := 16#0#;
-      --  Number of bits shifted out of TXSR before autopull or conditional
-      --  pull.\n Write 0 for value of 32.
+      --  Number of bits shifted out of OSR before autopull, or conditional
+      --  pull (PULL IFEMPTY), will take place.\n Write 0 for value of 32.
       PULL_THRESH   : SM2_SHIFTCTRL_PULL_THRESH_Field := 16#0#;
       --  When 1, TX FIFO steals the RX FIFO's storage, and becomes twice as
       --  deep.\n RX FIFO is disabled as a result (always reads as both full
@@ -1358,9 +1453,9 @@ package RP2040_SVD.PIO is
 
    subtype SM2_INSTR_SM2_INSTR_Field is HAL.UInt16;
 
-   --  Instruction currently being executed by state machine 2\n Write to
-   --  execute an instruction immediately (including jumps) and then resume
-   --  execution.
+   --  Read to see the instruction currently addressed by state machine 2's
+   --  program counter\n Write to execute an instruction immediately (including
+   --  jumps) and then resume execution.
    type SM2_INSTR_Register is record
       SM2_INSTR      : SM2_INSTR_SM2_INSTR_Field := 16#0#;
       --  unspecified
@@ -1384,20 +1479,35 @@ package RP2040_SVD.PIO is
 
    --  State machine pin control
    type SM2_PINCTRL_Register is record
-      --  The virtual pin corresponding to OUT bit 0
+      --  The lowest-numbered pin that will be affected by an OUT PINS, OUT
+      --  PINDIRS or MOV PINS instruction. The data written to this pin will
+      --  always be the least-significant bit of the OUT or MOV data.
       OUT_BASE      : SM2_PINCTRL_OUT_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to SET bit 0
+      --  The lowest-numbered pin that will be affected by a SET PINS or SET
+      --  PINDIRS instruction. The data written to this pin is the
+      --  least-significant bit of the SET data.
       SET_BASE      : SM2_PINCTRL_SET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to delay field bit 0
+      --  The lowest-numbered pin that will be affected by a side-set
+      --  operation. The MSBs of an instruction's side-set/delay field (up to
+      --  5, determined by SIDESET_COUNT) are used for side-set data, with the
+      --  remaining LSBs used for delay. The least-significant bit of the
+      --  side-set portion is the bit written to this pin, with
+      --  more-significant bits written to higher-numbered pins.
       SIDESET_BASE  : SM2_PINCTRL_SIDESET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to IN bit 0
+      --  The pin which is mapped to the least-significant bit of a state
+      --  machine's IN data bus. Higher-numbered pins are mapped to
+      --  consecutively more-significant data bits, with a modulo of 32 applied
+      --  to pin number.
       IN_BASE       : SM2_PINCTRL_IN_BASE_Field := 16#0#;
-      --  The number of pins asserted by an OUT. Value of 0 -> 32 pins
+      --  The number of pins asserted by an OUT PINS, OUT PINDIRS or MOV PINS
+      --  instruction. In the range 0 to 32 inclusive.
       OUT_COUNT     : SM2_PINCTRL_OUT_COUNT_Field := 16#0#;
-      --  The number of pins asserted by a SET. Max of 5
+      --  The number of pins asserted by a SET. In the range 0 to 5 inclusive.
       SET_COUNT     : SM2_PINCTRL_SET_COUNT_Field := 16#5#;
-      --  The number of delay bits co-opted for side-set. Inclusive of the
-      --  enable bit, if present.
+      --  The number of MSBs of the Delay/Side-set instruction field which are
+      --  used for side-set. Inclusive of the enable bit, if present. Minimum
+      --  of 0 (all delay bits, no side-set) and maximum of 5 (all side-set, no
+      --  delay).
       SIDESET_COUNT : SM2_PINCTRL_SIDESET_COUNT_Field := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -1416,15 +1526,15 @@ package RP2040_SVD.PIO is
    subtype SM3_CLKDIV_FRAC_Field is HAL.UInt8;
    subtype SM3_CLKDIV_INT_Field is HAL.UInt16;
 
-   --  Clock divider register for state machine 3\n Frequency = clock freq /
+   --  Clock divisor register for state machine 3\n Frequency = clock freq /
    --  (CLKDIV_INT + CLKDIV_FRAC / 256)
    type SM3_CLKDIV_Register is record
       --  unspecified
       Reserved_0_7 : HAL.UInt8 := 16#0#;
-      --  Fractional part of clock divider
+      --  Fractional part of clock divisor
       FRAC         : SM3_CLKDIV_FRAC_Field := 16#0#;
-      --  Effective frequency is sysclk/int.\n Value of 0 is interpreted as max
-      --  possible value
+      --  Effective frequency is sysclk/(int + frac/256).\n Value of 0 is
+      --  interpreted as 65536. If INT is 0, FRAC must also be 0.
       INT          : SM3_CLKDIV_INT_Field := 16#1#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -1459,7 +1569,8 @@ package RP2040_SVD.PIO is
       --  Comparison level for the MOV x, STATUS instruction
       STATUS_N      : SM3_EXECCTRL_STATUS_N_Field := 16#0#;
       --  Comparison used for the MOV x, STATUS instruction.
-      STATUS_SEL    : SM3_EXECCTRL_STATUS_SEL_Field := RP2040_SVD.PIO.TXLEVEL;
+      STATUS_SEL    : SM3_EXECCTRL_STATUS_SEL_Field :=
+                       RP2040_SVD.PIO.TXLEVEL;
       --  unspecified
       Reserved_5_6  : HAL.UInt2 := 16#0#;
       --  After reaching wrap_top, execution is wrapped to this address.
@@ -1481,14 +1592,18 @@ package RP2040_SVD.PIO is
       --  The GPIO number to use as condition for JMP PIN. Unaffected by input
       --  mapping.
       JMP_PIN       : SM3_EXECCTRL_JMP_PIN_Field := 16#0#;
-      --  Side-set data is asserted to pin OEs instead of pin values
+      --  If 1, side-set data is asserted to pin directions, instead of pin
+      --  values
       SIDE_PINDIR   : Boolean := False;
-      --  If 1, the delay MSB is used as side-set enable, rather than a\n
-      --  side-set data bit. This allows instructions to perform side-set
-      --  optionally,\n rather than on every instruction.
+      --  If 1, the MSB of the Delay/Side-set instruction field is used as
+      --  side-set enable, rather than a side-set data bit. This allows
+      --  instructions to perform side-set optionally, rather than on every
+      --  instruction, but the maximum possible side-set width is reduced from
+      --  5 to 4. Note that the value of PINCTRL_SIDESET_COUNT is inclusive of
+      --  this enable bit.
       SIDE_EN       : Boolean := False;
-      --  Read-only. An instruction written to SMx_INSTR is stalled, and
-      --  latched by the\n state machine. Will clear once the instruction
+      --  Read-only. If 1, an instruction written to SMx_INSTR is stalled, and
+      --  latched by the state machine. Will clear to 0 once this instruction
       --  completes.
       EXEC_STALLED  : Boolean := False;
    end record
@@ -1518,20 +1633,24 @@ package RP2040_SVD.PIO is
    type SM3_SHIFTCTRL_Register is record
       --  unspecified
       Reserved_0_15 : HAL.UInt16 := 16#0#;
-      --  Push automatically when the input shift register is filled
+      --  Push automatically when the input shift register is filled, i.e. on
+      --  an IN instruction which causes the input shift counter to reach or
+      --  exceed PUSH_THRESH.
       AUTOPUSH      : Boolean := False;
-      --  Pull automatically when the output shift register is emptied
+      --  Pull automatically when the output shift register is emptied, i.e. on
+      --  or following an OUT instruction which causes the output shift counter
+      --  to reach or exceed PULL_THRESH.
       AUTOPULL      : Boolean := False;
       --  1 = shift input shift register to right (data enters from left). 0 =
       --  to left.
       IN_SHIFTDIR   : Boolean := True;
       --  1 = shift out of output shift register to right. 0 = to left.
       OUT_SHIFTDIR  : Boolean := True;
-      --  Number of bits shifted into RXSR before autopush or conditional
-      --  push.\n Write 0 for value of 32.
+      --  Number of bits shifted into ISR before autopush, or conditional push
+      --  (PUSH IFFULL), will take place.\n Write 0 for value of 32.
       PUSH_THRESH   : SM3_SHIFTCTRL_PUSH_THRESH_Field := 16#0#;
-      --  Number of bits shifted out of TXSR before autopull or conditional
-      --  pull.\n Write 0 for value of 32.
+      --  Number of bits shifted out of OSR before autopull, or conditional
+      --  pull (PULL IFEMPTY), will take place.\n Write 0 for value of 32.
       PULL_THRESH   : SM3_SHIFTCTRL_PULL_THRESH_Field := 16#0#;
       --  When 1, TX FIFO steals the RX FIFO's storage, and becomes twice as
       --  deep.\n RX FIFO is disabled as a result (always reads as both full
@@ -1576,9 +1695,9 @@ package RP2040_SVD.PIO is
 
    subtype SM3_INSTR_SM3_INSTR_Field is HAL.UInt16;
 
-   --  Instruction currently being executed by state machine 3\n Write to
-   --  execute an instruction immediately (including jumps) and then resume
-   --  execution.
+   --  Read to see the instruction currently addressed by state machine 3's
+   --  program counter\n Write to execute an instruction immediately (including
+   --  jumps) and then resume execution.
    type SM3_INSTR_Register is record
       SM3_INSTR      : SM3_INSTR_SM3_INSTR_Field := 16#0#;
       --  unspecified
@@ -1602,20 +1721,35 @@ package RP2040_SVD.PIO is
 
    --  State machine pin control
    type SM3_PINCTRL_Register is record
-      --  The virtual pin corresponding to OUT bit 0
+      --  The lowest-numbered pin that will be affected by an OUT PINS, OUT
+      --  PINDIRS or MOV PINS instruction. The data written to this pin will
+      --  always be the least-significant bit of the OUT or MOV data.
       OUT_BASE      : SM3_PINCTRL_OUT_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to SET bit 0
+      --  The lowest-numbered pin that will be affected by a SET PINS or SET
+      --  PINDIRS instruction. The data written to this pin is the
+      --  least-significant bit of the SET data.
       SET_BASE      : SM3_PINCTRL_SET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to delay field bit 0
+      --  The lowest-numbered pin that will be affected by a side-set
+      --  operation. The MSBs of an instruction's side-set/delay field (up to
+      --  5, determined by SIDESET_COUNT) are used for side-set data, with the
+      --  remaining LSBs used for delay. The least-significant bit of the
+      --  side-set portion is the bit written to this pin, with
+      --  more-significant bits written to higher-numbered pins.
       SIDESET_BASE  : SM3_PINCTRL_SIDESET_BASE_Field := 16#0#;
-      --  The virtual pin corresponding to IN bit 0
+      --  The pin which is mapped to the least-significant bit of a state
+      --  machine's IN data bus. Higher-numbered pins are mapped to
+      --  consecutively more-significant data bits, with a modulo of 32 applied
+      --  to pin number.
       IN_BASE       : SM3_PINCTRL_IN_BASE_Field := 16#0#;
-      --  The number of pins asserted by an OUT. Value of 0 -> 32 pins
+      --  The number of pins asserted by an OUT PINS, OUT PINDIRS or MOV PINS
+      --  instruction. In the range 0 to 32 inclusive.
       OUT_COUNT     : SM3_PINCTRL_OUT_COUNT_Field := 16#0#;
-      --  The number of pins asserted by a SET. Max of 5
+      --  The number of pins asserted by a SET. In the range 0 to 5 inclusive.
       SET_COUNT     : SM3_PINCTRL_SET_COUNT_Field := 16#5#;
-      --  The number of delay bits co-opted for side-set. Inclusive of the
-      --  enable bit, if present.
+      --  The number of MSBs of the Delay/Side-set instruction field which are
+      --  used for side-set. Inclusive of the enable bit, if present. Minimum
+      --  of 0 (all delay bits, no side-set) and maximum of 5 (all side-set, no
+      --  delay).
       SIDESET_COUNT : SM3_PINCTRL_SIDESET_COUNT_Field := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
@@ -2055,49 +2189,78 @@ package RP2040_SVD.PIO is
       --  FIFO levels
       FLEVEL            : aliased FLEVEL_Register;
       --  Direct write access to the TX FIFO for this state machine. Each write
-      --  pushes one word to the FIFO.
+      --  pushes one word to the FIFO. Attempting to write to a full FIFO has
+      --  no effect on the FIFO state or contents, and sets the sticky
+      --  FDEBUG_TXOVER error flag for this FIFO.
       TXF0              : aliased HAL.UInt32;
       --  Direct write access to the TX FIFO for this state machine. Each write
-      --  pushes one word to the FIFO.
+      --  pushes one word to the FIFO. Attempting to write to a full FIFO has
+      --  no effect on the FIFO state or contents, and sets the sticky
+      --  FDEBUG_TXOVER error flag for this FIFO.
       TXF1              : aliased HAL.UInt32;
       --  Direct write access to the TX FIFO for this state machine. Each write
-      --  pushes one word to the FIFO.
+      --  pushes one word to the FIFO. Attempting to write to a full FIFO has
+      --  no effect on the FIFO state or contents, and sets the sticky
+      --  FDEBUG_TXOVER error flag for this FIFO.
       TXF2              : aliased HAL.UInt32;
       --  Direct write access to the TX FIFO for this state machine. Each write
-      --  pushes one word to the FIFO.
+      --  pushes one word to the FIFO. Attempting to write to a full FIFO has
+      --  no effect on the FIFO state or contents, and sets the sticky
+      --  FDEBUG_TXOVER error flag for this FIFO.
       TXF3              : aliased HAL.UInt32;
       --  Direct read access to the RX FIFO for this state machine. Each read
-      --  pops one word from the FIFO.
+      --  pops one word from the FIFO. Attempting to read from an empty FIFO
+      --  has no effect on the FIFO state, and sets the sticky FDEBUG_RXUNDER
+      --  error flag for this FIFO. The data returned to the system on a read
+      --  from an empty FIFO is undefined.
       RXF0              : aliased HAL.UInt32;
       --  Direct read access to the RX FIFO for this state machine. Each read
-      --  pops one word from the FIFO.
+      --  pops one word from the FIFO. Attempting to read from an empty FIFO
+      --  has no effect on the FIFO state, and sets the sticky FDEBUG_RXUNDER
+      --  error flag for this FIFO. The data returned to the system on a read
+      --  from an empty FIFO is undefined.
       RXF1              : aliased HAL.UInt32;
       --  Direct read access to the RX FIFO for this state machine. Each read
-      --  pops one word from the FIFO.
+      --  pops one word from the FIFO. Attempting to read from an empty FIFO
+      --  has no effect on the FIFO state, and sets the sticky FDEBUG_RXUNDER
+      --  error flag for this FIFO. The data returned to the system on a read
+      --  from an empty FIFO is undefined.
       RXF2              : aliased HAL.UInt32;
       --  Direct read access to the RX FIFO for this state machine. Each read
-      --  pops one word from the FIFO.
+      --  pops one word from the FIFO. Attempting to read from an empty FIFO
+      --  has no effect on the FIFO state, and sets the sticky FDEBUG_RXUNDER
+      --  error flag for this FIFO. The data returned to the system on a read
+      --  from an empty FIFO is undefined.
       RXF3              : aliased HAL.UInt32;
-      --  Interrupt request register. Write 1 to clear
+      --  State machine IRQ flags register. Write 1 to clear. There are 8 state
+      --  machine IRQ flags, which can be set, cleared, and waited on by the
+      --  state machines. There's no fixed association between flags and state
+      --  machines -- any state machine can use any flag.\n\n Any of the 8
+      --  flags can be used for timing synchronisation between state machines,
+      --  using IRQ and WAIT instructions. The lower four of these flags are
+      --  also routed out to system-level interrupt requests, alongside FIFO
+      --  status interrupts -- see e.g. IRQ0_INTE.
       IRQ               : aliased IRQ_Register;
       --  Writing a 1 to each of these bits will forcibly assert the
-      --  corresponding IRQ.\n Note this is different to the INTF register:
-      --  writing here affects PIO internal\n state. INTF just asserts the
-      --  processor-facing IRQ signal for testing ISRs,\n and is not visible to
+      --  corresponding IRQ. Note this is different to the INTF register:
+      --  writing here affects PIO internal state. INTF just asserts the
+      --  processor-facing IRQ signal for testing ISRs, and is not visible to
       --  the state machines.
       IRQ_FORCE         : aliased IRQ_FORCE_Register;
-      --  There is a 2-flipflop synchronizer on each GPIO input, which
-      --  protects\n PIO logic from metastabilities. This increases input
-      --  delay, and for fast\n synchronous IO (e.g. SPI) these synchronizers
-      --  may need to be bypassed.\n Each bit in this register corresponds to
-      --  one GPIO.\n 0 -> input is synchronized (default)\n 1 -> synchronizer
-      --  is bypassed\n If in doubt, leave this register as all zeroes.
+      --  There is a 2-flipflop synchronizer on each GPIO input, which protects
+      --  PIO logic from metastabilities. This increases input delay, and for
+      --  fast synchronous IO (e.g. SPI) these synchronizers may need to be
+      --  bypassed. Each bit in this register corresponds to one GPIO.\n 0 ->
+      --  input is synchronized (default)\n 1 -> synchronizer is bypassed\n If
+      --  in doubt, leave this register as all zeroes.
       INPUT_SYNC_BYPASS : aliased HAL.UInt32;
       --  Read to sample the pad output values PIO is currently driving to the
-      --  GPIOs.
+      --  GPIOs. On RP2040 there are 30 GPIOs, so the two most significant bits
+      --  are hardwired to 0.
       DBG_PADOUT        : aliased HAL.UInt32;
       --  Read to sample the pad output enables (direction) PIO is currently
-      --  driving to the GPIOs.
+      --  driving to the GPIOs. On RP2040 there are 30 GPIOs, so the two most
+      --  significant bits are hardwired to 0.
       DBG_PADOE         : aliased HAL.UInt32;
       --  The PIO hardware has some free parameters that may vary between chip
       --  products.\n These should be provided in the chip datasheet, but are
@@ -2167,7 +2330,7 @@ package RP2040_SVD.PIO is
       INSTR_MEM30       : aliased INSTR_MEM30_Register;
       --  Write-only access to instruction memory location 31
       INSTR_MEM31       : aliased INSTR_MEM31_Register;
-      --  Clock divider register for state machine 0\n Frequency = clock freq /
+      --  Clock divisor register for state machine 0\n Frequency = clock freq /
       --  (CLKDIV_INT + CLKDIV_FRAC / 256)
       SM0_CLKDIV        : aliased SM0_CLKDIV_Register;
       --  Execution/behavioural settings for state machine 0
@@ -2177,13 +2340,13 @@ package RP2040_SVD.PIO is
       SM0_SHIFTCTRL     : aliased SM0_SHIFTCTRL_Register;
       --  Current instruction address of state machine 0
       SM0_ADDR          : aliased SM0_ADDR_Register;
-      --  Instruction currently being executed by state machine 0\n Write to
-      --  execute an instruction immediately (including jumps) and then resume
-      --  execution.
+      --  Read to see the instruction currently addressed by state machine 0's
+      --  program counter\n Write to execute an instruction immediately
+      --  (including jumps) and then resume execution.
       SM0_INSTR         : aliased SM0_INSTR_Register;
       --  State machine pin control
       SM0_PINCTRL       : aliased SM0_PINCTRL_Register;
-      --  Clock divider register for state machine 1\n Frequency = clock freq /
+      --  Clock divisor register for state machine 1\n Frequency = clock freq /
       --  (CLKDIV_INT + CLKDIV_FRAC / 256)
       SM1_CLKDIV        : aliased SM1_CLKDIV_Register;
       --  Execution/behavioural settings for state machine 1
@@ -2193,13 +2356,13 @@ package RP2040_SVD.PIO is
       SM1_SHIFTCTRL     : aliased SM1_SHIFTCTRL_Register;
       --  Current instruction address of state machine 1
       SM1_ADDR          : aliased SM1_ADDR_Register;
-      --  Instruction currently being executed by state machine 1\n Write to
-      --  execute an instruction immediately (including jumps) and then resume
-      --  execution.
+      --  Read to see the instruction currently addressed by state machine 1's
+      --  program counter\n Write to execute an instruction immediately
+      --  (including jumps) and then resume execution.
       SM1_INSTR         : aliased SM1_INSTR_Register;
       --  State machine pin control
       SM1_PINCTRL       : aliased SM1_PINCTRL_Register;
-      --  Clock divider register for state machine 2\n Frequency = clock freq /
+      --  Clock divisor register for state machine 2\n Frequency = clock freq /
       --  (CLKDIV_INT + CLKDIV_FRAC / 256)
       SM2_CLKDIV        : aliased SM2_CLKDIV_Register;
       --  Execution/behavioural settings for state machine 2
@@ -2209,13 +2372,13 @@ package RP2040_SVD.PIO is
       SM2_SHIFTCTRL     : aliased SM2_SHIFTCTRL_Register;
       --  Current instruction address of state machine 2
       SM2_ADDR          : aliased SM2_ADDR_Register;
-      --  Instruction currently being executed by state machine 2\n Write to
-      --  execute an instruction immediately (including jumps) and then resume
-      --  execution.
+      --  Read to see the instruction currently addressed by state machine 2's
+      --  program counter\n Write to execute an instruction immediately
+      --  (including jumps) and then resume execution.
       SM2_INSTR         : aliased SM2_INSTR_Register;
       --  State machine pin control
       SM2_PINCTRL       : aliased SM2_PINCTRL_Register;
-      --  Clock divider register for state machine 3\n Frequency = clock freq /
+      --  Clock divisor register for state machine 3\n Frequency = clock freq /
       --  (CLKDIV_INT + CLKDIV_FRAC / 256)
       SM3_CLKDIV        : aliased SM3_CLKDIV_Register;
       --  Execution/behavioural settings for state machine 3
@@ -2225,9 +2388,9 @@ package RP2040_SVD.PIO is
       SM3_SHIFTCTRL     : aliased SM3_SHIFTCTRL_Register;
       --  Current instruction address of state machine 3
       SM3_ADDR          : aliased SM3_ADDR_Register;
-      --  Instruction currently being executed by state machine 3\n Write to
-      --  execute an instruction immediately (including jumps) and then resume
-      --  execution.
+      --  Read to see the instruction currently addressed by state machine 3's
+      --  program counter\n Write to execute an instruction immediately
+      --  (including jumps) and then resume execution.
       SM3_INSTR         : aliased SM3_INSTR_Register;
       --  State machine pin control
       SM3_PINCTRL       : aliased SM3_PINCTRL_Register;
@@ -2335,8 +2498,6 @@ package RP2040_SVD.PIO is
    --  Programmable IO block
    PIO0_Periph : aliased PIO_Peripheral
      with Import, Address => PIO0_Base;
-
-   --  Programmable IO block
    PIO1_Periph : aliased PIO_Peripheral
      with Import, Address => PIO1_Base;
 

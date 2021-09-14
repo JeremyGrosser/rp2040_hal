@@ -90,12 +90,61 @@ package RP2040_SVD.BUSCTRL is
       Reserved_24_31 at 0 range 24 .. 31;
    end record;
 
-   subtype PERFSEL0_PERFSEL0_Field is HAL.UInt5;
+   --  Select an event for PERFCTR0. Count either contested accesses, or all
+   --  accesses, on a downstream port of the main crossbar.
+   type PERFSEL0_PERFSEL0_Field is
+     (apb_contested,
+      apb,
+      fastperi_contested,
+      fastperi,
+      sram5_contested,
+      sram5,
+      sram4_contested,
+      sram4,
+      sram3_contested,
+      sram3,
+      sram2_contested,
+      sram2,
+      sram1_contested,
+      sram1,
+      sram0_contested,
+      sram0,
+      xip_main_contested,
+      xip_main,
+      rom_contested,
+      rom,
+      --  Reset value for the field
+      PERFSEL0_PERFSEL0_Field_Reset)
+     with Size => 5;
+   for PERFSEL0_PERFSEL0_Field use
+     (apb_contested => 0,
+      apb => 1,
+      fastperi_contested => 2,
+      fastperi => 3,
+      sram5_contested => 4,
+      sram5 => 5,
+      sram4_contested => 6,
+      sram4 => 7,
+      sram3_contested => 8,
+      sram3 => 9,
+      sram2_contested => 10,
+      sram2 => 11,
+      sram1_contested => 12,
+      sram1 => 13,
+      sram0_contested => 14,
+      sram0 => 15,
+      xip_main_contested => 16,
+      xip_main => 17,
+      rom_contested => 18,
+      rom => 19,
+      PERFSEL0_PERFSEL0_Field_Reset => 31);
 
    --  Bus fabric performance event select for PERFCTR0
    type PERFSEL0_Register is record
-      --  Select a performance event for PERFCTR0
-      PERFSEL0      : PERFSEL0_PERFSEL0_Field := 16#1F#;
+      --  Select an event for PERFCTR0. Count either contested accesses, or all
+      --  accesses, on a downstream port of the main crossbar.
+      PERFSEL0      : PERFSEL0_PERFSEL0_Field :=
+                       PERFSEL0_PERFSEL0_Field_Reset;
       --  unspecified
       Reserved_5_31 : HAL.UInt27 := 16#0#;
    end record
@@ -127,12 +176,61 @@ package RP2040_SVD.BUSCTRL is
       Reserved_24_31 at 0 range 24 .. 31;
    end record;
 
-   subtype PERFSEL1_PERFSEL1_Field is HAL.UInt5;
+   --  Select an event for PERFCTR1. Count either contested accesses, or all
+   --  accesses, on a downstream port of the main crossbar.
+   type PERFSEL1_PERFSEL1_Field is
+     (apb_contested,
+      apb,
+      fastperi_contested,
+      fastperi,
+      sram5_contested,
+      sram5,
+      sram4_contested,
+      sram4,
+      sram3_contested,
+      sram3,
+      sram2_contested,
+      sram2,
+      sram1_contested,
+      sram1,
+      sram0_contested,
+      sram0,
+      xip_main_contested,
+      xip_main,
+      rom_contested,
+      rom,
+      --  Reset value for the field
+      PERFSEL1_PERFSEL1_Field_Reset)
+     with Size => 5;
+   for PERFSEL1_PERFSEL1_Field use
+     (apb_contested => 0,
+      apb => 1,
+      fastperi_contested => 2,
+      fastperi => 3,
+      sram5_contested => 4,
+      sram5 => 5,
+      sram4_contested => 6,
+      sram4 => 7,
+      sram3_contested => 8,
+      sram3 => 9,
+      sram2_contested => 10,
+      sram2 => 11,
+      sram1_contested => 12,
+      sram1 => 13,
+      sram0_contested => 14,
+      sram0 => 15,
+      xip_main_contested => 16,
+      xip_main => 17,
+      rom_contested => 18,
+      rom => 19,
+      PERFSEL1_PERFSEL1_Field_Reset => 31);
 
    --  Bus fabric performance event select for PERFCTR1
    type PERFSEL1_Register is record
-      --  Select a performance event for PERFCTR1
-      PERFSEL1      : PERFSEL1_PERFSEL1_Field := 16#1F#;
+      --  Select an event for PERFCTR1. Count either contested accesses, or all
+      --  accesses, on a downstream port of the main crossbar.
+      PERFSEL1      : PERFSEL1_PERFSEL1_Field :=
+                       PERFSEL1_PERFSEL1_Field_Reset;
       --  unspecified
       Reserved_5_31 : HAL.UInt27 := 16#0#;
    end record
@@ -164,12 +262,61 @@ package RP2040_SVD.BUSCTRL is
       Reserved_24_31 at 0 range 24 .. 31;
    end record;
 
-   subtype PERFSEL2_PERFSEL2_Field is HAL.UInt5;
+   --  Select an event for PERFCTR2. Count either contested accesses, or all
+   --  accesses, on a downstream port of the main crossbar.
+   type PERFSEL2_PERFSEL2_Field is
+     (apb_contested,
+      apb,
+      fastperi_contested,
+      fastperi,
+      sram5_contested,
+      sram5,
+      sram4_contested,
+      sram4,
+      sram3_contested,
+      sram3,
+      sram2_contested,
+      sram2,
+      sram1_contested,
+      sram1,
+      sram0_contested,
+      sram0,
+      xip_main_contested,
+      xip_main,
+      rom_contested,
+      rom,
+      --  Reset value for the field
+      PERFSEL2_PERFSEL2_Field_Reset)
+     with Size => 5;
+   for PERFSEL2_PERFSEL2_Field use
+     (apb_contested => 0,
+      apb => 1,
+      fastperi_contested => 2,
+      fastperi => 3,
+      sram5_contested => 4,
+      sram5 => 5,
+      sram4_contested => 6,
+      sram4 => 7,
+      sram3_contested => 8,
+      sram3 => 9,
+      sram2_contested => 10,
+      sram2 => 11,
+      sram1_contested => 12,
+      sram1 => 13,
+      sram0_contested => 14,
+      sram0 => 15,
+      xip_main_contested => 16,
+      xip_main => 17,
+      rom_contested => 18,
+      rom => 19,
+      PERFSEL2_PERFSEL2_Field_Reset => 31);
 
    --  Bus fabric performance event select for PERFCTR2
    type PERFSEL2_Register is record
-      --  Select a performance event for PERFCTR2
-      PERFSEL2      : PERFSEL2_PERFSEL2_Field := 16#1F#;
+      --  Select an event for PERFCTR2. Count either contested accesses, or all
+      --  accesses, on a downstream port of the main crossbar.
+      PERFSEL2      : PERFSEL2_PERFSEL2_Field :=
+                       PERFSEL2_PERFSEL2_Field_Reset;
       --  unspecified
       Reserved_5_31 : HAL.UInt27 := 16#0#;
    end record
@@ -201,12 +348,61 @@ package RP2040_SVD.BUSCTRL is
       Reserved_24_31 at 0 range 24 .. 31;
    end record;
 
-   subtype PERFSEL3_PERFSEL3_Field is HAL.UInt5;
+   --  Select an event for PERFCTR3. Count either contested accesses, or all
+   --  accesses, on a downstream port of the main crossbar.
+   type PERFSEL3_PERFSEL3_Field is
+     (apb_contested,
+      apb,
+      fastperi_contested,
+      fastperi,
+      sram5_contested,
+      sram5,
+      sram4_contested,
+      sram4,
+      sram3_contested,
+      sram3,
+      sram2_contested,
+      sram2,
+      sram1_contested,
+      sram1,
+      sram0_contested,
+      sram0,
+      xip_main_contested,
+      xip_main,
+      rom_contested,
+      rom,
+      --  Reset value for the field
+      PERFSEL3_PERFSEL3_Field_Reset)
+     with Size => 5;
+   for PERFSEL3_PERFSEL3_Field use
+     (apb_contested => 0,
+      apb => 1,
+      fastperi_contested => 2,
+      fastperi => 3,
+      sram5_contested => 4,
+      sram5 => 5,
+      sram4_contested => 6,
+      sram4 => 7,
+      sram3_contested => 8,
+      sram3 => 9,
+      sram2_contested => 10,
+      sram2 => 11,
+      sram1_contested => 12,
+      sram1 => 13,
+      sram0_contested => 14,
+      sram0 => 15,
+      xip_main_contested => 16,
+      xip_main => 17,
+      rom_contested => 18,
+      rom => 19,
+      PERFSEL3_PERFSEL3_Field_Reset => 31);
 
    --  Bus fabric performance event select for PERFCTR3
    type PERFSEL3_Register is record
-      --  Select a performance event for PERFCTR3
-      PERFSEL3      : PERFSEL3_PERFSEL3_Field := 16#1F#;
+      --  Select an event for PERFCTR3. Count either contested accesses, or all
+      --  accesses, on a downstream port of the main crossbar.
+      PERFSEL3      : PERFSEL3_PERFSEL3_Field :=
+                       PERFSEL3_PERFSEL3_Field_Reset;
       --  unspecified
       Reserved_5_31 : HAL.UInt27 := 16#0#;
    end record

@@ -1777,59 +1777,99 @@ package RP2040_SVD.CLOCKS is
       CLK_GPOUT0_CTRL      : aliased CLK_GPOUT0_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_GPOUT0_DIV       : aliased CLK_GPOUT0_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_GPOUT0_SELECTED  : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_GPOUT1_CTRL      : aliased CLK_GPOUT1_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_GPOUT1_DIV       : aliased CLK_GPOUT1_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_GPOUT1_SELECTED  : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_GPOUT2_CTRL      : aliased CLK_GPOUT2_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_GPOUT2_DIV       : aliased CLK_GPOUT2_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_GPOUT2_SELECTED  : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_GPOUT3_CTRL      : aliased CLK_GPOUT3_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_GPOUT3_DIV       : aliased CLK_GPOUT3_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_GPOUT3_SELECTED  : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_REF_CTRL         : aliased CLK_REF_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_REF_DIV          : aliased CLK_REF_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n The glitchless multiplexer does not switch
+      --  instantaneously (to avoid glitches), so software should poll this
+      --  register to wait for the switch to complete. This register contains
+      --  one decoded bit for each of the clock sources enumerated in the CTRL
+      --  SRC field. At most one of these bits will be set at any time,
+      --  indicating that clock is currently present at the output of the
+      --  glitchless mux. Whilst switching is in progress, this register may
+      --  briefly show all-0s.
       CLK_REF_SELECTED     : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_SYS_CTRL         : aliased CLK_SYS_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_SYS_DIV          : aliased CLK_SYS_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n The glitchless multiplexer does not switch
+      --  instantaneously (to avoid glitches), so software should poll this
+      --  register to wait for the switch to complete. This register contains
+      --  one decoded bit for each of the clock sources enumerated in the CTRL
+      --  SRC field. At most one of these bits will be set at any time,
+      --  indicating that clock is currently present at the output of the
+      --  glitchless mux. Whilst switching is in progress, this register may
+      --  briefly show all-0s.
       CLK_SYS_SELECTED     : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_PERI_CTRL        : aliased CLK_PERI_CTRL_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_PERI_SELECTED    : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_USB_CTRL         : aliased CLK_USB_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_USB_DIV          : aliased CLK_USB_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_USB_SELECTED     : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_ADC_CTRL         : aliased CLK_ADC_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_ADC_DIV          : aliased CLK_ADC_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_ADC_SELECTED     : aliased HAL.UInt32;
       --  Clock control, can be changed on-the-fly (except for auxsrc)
       CLK_RTC_CTRL         : aliased CLK_RTC_CTRL_Register;
       --  Clock divisor, can be changed on-the-fly
       CLK_RTC_DIV          : aliased CLK_RTC_DIV_Register;
-      --  Indicates which src is currently selected (one-hot)
+      --  Indicates which SRC is currently selected by the glitchless mux
+      --  (one-hot).\n This slice does not have a glitchless mux (only the
+      --  AUX_SRC field is present, not SRC) so this register is hardwired to
+      --  0x1.
       CLK_RTC_SELECTED     : aliased HAL.UInt32;
       CLK_SYS_RESUS_CTRL   : aliased CLK_SYS_RESUS_CTRL_Register;
       CLK_SYS_RESUS_STATUS : aliased CLK_SYS_RESUS_STATUS_Register;

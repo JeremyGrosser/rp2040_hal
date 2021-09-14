@@ -3249,6 +3249,16 @@ package RP2040_SVD.DMA is
       --  evaluated every sys_clk cycles and therefore can only generate TREQs
       --  at a rate of 1 per sys_clk (i.e. permanent TREQ) or less.
       TIMER1                    : aliased TIMER_Register;
+      --  Pacing (X/Y) Fractional Timer\n The pacing timer produces TREQ
+      --  assertions at a rate set by ((X/Y) * sys_clk). This equation is
+      --  evaluated every sys_clk cycles and therefore can only generate TREQs
+      --  at a rate of 1 per sys_clk (i.e. permanent TREQ) or less.
+      TIMER2                    : aliased TIMER_Register;
+      --  Pacing (X/Y) Fractional Timer\n The pacing timer produces TREQ
+      --  assertions at a rate set by ((X/Y) * sys_clk). This equation is
+      --  evaluated every sys_clk cycles and therefore can only generate TREQs
+      --  at a rate of 1 per sys_clk (i.e. permanent TREQ) or less.
+      TIMER3                    : aliased TIMER_Register;
       --  Trigger one or more channels simultaneously
       MULTI_CHAN_TRIGGER        : aliased MULTI_CHAN_TRIGGER_Register;
       --  Sniffer Control
@@ -3568,6 +3578,8 @@ package RP2040_SVD.DMA is
       INTS1                     at 16#41C# range 0 .. 31;
       TIMER0                    at 16#420# range 0 .. 31;
       TIMER1                    at 16#424# range 0 .. 31;
+      TIMER2                    at 16#428# range 0 .. 31;
+      TIMER3                    at 16#42C# range 0 .. 31;
       MULTI_CHAN_TRIGGER        at 16#430# range 0 .. 31;
       SNIFF_CTRL                at 16#434# range 0 .. 31;
       SNIFF_DATA                at 16#438# range 0 .. 31;
