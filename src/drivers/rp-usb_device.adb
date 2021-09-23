@@ -8,9 +8,6 @@ package body RP.USB_Device is
    UD : USBCTRL_DPRAM_Peripheral renames USBCTRL_DPRAM_Periph;
    UR : USBCTRL_REGS_Peripheral  renames USBCTRL_REGS_Periph;
 
-   SETUP_PACKET : USB.Setup_Data
-      with Import, Address => UD.SETUP_PACKET_LOW'Address;
-
    type BUFF_CTRL_Registers is
       array (USB.EP_Id, USB.EP_Dir)
       of EP0_IN_BUFFER_CONTROL_Register
@@ -27,11 +24,13 @@ package body RP.USB_Device is
       of EP1_IN_CONTROL_Register
       with Size => 64 * 15;
 
-   BUFF_STATUS : aliased BUFF_STATUS_Registers
+   SETUP_PACKET : aliased USB.Setup_Data
+      with Import, Address => UD.SETUP_PACKET_LOW'Address;
+   BUFF_STATUS  : aliased BUFF_STATUS_Registers
       with Import, Address => UR.BUFF_STATUS'Address;
-   BUFF_CTRL   : aliased BUFF_CTRL_Registers
+   BUFF_CTRL    : aliased BUFF_CTRL_Registers
       with Import, Address => UD.EP0_IN_BUFFER_CONTROL'Address;
-   EP_CTRL     : aliased EP_CTRL_Registers
+   EP_CTRL      : aliased EP_CTRL_Registers
       with Import, Address => UD.EP1_IN_CONTROL'Address;
 
    overriding
@@ -78,8 +77,8 @@ package body RP.USB_Device is
       --  Most interrupts are read directly from SIE_STATUS. BUFF_STATUS is the
       --  only masked interrupt we care about.
       UR.INTE :=
-         (BUFF_STATUS       => True,
-          others            => <>);
+         (BUFF_STATUS => True,
+          others      => <>);
 
       --  Pullup USB_DP to indicate full speed
       UR.SIE_CTRL.PULLUP_EN := True;
@@ -167,13 +166,16 @@ package body RP.USB_Device is
        return System.Address
    is
       use System.Storage_Elements;
-      Alignment : Natural := Natural (Min_Alignment);
+      Alignment : UInt32 := UInt32 (Min_Alignment);
       Offset    : DPRAM_Offset;
    begin
-      if Alignment < 64 then
-         Alignment := 64;
+      --  Alignment must be a multiple of 64
+      Alignment := Alignment and (not 16#3F#);
+      if Alignment = 0 or Alignment < UInt32 (Min_Alignment) then
+         Alignment := Alignment + 64;
       end if;
-      Offset := Allocate_Buffer (This, Natural (Len), Alignment);
+
+      Offset := Allocate_Buffer (This, Natural (Len), Natural (Alignment));
       EP_CTRL (Ep.Num, Ep.Dir).BUFFER_ADDRESS := UInt16 (Offset);
       return RP2040_SVD.USBCTRL_DPRAM_Base + Offset;
    end Request_Buffer;
