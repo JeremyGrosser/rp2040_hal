@@ -102,7 +102,9 @@ private
        Size      : Natural;
        Alignment : Natural)
        return DPRAM_Offset
-   with Pre  => Size <= Integer (DPRAM_Offset'Last),
+   with Pre  => Alignment >= 64
+                and Alignment mod 64 = 0
+                and Size <= Integer (DPRAM_Offset'Last),
         Post => (Natural (Allocate_Buffer'Result) + Size) <= Natural (DPRAM_Offset'Last)
                 and (Natural (Allocate_Buffer'Result) mod Alignment) = 0;
 
