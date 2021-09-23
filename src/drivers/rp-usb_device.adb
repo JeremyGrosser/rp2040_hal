@@ -283,18 +283,24 @@ package body RP.USB_Device is
    is
       use System.Storage_Elements;
       use System;
-      Length : constant Natural := Natural (BUFF_CTRL (Num, Dir).LENGTH_0);
-      Source : Storage_Array (1 .. Storage_Offset (Length))
-         with Address => Endpoint_Buffer_Address ((Num => Num, Dir => Dir));
-      Target : Storage_Array (1 .. Storage_Offset (Length))
-         with Address => This.EP_Status (Num, Dir).Addr;
+      Length         : constant Storage_Offset := Storage_Offset (BUFF_CTRL (Num, Dir).LENGTH_0);
+      Source_Address : constant Address := Endpoint_Buffer_Address ((Num => Num, Dir => Dir));
+      Target_Address : constant Address := This.EP_Status (Num, Dir).Addr;
    begin
       BUFF_CTRL (Num, Dir).AVAILABLE_0 := False;
-      if Target'Address = System.Null_Address or Source'Address = Target'Address then
+
+      if Length = 0 or Target_Address = System.Null_Address or Source_Address = Target_Address then
          return;
-      else
-         Target := Source;
       end if;
+
+      declare
+         Source : Storage_Array (1 .. Length)
+            with Address => Source_Address;
+         Target : Storage_Array (1 .. Length)
+            with Address => Target_Address;
+      begin
+         Target := Source;
+      end;
    end Copy_Endpoint_Buffer;
 
    overriding

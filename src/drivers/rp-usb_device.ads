@@ -96,11 +96,15 @@ private
       EP_Status   : Endpoint_Status_Array := (others => (others => <>));
    end record;
 
+   use type System.Storage_Elements.Storage_Offset;
    function Allocate_Buffer
       (This      : in out USB_Device_Controller;
        Size      : Natural;
        Alignment : Natural)
-       return DPRAM_Offset;
+       return DPRAM_Offset
+   with Pre  => Size <= Integer (DPRAM_Offset'Last),
+        Post => (Natural (Allocate_Buffer'Result) + Size) <= Natural (DPRAM_Offset'Last)
+                and (Natural (Allocate_Buffer'Result) mod Alignment) = 0;
 
    function Endpoint_Buffer_Address
       (Ep : USB.EP_Addr)
