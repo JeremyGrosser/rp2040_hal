@@ -8,8 +8,7 @@ package body RP.USB_Device is
    UD : USBCTRL_DPRAM_Peripheral renames USBCTRL_DPRAM_Periph;
    UR : USBCTRL_REGS_Peripheral  renames USBCTRL_REGS_Periph;
 
-   type SETUP_PACKET_Register is new System.Storage_Elements.Storage_Array (1 .. 8);
-   SETUP_PACKET : SETUP_PACKET_Register
+   SETUP_PACKET : USB.Setup_Data
       with Import, Address => UD.SETUP_PACKET_LOW'Address;
 
    type BUFF_CTRL_Registers is
@@ -119,14 +118,9 @@ package body RP.USB_Device is
          UR.SIE_STATUS.SETUP_REC := True;
          This.EP_Status (0, USB.EP_In).Next_PID := True;
          This.EP_Status (0, USB.EP_Out).Next_PID := True;
-         declare
-            Setup_Packet : USB.Setup_Data
-               with Address => UD.SETUP_PACKET_LOW'Address;
-         begin
-            return (Kind   => Setup_Request,
-                    Req    => Setup_Packet,
-                    Req_EP => 0);
-         end;
+         return (Kind   => Setup_Request,
+                 Req    => SETUP_PACKET,
+                 Req_EP => 0);
       end if;
 
       return No_Event;
