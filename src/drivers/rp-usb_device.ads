@@ -85,8 +85,9 @@ private
    subtype DPRAM_Offset is System.Storage_Elements.Storage_Offset range 16#100# .. 16#FFF#;
 
    type Endpoint_Status is record
-      Addr     : System.Address := System.Null_Address;
-      Next_PID : Boolean := False;
+      Addr           : System.Address := System.Null_Address;
+      Next_PID       : Boolean := False;
+      Buffer_Address : DPRAM_Offset := DPRAM_Offset'Last;
    end record;
 
    type Endpoint_Status_Array is array (USB.EP_Id, USB.EP_Dir) of Endpoint_Status;
@@ -104,8 +105,9 @@ private
        return DPRAM_Offset
    with Pre  => Alignment >= 64
                 and Alignment mod 64 = 0
-                and Size <= Integer (DPRAM_Offset'Last),
-        Post => (Natural (Allocate_Buffer'Result) + Size) <= Natural (DPRAM_Offset'Last)
+                and Size <= 1024,
+        Post => Allocate_Buffer'Result >= DPRAM_Offset'First
+                and (Natural (Allocate_Buffer'Result) + Size) <= Natural (DPRAM_Offset'Last)
                 and (Natural (Allocate_Buffer'Result) mod Alignment) = 0;
 
    function Endpoint_Buffer_Address

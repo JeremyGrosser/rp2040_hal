@@ -132,7 +132,6 @@ package body RP.USB_Device is
    begin
       for Num in USB.EP_Id'Range loop
          for Dir in USB.EP_Dir'Range loop
-            This.EP_Status (Num, Dir) := (others => <>);
             BUFF_CTRL (Num, Dir) := (others => <>);
             BUFF_STATUS (Num, Dir) := True;
          end loop;
@@ -176,7 +175,7 @@ package body RP.USB_Device is
       end if;
 
       Offset := Allocate_Buffer (This, Natural (Len), Natural (Alignment));
-      EP_CTRL (Ep.Num, Ep.Dir).BUFFER_ADDRESS := UInt16 (Offset);
+      This.EP_Status (Ep.Num, Ep.Dir).Buffer_Address := Offset;
       return RP2040_SVD.USBCTRL_DPRAM_Base + Offset;
    end Request_Buffer;
 
@@ -246,7 +245,7 @@ package body RP.USB_Device is
       EP_CTRL (Ep.Num, Ep.Dir).ENDPOINT_TYPE :=  EP1_IN_CONTROL_ENDPOINT_TYPE_Field'Val (USB.EP_Type'Pos (Typ));
       EP_CTRL (Ep.Num, Ep.Dir).INTERRUPT_PER_BUFF := True;
       EP_CTRL (Ep.Num, Ep.Dir).ENABLE := True;
-      This.EP_Status (Ep.Num, Ep.Dir) := (others => <>);
+      EP_CTRL (Ep.Num, Ep.Dir).BUFFER_ADDRESS := UInt16 (This.EP_Status (Ep.Num, Ep.Dir).Buffer_Address);
    end EP_Setup;
 
    overriding
