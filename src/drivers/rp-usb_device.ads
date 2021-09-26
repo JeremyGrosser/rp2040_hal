@@ -106,7 +106,7 @@ private
    with Pre  => Alignment >= 64
                 and Alignment mod 64 = 0
                 and Size <= 1024,
-        Post => Allocate_Buffer'Result >= DPRAM_Offset'First
+        Post => Allocate_Buffer'Result >= 16#180#
                 and (Natural (Allocate_Buffer'Result) + Size) <= Natural (DPRAM_Offset'Last)
                 and (Natural (Allocate_Buffer'Result) mod Alignment) = 0;
 
