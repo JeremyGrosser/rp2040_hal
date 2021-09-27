@@ -14,13 +14,13 @@ package body RP.Clock is
    is (Shift_Left (1, Natural (SRC)));
 
    procedure Enable_XOSC
-      (XOSC_Frequency : XOSC_Hertz)
+      (XOSC_Frequency     : XOSC_Hertz;
+       XOSC_Startup_Delay : XOSC_Cycles)
    is
       use RP2040_SVD.XOSC;
    begin
       XOSC_Periph.CTRL.FREQ_RANGE := Val_1_15MHZ;
-      --  1 millisecond startup delay
-      XOSC_Periph.STARTUP.DELAY_k := STARTUP_DELAY_Field ((XOSC_Frequency / 1000) / 256);
+      XOSC_Periph.STARTUP.DELAY_k := STARTUP_DELAY_Field (XOSC_Startup_Delay / 256);
       XOSC_Periph.CTRL.ENABLE := ENABLE;
       while not XOSC_Periph.STATUS.STABLE loop
          null;
@@ -89,7 +89,8 @@ package body RP.Clock is
    end Enable_PLL;
 
    procedure Initialize
-      (XOSC_Frequency : XOSC_Hertz := 0)
+      (XOSC_Frequency     : XOSC_Hertz := 0;
+       XOSC_Startup_Delay : XOSC_Cycles := 12_032)
    is
       use RP.Reset;
       Has_XOSC  : constant Boolean := XOSC_Frequency > 0;
@@ -101,7 +102,7 @@ package body RP.Clock is
       --  Enable watchdog and maybe XOSC
       if Has_XOSC then
          Reference := XOSC_Frequency;
-         Enable_XOSC (XOSC_Frequency);
+         Enable_XOSC (XOSC_Frequency, XOSC_Startup_Delay);
       else
          Reference := ROSC_Frequency;
          Enable_ROSC;

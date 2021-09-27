@@ -14,8 +14,15 @@ package RP.Clock is
       with Static_Predicate => XOSC_Hertz in 0 | 1_000_000 .. 15_000_000;
    --  The special value 0 indicates that the XOSC is not available.
 
+   subtype XOSC_Cycles is Natural;
+
    procedure Initialize
-      (XOSC_Frequency : XOSC_Hertz := 0);
+      (XOSC_Frequency     : XOSC_Hertz := 0;
+       XOSC_Startup_Delay : XOSC_Cycles := 12_032)
+       with Pre => XOSC_Startup_Delay <= (Natural (UInt14'Last) * 256)
+               and XOSC_Startup_Delay mod 256 = 0;
+   --  See 2.16.3 Startup Delay for XOSC_Startup_Delay calculation. The default
+   --  value is approximately 1ms with a 12 MHz crystal.
 
    --  Currently we have hardcoded PLL divider values for 12 MHz ROSC or XOSC
    --  operation. This exception is thrown if any other reference frequency is
@@ -53,7 +60,8 @@ private
    procedure Enable_ROSC;
 
    procedure Enable_XOSC
-      (XOSC_Frequency : XOSC_Hertz)
+      (XOSC_Frequency     : XOSC_Hertz;
+       XOSC_Startup_Delay : XOSC_Cycles)
    with Pre => XOSC_Frequency >= 1_000_000;
 
    subtype PLL_Divider is Integer range 1 .. 7;
