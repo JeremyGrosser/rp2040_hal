@@ -5,7 +5,6 @@
 --
 with Cortex_M_SVD.NVIC;
 with RP2040_SVD.Interrupts;
-with RP.Clock;
 with RP.Reset;
 
 package body RP.PWM is

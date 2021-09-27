@@ -5,6 +5,7 @@
 --
 with RP2040_SVD.PWM;
 with RP2040_SVD;
+with RP.Clock;
 with RP.GPIO;
 with HAL; use HAL;
 
@@ -59,12 +60,14 @@ package RP.PWM is
        Div   : Divider)
    with Pre => Initialized;
 
-   --  Set_Frequency is a convenience method that calculates the correct
-   --  divider for the target frequency
+   --  Set_Frequency is a convenience method that calculates the closest
+   --  divider for the target frequency. This may be less accurate than using
+   --  Set_Divider due to rounding errors.
    procedure Set_Frequency
       (Slice     : PWM_Slice;
        Frequency : Hertz)
-       with Pre => Initialized and Frequency > 0;
+       with Pre => Initialized
+               and Frequency in RP.Clock.Frequency (RP.Clock.SYS) / 256 .. RP.Clock.Frequency (RP.Clock.SYS);
 
    --  on each divided clock cycle, a counter is incremented toward Clocks and
    --  wraps around when it matches this value
