@@ -19,7 +19,7 @@ usb_embedded = "~0.1.0"
 [[pins]]  # Added by alr
 atomic = { url='https://github.com/Fabien-Chouteau/atomic#critical_sections' }
 bbqueue = { url='https://github.com/Fabien-Chouteau/bbqueue-spark' }
-usb_embedded = { url='https://github.com/JeremyGrosser/usb_embedded#blocking_start' }
+usb_embedded = { url='https://github.com/Fabien-Chouteau/usb_embedded' }
 
 [configuration.values]
 atomic.Backend = "armv6m"
