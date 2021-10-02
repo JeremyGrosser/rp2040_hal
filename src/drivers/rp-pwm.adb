@@ -104,6 +104,20 @@ package body RP.PWM is
       PWM_Periph.CH (Slice).CC.B := Channel_B;
    end Set_Duty_Cycle;
 
+   procedure Set_Duty_Cycle
+      (Slice      : PWM_Slice;
+       Channel    : PWM_Channel;
+       Duty_Cycle : Period)
+   is
+   begin
+      case Channel is
+         when A =>
+            PWM_Periph.CH (Slice).CC.A := Duty_Cycle;
+         when B =>
+            PWM_Periph.CH (Slice).CC.B := Duty_Cycle;
+      end case;
+   end Set_Duty_Cycle;
+
    procedure Set_Invert
       (Slice     : PWM_Slice;
        Channel_A : Boolean;

@@ -85,6 +85,12 @@ package RP.PWM is
        Channel_B : Period)
    with Pre => Initialized;
 
+   procedure Set_Duty_Cycle
+      (Slice      : PWM_Slice;
+       Channel    : PWM_Channel;
+       Duty_Cycle : Period)
+   with Pre => Initialized;
+
    procedure Enable
       (Slice : PWM_Slice)
    with Pre => Initialized;
