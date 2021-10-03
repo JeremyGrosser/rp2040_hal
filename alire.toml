@@ -15,6 +15,7 @@ hal = "~0.1"
 
 [[depends-on]]
 usb_embedded = "~0.1.0"
+gnat_arm_elf = "^11.2.2"
 
 [[pins]]  # Added by alr
 atomic = { url='https://github.com/Fabien-Chouteau/atomic#critical_sections' }
