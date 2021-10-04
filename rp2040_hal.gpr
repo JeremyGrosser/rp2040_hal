@@ -32,10 +32,9 @@ project Rp2040_Hal is
    type Build_Kind is ("debug", "optimize");
    Build_Mode : Build_Kind := External ("RP2040_HAL_BUILD_MODE", "debug");
 
-   Use_Startup : Enabled_Kind := External ("RP2040_HAL_STARTUP", "enabled");
    Startup_Dirs := ();
-   case Use_Startup is
-      when "enabled" =>
+   case Rp2040_Hal_Config.Use_Startup is
+      when "True" =>
          Startup_Dirs := ("src/startup");
       when others => null;
    end case;

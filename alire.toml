@@ -24,6 +24,7 @@ usb_embedded = { url='https://github.com/Fabien-Chouteau/usb_embedded' }
 
 [configuration.variables]
 Flash_Chip = {type = "Enum",  values = ["w25qxx", "generic_qspi", "generic_03"], default = "w25qxx"}
+Use_Startup = {type = "Boolean", default = true}
 
 [configuration.values]
 atomic.Backend = "armv6m"
