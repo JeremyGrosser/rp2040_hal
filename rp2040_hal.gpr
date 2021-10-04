@@ -7,12 +7,6 @@ project Rp2040_Hal is
    for Target use "arm-eabi";
 
    for Languages use ("Ada", "Asm_Cpp");
-   for Source_Dirs use
-       ("src",
-        "src/drivers",
-        "src/svd",
-        "src/devices/RP2040",
-        "src/startup");
    for Object_Dir use "obj/RP2040";
    for Create_Missing_Dirs use "True";
 
@@ -37,6 +31,21 @@ project Rp2040_Hal is
 
    type Build_Kind is ("debug", "optimize");
    Build_Mode : Build_Kind := External ("RP2040_HAL_BUILD_MODE", "debug");
+
+   Use_Startup : Enabled_Kind := External ("RP2040_HAL_STARTUP", "enabled");
+   Startup_Dirs := ();
+   case Use_Startup is
+      when "enabled" =>
+         Startup_Dirs := ("src/startup");
+      when others => null;
+   end case;
+
+   for Source_Dirs use
+       Startup_Dirs &
+       ("src",
+        "src/drivers",
+        "src/svd",
+        "src/devices/RP2040");
 
    Compile_Checks_Switches := ();
    case Compile_Checks is
