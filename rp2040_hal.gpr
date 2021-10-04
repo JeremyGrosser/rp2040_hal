@@ -21,8 +21,8 @@ project Rp2040_Hal is
    Linker_Switches := ("-T", Linker_Script, Boot_Stage_2);
 
    for Library_Name use "rp2040_hal";
-   for Library_Version use "0.6.0";
    for Library_Dir use "lib";
+   for Library_Version use Project'Library_Name & ".so." & Rp2040_Hal_Config.Crate_Version;
 
    type Library_Type_Type is ("relocatable", "static", "static-pic");
    Library_Type : Library_Type_Type :=
