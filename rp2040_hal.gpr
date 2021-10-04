@@ -1,20 +1,24 @@
-with "hal.gpr";
+with "config/rp2040_hal_config.gpr";
 with "cortex_m0.gpr";
-with "usb_embedded.gpr";
 
 project Rp2040_Hal is
 
    for Runtime ("Ada") use "zfp-cortex-m0p";
    for Target use "arm-eabi";
 
-   for Languages use ("Ada");
+   for Languages use ("Ada", "Asm_Cpp");
    for Source_Dirs use
        ("src",
         "src/drivers",
         "src/svd",
-        "src/devices/RP2040");
+        "src/devices/RP2040",
+        "src/startup");
    for Object_Dir use "obj/RP2040";
    for Create_Missing_Dirs use "True";
+
+   Boot_Stage_2 := Project'Project_Dir & "boot2/generated/boot2__" & RP2040_HAL_Config.Flash_Chip & ".S";
+   Linker_Script := Project'Project_Dir & "ld/memmap_default.ld";
+   Linker_Switches := ("-T", Linker_Script, Boot_Stage_2);
 
    for Library_Name use "rp2040_hal";
    for Library_Version use "0.6.0";

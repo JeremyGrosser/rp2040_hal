@@ -17,10 +17,13 @@ hal = "~0.1"
 usb_embedded = "~0.1.0"
 gnat_arm_elf = "^11.2.2"
 
-[[pins]]  # Added by alr
+[[pins]]
 atomic = { url='https://github.com/Fabien-Chouteau/atomic#critical_sections' }
 bbqueue = { url='https://github.com/Fabien-Chouteau/bbqueue-spark' }
 usb_embedded = { url='https://github.com/Fabien-Chouteau/usb_embedded' }
+
+[configuration.variables]
+Flash_Chip = {type = "Enum",  values = ["w25qxx", "generic_qspi", "generic_03"], default = "w25qxx"}
 
 [configuration.values]
 atomic.Backend = "armv6m"
