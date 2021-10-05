@@ -6,6 +6,7 @@
 with RP2040_SVD.SPI;
 with RP2040_SVD.I2C;
 with RP2040_SVD.UART;
+with RP2040_SVD.ADC;
 with RP2040_SVD;
 with RP.SPI;         use RP.SPI;
 with RP.I2C_Master;  use RP.I2C_Master;
@@ -46,4 +47,7 @@ package RP.Device is
    Timer   : aliased RP.Timer.Delays;
    RTC     : aliased RP.RTC.RTC_Device;
    UDC     : aliased RP.USB_Device.USB_Device_Controller;
+
+   ADC     : aliased RP2040_SVD.ADC.ADC_Peripheral
+      with Import, Address => RP2040_SVD.ADC_Base;
 end RP.Device;

@@ -8,6 +8,8 @@ with RP.GPIO; use RP.GPIO;
 with RP.Reset;
 
 package body RP.ADC is
+   use HAL;
+
    procedure Enable
    is
       use RP.Reset;
@@ -19,11 +21,24 @@ package body RP.ADC is
       while not ADC_Periph.CS.READY loop
          null;
       end loop;
+
+      --  Enable FIFO and DMA operation
+      ADC_Periph.FCS :=
+         (DREQ_EN => True,
+          EN      => True,
+          THRESH  => FCS_THRESH_Field'Last,
+          others  => <>);
    end Enable;
+
+   procedure Disable
+   is
+   begin
+      ADC_Periph.CS.EN := False;
+   end Disable;
 
    function Enabled
       return Boolean
-   is (ADC_Periph.CS.READY);
+   is (ADC_Periph.CS.EN and ADC_Periph.CS.READY);
 
    procedure Configure
       (Channel : ADC_Channel)
@@ -47,17 +62,77 @@ package body RP.ADC is
       end if;
    end Configure;
 
+   procedure Configure
+      (Channels : ADC_Channels)
+   is
+   begin
+      for I in Channels'Range loop
+         if Channels (I) then
+            Configure (I);
+         end if;
+      end loop;
+   end Configure;
+
+   procedure Set_Mode
+      (Mode : ADC_Mode)
+   is
+   begin
+      ADC_Periph.CS.START_MANY := (Mode = Free_Running);
+   end Set_Mode;
+
+   procedure Set_Round_Robin
+      (Channels : ADC_Channels)
+   is
+   begin
+      ADC_Periph.CS.RROBIN := To_UInt5 (Channels);
+   end Set_Round_Robin;
+
+   procedure Set_Divider
+      (Div : ADC_Divider)
+   is
+   begin
+      ADC_Periph.DIV :=
+         (INT    => Div_Integer (Div),
+          FRAC   => Div_Fraction (Div),
+          others => <>);
+   end Set_Divider;
+
+   procedure Set_Sample_Rate
+      (Rate : Hertz)
+   is
+      clk_adc : constant Hertz := RP.Clock.Frequency (RP.Clock.ADC);
+      Div     : constant ADC_Divider := ADC_Divider (Float (clk_adc) / Float (Rate)) - 1.0;
+   begin
+      Set_Divider (Div);
+   end Set_Sample_Rate;
+
+   procedure Set_Sample_Bits
+      (Bits : ADC_Sample_Bits)
+   is
+   begin
+      ADC_Periph.FCS.SHIFT := (Bits = 8);
+   end Set_Sample_Bits;
+
    function Read
       (Channel : ADC_Channel)
       return Analog_Value
    is
    begin
       ADC_Periph.CS.AINSEL := CS_AINSEL_Field (Channel);
-      ADC_Periph.CS.START_ONCE := True;
-      while not ADC_Periph.CS.READY loop
+      return Read;
+   end Read;
+
+   function Read
+      return Analog_Value
+   is
+   begin
+      if not ADC_Periph.CS.START_MANY then
+         ADC_Periph.CS.START_ONCE := True;
+      end if;
+      while ADC_Periph.FCS.EMPTY loop
          null;
       end loop;
-      return Analog_Value (ADC_Periph.RESULT.RESULT);
+      return Analog_Value (ADC_Periph.FIFO.VAL);
    end Read;
 
    function Read_Microvolts
@@ -90,4 +165,27 @@ package body RP.ADC is
       (Point : RP.GPIO.GPIO_Point)
       return ADC_Channel
    is (ADC_Channel (Point.Pin - 26));
+
+   function Div_Integer
+      (V : ADC_Divider)
+      return UInt16
+   is
+      I : constant Natural := Natural (V);
+   begin
+      if ADC_Divider (I) > V then
+         return UInt16 (I - 1);
+      else
+         return UInt16 (I);
+      end if;
+   end Div_Integer;
+
+   function Div_Fraction
+      (V : ADC_Divider)
+      return UInt8
+   is (UInt8 ((V - ADC_Divider (Div_Integer (V))) * 2 ** 8));
+
+   function FIFO_Address
+      return System.Address
+   is (ADC_Periph.FIFO'Address);
+
 end RP.ADC;
