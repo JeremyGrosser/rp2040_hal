@@ -26,7 +26,7 @@ package body RP.ADC is
       ADC_Periph.FCS :=
          (DREQ_EN => True,
           EN      => True,
-          THRESH  => FCS_THRESH_Field'Last,
+          THRESH  => 1,
           others  => <>);
    end Enable;
 
