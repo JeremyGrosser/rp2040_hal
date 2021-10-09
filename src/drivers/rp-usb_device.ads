@@ -119,4 +119,15 @@ private
        Num  : USB.EP_Id;
        Dir  : USB.EP_Dir);
 
+   --  See Errata RP2040-E5
+   procedure Enumeration_Fix
+      (This : in out USB_Device_Controller);
+
+   type Line_States is (SE0, J, K, SE1)
+      with Size => 2;
+
+   function Line_State
+      (This : in out USB_Device_Controller)
+      return Line_States;
+
 end RP.USB_Device;

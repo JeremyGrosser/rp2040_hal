@@ -1,6 +1,9 @@
 with RP2040_SVD.USBCTRL_DPRAM; use RP2040_SVD.USBCTRL_DPRAM;
 with RP2040_SVD.USBCTRL_REGS;  use RP2040_SVD.USBCTRL_REGS;
+with RP2040_SVD.PADS_BANK0;
+with RP2040_SVD.IO_BANK0;
 with RP2040_SVD;
+with RP.Timer;
 with RP.Clock;
 with RP.Reset;
 
@@ -94,6 +97,9 @@ package body RP.USB_Device is
    begin
       if UR.SIE_STATUS.BUS_RESET then
          UR.SIE_STATUS.BUS_RESET := True;
+         if UR.SIE_CTRL.PULLUP_EN then
+            This.Enumeration_Fix;
+         end if;
          return (Kind => USB.HAL.Device.Reset);
       end if;
 
@@ -331,5 +337,65 @@ package body RP.USB_Device is
       (This : USB_Device_Controller)
       return Boolean
    is (False);
+
+   function Line_State
+      (This : in out USB_Device_Controller)
+      return Line_States
+   is (Line_States'Val (UR.SIE_STATUS.LINE_STATE));
+
+   procedure Enumeration_Fix
+      (This : in out USB_Device_Controller)
+   is
+      use RP2040_SVD.IO_BANK0;
+      use RP2040_SVD.PADS_BANK0;
+      DP_CTRL : GPIO15_CTRL_Register renames IO_BANK0_Periph.GPIO15_CTRL;
+      DP_PAD  : GPIO_Register renames PADS_BANK0_Periph.GPIO15;
+
+      --  Save DP state
+      DP_CTRL_Save : constant GPIO15_CTRL_Register := DP_CTRL;
+      DP_PAD_Save  : constant GPIO_Register := DP_PAD;
+   begin
+      while This.Line_State = SE0 loop
+         null;
+      end loop;
+
+      --  Enable pull up/down
+      DP_PAD.PUE := True;
+      DP_PAD.PDE := True;
+
+      --  Disconnect the pad from USB
+      DP_CTRL.OEOVER := DISABLE;
+      DP_CTRL.FUNCSEL := usb_muxing_digital_dp;
+
+      --  Pretend DP is high
+      DP_CTRL.INOVER := HIGH;
+      UR.USBPHY_DIRECT.DP_PULLUP_EN := True;
+      UR.USBPHY_DIRECT_OVERRIDE.DP_PULLUP_EN_OVERRIDE_EN := True;
+      UR.USB_MUXING :=
+         (TO_DIGITAL_PAD => True,
+          SOFTCON        => True,
+          others         => <>);
+
+      --  J state is now forced, hold for 1ms
+      declare
+         D : RP.Timer.Delays;
+      begin
+         D.Delay_Microseconds (1_000);
+      end;
+
+      --  The controller should be in the connected state now
+      while not UR.SIE_STATUS.CONNECTED loop
+         null;
+      end loop;
+
+      --  Put everything back the way we found it
+      UR.USB_MUXING :=
+         (TO_PHY  => True,
+          SOFTCON => True,
+          others  => <>);
+      UR.USBPHY_DIRECT_OVERRIDE.DP_PULLUP_EN_OVERRIDE_EN := False;
+      DP_CTRL := DP_CTRL_Save;
+      DP_PAD := DP_PAD_Save;
+   end Enumeration_Fix;
 
 end RP.USB_Device;
