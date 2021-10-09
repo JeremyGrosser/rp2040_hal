@@ -383,11 +383,6 @@ package body RP.USB_Device is
          D.Delay_Microseconds (1_000);
       end;
 
-      --  The controller should be in the connected state now
-      while not UR.SIE_STATUS.CONNECTED loop
-         null;
-      end loop;
-
       --  Put everything back the way we found it
       UR.USB_MUXING :=
          (TO_PHY  => True,
