@@ -9,9 +9,7 @@ with HAL.Time;
 with RP.Clock;
 with System;
 
-package RP.UART
-   with Elaborate_Body
-is
+package RP.UART is
    subtype UART_Number is Natural range 0 .. 1;
 
    type UART_Port

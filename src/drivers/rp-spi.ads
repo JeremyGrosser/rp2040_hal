@@ -8,9 +8,7 @@ with RP2040_SVD.SPI;
 with RP.Clock;
 with System;
 
-package RP.SPI
-   with Elaborate_Body
-is
+package RP.SPI is
    subtype SPI_Number is Natural range 0 .. 1;
    type SPI_Port
       (Num    : SPI_Number;

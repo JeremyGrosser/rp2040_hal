@@ -6,9 +6,7 @@
 with HAL.Time; use HAL.Time;
 with HAL;      use HAL;
 
-package RP.Timer
-   with Elaborate_Body
-is
+package RP.Timer is
    type Time is new UInt64;
    Ticks_Per_Second : constant := 1_000_000;
 

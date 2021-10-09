@@ -11,9 +11,7 @@ with HAL;                   use HAL;
 with HAL.GPIO;              use HAL.GPIO;
 with System;
 
-package RP.GPIO
-   with Elaborate_Body
-is
+package RP.GPIO is
    type GPIO_Pin is range 0 .. 29;
    subtype ADC_Pin is GPIO_Pin range 26 .. 29;
 
