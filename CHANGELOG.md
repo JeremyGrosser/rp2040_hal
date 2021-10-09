@@ -1,3 +1,34 @@
+# rp2040_hal 0.7.0 (UNRELEASED)
+
+## New features
+
+### Documentation
+Documentation has been written for most of the drivers and is now available at [pico-doc.synack.me](https://pico-doc.synack.me/)
+
+### USB device controller
+The `RP.USB_Device` driver now implements the `USB.HAL.Device.USB_Device_Controller` interface. This adds a dependency on the `usb_embedded` crate, which in turn depends on `bbqueue` and `atomic`. This driver does not support USB host mode or double buffering.
+
+The upstream SVD was updated to include USB_DPRAM registers, so all of the RP2040_SVD packages have been regenerated from source.
+
+### ADC round robin and free running mode
+`RP.ADC.Set_Round_Robin` can be used to select multiple ADC channels to be read sequentially. `RP.ADC.Set_Mode (Free_Running)` will cause the ADC to continuously sample the selected channels. Paired with DMA, this means the ADC can run at up to 500,000 samples per second. [Documentation](https://pico-doc.synack.me/#round_robin).
+
+### Ada boot2 code
+Thanks to [Daniel King](https://github.com/damaki), we now have a working implementation of boot2 in Ada. boot2 has been moved from pico_bsp to rp2040_hal and the flash chip may be selected with the `Flash_Chip` Alire configuration variable. [Documentation](https://pico-doc.synack.me/#boot_code)
+
+## Breaking changes
+
+### Toolchain dependency
+rp2040_hal now depends on the `gnat_arm_elf` toolchain in Alire. While the GNAT Community toolchains should continue to work, the FSF GNAT toolchain is the only one we will test going forward.
+
+### Startup code conflicts with Ravenscar runtimes
+`crt0.S` and `package Runtime` have been moved from pico_bsp into rp2040_hal. If rp2040_hal is used as a dependency of a project built with one of the Ravenscar runtimes, rp2040_hal's startup code will conflict with that provided by the runtime. The `Use_Startup = false` Alire configuration variable will prevent rp2040_hal from compiling and linking it's startup code.
+
+## Bugs fixed
+
+### Oscillator startup delay for Feather boards
+Some Adafruit Feather RP2040 boards have higher than expected capacitance on the XOSC traces and need a bit more time for the oscillator to stabilize. The `XOSC_Startup_Delay` parameter was added to `RP.Clock.Initialize` to allow BSPs to override the default startup delay. The default value should still be fine for most boards.
+
 # rp2040_hal 0.6.0
 
 ## New features
