@@ -13,24 +13,28 @@ package RP.ROM.AEABI is
    with Export,
         Convention => C,
         External_Name => "__aeabi_fadd";
+   pragma Weak_External (fadd);
 
    function fsub (A, B : Float)
       return Float
    with Export,
         Convention => C,
         External_Name => "__aeabi_fsub";
+   pragma Weak_External (fsub);
 
    function fmul (A, B : Float)
       return Float
    with Export,
         Convention => C,
         External_Name => "__aeabi_fmul";
+   pragma Weak_External (fmul);
 
    function fdiv (A, B : Float)
       return Float
    with Export,
         Convention => C,
         External_Name => "__aeabi_fdiv";
+   pragma Weak_External (fdiv);
 
    function fsqrt (V : Float)
       return Float
