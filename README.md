@@ -6,6 +6,4 @@ This repository contains drivers for the [RP2040 SoC](https://datasheets.raspber
 
 This is not production ready code and all of the APIs here are still subject to change.
 
-See [CHANGELOG](CHANGELOG.md) for recent updates and notice of breaking changes.
-
 Development discussion is happening on Gitter: [https://gitter.im/ada-lang/raspberrypi-pico](https://gitter.im/ada-lang/raspberrypi-pico)
