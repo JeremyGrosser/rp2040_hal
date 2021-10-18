@@ -9,8 +9,8 @@ with RP.Timer;
 package body RP.UART is
 
    procedure Configure
-      (This  : in out UART_Port;
-       Config : UART_Configuration)
+      (This   : in out UART_Port;
+       Config : UART_Configuration := Default_UART_Configuration)
    is
       use RP.Reset;
       use HAL;

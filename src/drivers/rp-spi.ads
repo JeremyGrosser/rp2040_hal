@@ -29,9 +29,11 @@ package RP.SPI is
       Blocking  : Boolean := True; --  Wait for Transmit FIFO to be empty before returning
    end record;
 
+   Default_SPI_Configuration : constant SPI_Configuration := (others => <>);
+
    procedure Configure
       (This   : in out SPI_Port;
-       Config : SPI_Configuration);
+       Config : SPI_Configuration := Default_SPI_Configuration);
 
    procedure Set_Speed
       (This : in out SPI_Port;

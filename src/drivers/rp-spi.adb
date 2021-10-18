@@ -11,7 +11,7 @@ with HAL; use HAL;
 package body RP.SPI is
    procedure Configure
       (This   : in out SPI_Port;
-       Config : SPI_Configuration)
+       Config : SPI_Configuration := Default_SPI_Configuration)
    is
       use RP.Reset;
    begin

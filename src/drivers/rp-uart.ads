@@ -32,11 +32,13 @@ package RP.UART is
       Frame_Length : Positive := 1; --  Words per frame. Used to calculate break timing.
    end record;
 
+   Default_UART_Configuration : constant UART_Configuration := (others => <>);
+
    type UART_FIFO_Status is (Empty, Not_Full, Full, Invalid);
 
    procedure Configure
       (This   : in out UART_Port;
-       Config : UART_Configuration)
+       Config : UART_Configuration := Default_UART_Configuration)
       with Pre => RP.Clock.Frequency (RP.Clock.PERI) > 3_686_400;
 
    --  If parity is enabled, the parity bit may be forced high using this
