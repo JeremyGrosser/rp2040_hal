@@ -220,7 +220,7 @@ package body RP.PWM is
    is
       I : constant Natural := Natural (V);
    begin
-      if Divider (I) > V then
+      if I = 256 or else Divider (I) > V then
          return UInt8 (I - 1);
       else
          return UInt8 (I);
