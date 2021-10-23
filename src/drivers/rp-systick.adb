@@ -40,8 +40,13 @@ package body RP.SysTick is
    end Enabled;
 
    function Clock
-      return UInt32
-   is (Ticks);
+      return Time
+   is (Time (SysTick_Periph.CVR.CURRENT));
+
+   function Milliseconds
+      (T : Natural)
+      return Time
+   is (Time (T));
 
    overriding
    procedure Delay_Microseconds

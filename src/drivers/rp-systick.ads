@@ -7,6 +7,17 @@ with HAL; use HAL;
 with HAL.Time;
 
 package RP.SysTick is
+
+   type Time is new UInt24;
+   Ticks_Per_Second : constant := 1_000;
+
+   function Clock
+      return Time;
+
+   function Milliseconds
+      (T : Natural)
+      return Time;
+
    type Delays is new HAL.Time.Delays with null record;
 
    procedure Enable
@@ -18,9 +29,6 @@ package RP.SysTick is
    function Enabled
       (This : in out Delays)
       return Boolean;
-
-   function Clock
-      return UInt32;
 
    overriding
    procedure Delay_Microseconds
@@ -41,8 +49,6 @@ package RP.SysTick is
    with Pre => Enabled (This);
 
 private
-
-   subtype Time is UInt32;
 
    Ticks : Time := 0
       with Atomic;
