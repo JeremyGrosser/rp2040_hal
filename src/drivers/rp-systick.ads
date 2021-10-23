@@ -19,6 +19,9 @@ package RP.SysTick is
       (This : in out Delays)
       return Boolean;
 
+   function Clock
+      return UInt32;
+
    overriding
    procedure Delay_Microseconds
       (This : in out Delays;

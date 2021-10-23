@@ -39,6 +39,10 @@ package body RP.SysTick is
       return SysTick_Periph.CSR.ENABLE = Enable;
    end Enabled;
 
+   function Clock
+      return UInt32
+   is (Ticks);
+
    overriding
    procedure Delay_Microseconds
       (This : in out Delays;
