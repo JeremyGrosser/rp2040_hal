@@ -369,9 +369,21 @@ package body RP.PIO is
        Prog        : Program;
        Offset      : PIO_Address)
    is
+      Insn : PIO_Instruction;
    begin
       for I in Prog'Range loop
-         This.Periph.INSTR_MEM (Offset + I - Prog'First) := UInt32 (Prog (I));
+         Insn := Prog (I);
+         
+         --  Check for JMP instruction
+         if (Insn and 2#111_00000_000_00000#) = 2#000_00000_000_00000# then
+            --  JMP instructions use absolute target addresses. If the program
+            --  is loaded at an offset, the JMP targets have to be adjusted with
+            --  this offset.
+            
+            Insn := Insn + PIO_Instruction (Offset);
+         end if;
+
+         This.Periph.INSTR_MEM (Offset + I - Prog'First) := UInt32 (Insn);
       end loop;
    end Load;
 
