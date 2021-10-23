@@ -172,7 +172,7 @@ package RP.PIO is
       (This        : in out PIO_Device;
        Prog        : Program;
        Offset      : PIO_Address)
-   with Pre => (Offset + Prog'Length) <= PIO_Address'Last;
+   with Pre => (Offset + Prog'Length - 1) <= PIO_Address'Last;
 
    procedure Put
       (This : in out PIO_Device;
