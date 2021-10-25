@@ -6,6 +6,8 @@
 with Ada.Unchecked_Conversion;
 with RP.Clock;
 with RP.Reset;
+with Cortex_M.NVIC; use Cortex_M.NVIC;
+with RP2040_SVD.Interrupts; use RP2040_SVD.Interrupts;
 
 package body RP.PIO is
    procedure Enable
@@ -450,5 +452,149 @@ package body RP.PIO is
        SM   : PIO_SM)
       return System.Address
    is (This.Periph.RXF (SM)'Address);
+
+   function NVIC_IRQ_Line (This : PIO_Device;
+                           IRQ  : PIO_IRQ_ID)
+                           return Cortex_M.NVIC.Interrupt_ID
+   is (case This.Num is
+          when 0 => (case IRQ is
+                        when 0 => PIO0_IRQ_0_Interrupt,
+                        when 1 => PIO0_IRQ_1_Interrupt),
+          when 1 => (case IRQ is
+                        when 0 => PIO1_IRQ_0_Interrupt,
+                        when 1 => PIO1_IRQ_1_Interrupt)
+      );
+
+   procedure Enable_IRQ (This : in out PIO_Device;
+                         IRQ  :        PIO_IRQ_ID)
+   is
+      Line : constant Cortex_M.NVIC.Interrupt_ID := NVIC_IRQ_Line (This, IRQ);
+   begin
+      Cortex_M.NVIC.Clear_Pending (Line);
+      Cortex_M.NVIC.Enable_Interrupt (Line);
+   end Enable_IRQ;
+
+   procedure Disable_IRQ (This : in out PIO_Device;
+                          IRQ  :        PIO_IRQ_ID)
+   is
+      Line : constant Cortex_M.NVIC.Interrupt_ID := NVIC_IRQ_Line (This, IRQ);
+   begin
+      Cortex_M.NVIC.Disable_Interrupt (Line);
+   end Disable_IRQ;
+
+   procedure Enable_IRQ_Flag (This : in out PIO_Device;
+                              IRQ  :        PIO_IRQ_ID;
+                              Flag :        PIO_IRQ_Flag)
+   is
+      INTE_Addr : constant System.Address :=
+        (case IRQ is
+            when 0 => This.Periph.IRQ0_INTE'Address,
+            when 1 => This.Periph.IRQ1_INTE'Address);
+
+      INTE : UInt32
+        with Address => INTE_Addr, Volatile_Full_Access;
+   begin
+
+      INTE := INTE or Flag'Enum_Rep;
+   end Enable_IRQ_Flag;
+
+   procedure Disable_IRQ_Flag (This : in out PIO_Device;
+                               IRQ  :        PIO_IRQ_ID;
+                               Flag :        PIO_IRQ_Flag)
+   is
+      INTE_Addr : constant System.Address :=
+        (case IRQ is
+            when 0 => This.Periph.IRQ0_INTE'Address,
+            when 1 => This.Periph.IRQ1_INTE'Address);
+
+      INTE : UInt32
+        with Address => INTE_Addr, Volatile_Full_Access;
+   begin
+      INTE := INTE and (not Flag'Enum_Rep);
+   end Disable_IRQ_Flag;
+
+   function IRQ_Flag_Status (This : in out PIO_Device;
+                             IRQ  :        PIO_IRQ_ID;
+                             Flag :        PIO_IRQ_Flag)
+                             return Boolean
+   is
+      INTS_Addr : constant System.Address :=
+        (case IRQ is
+            when 0 => This.Periph.IRQ0_INTS'Address,
+            when 1 => This.Periph.IRQ1_INTS'Address);
+
+      INTS : UInt32
+        with Address => INTS_Addr, Volatile_Full_Access;
+   begin
+      return (INTS and Flag'Enum_Rep) /= 0;
+   end IRQ_Flag_Status;
+
+   procedure Force_IRQ_Flag (This : in out PIO_Device;
+                             IRQ  :        PIO_IRQ_ID;
+                             Flag :        PIO_IRQ_Flag)
+   is
+      INTF_Addr : constant System.Address :=
+        (case IRQ is
+            when 0 => This.Periph.IRQ0_INTF'Address,
+            when 1 => This.Periph.IRQ1_INTF'Address);
+
+      INTF : UInt32
+        with Address => INTF_Addr, Volatile_Full_Access;
+   begin
+      INTF := INTF or Flag'Enum_Rep;
+   end Force_IRQ_Flag;
+
+   procedure Clear_Force_IRQ_Flag (This : in out PIO_Device;
+                                   IRQ  :        PIO_IRQ_ID;
+                                   Flag :        PIO_IRQ_Flag)
+   is
+      INTF_Addr : constant System.Address :=
+        (case IRQ is
+            when 0 => This.Periph.IRQ0_INTF'Address,
+            when 1 => This.Periph.IRQ1_INTF'Address);
+
+      INTF : UInt32
+        with Address => INTF_Addr, Volatile_Full_Access;
+   begin
+      INTF := INTF and (not Flag'Enum_Rep);
+   end Clear_Force_IRQ_Flag;
+
+   procedure Ack_SM_IRQ (This : in out PIO_Device;
+                         Flag :        PIO_SM_IRQ_Flag)
+   is
+      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
+   begin
+      --  Write 1 to clear
+      This.Periph.IRQ.IRQ := Mask;
+   end Ack_SM_IRQ;
+
+   --  Acknolege a state-machine-level IRQ
+
+   function SM_IRQ_Status (This : in out PIO_Device;
+                           Flag :        PIO_SM_IRQ_Flag)
+                           return Boolean
+   is
+      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
+   begin
+      return (This.Periph.IRQ.IRQ and Mask) /= 0;
+   end SM_IRQ_Status;
+
+   procedure Force_SM_IRQ (This : in out PIO_Device;
+                           Flag :        PIO_SM_IRQ_Flag)
+   is
+      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
+   begin
+      This.Periph.IRQ_FORCE.IRQ_FORCE :=
+        This.Periph.IRQ_FORCE.IRQ_FORCE or Mask;
+   end Force_SM_IRQ;
+
+   procedure Clear_Force_SM_IRQ (This : in out PIO_Device;
+                                 Flag :        PIO_SM_IRQ_Flag)
+   is
+      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
+   begin
+      This.Periph.IRQ_FORCE.IRQ_FORCE :=
+        This.Periph.IRQ_FORCE.IRQ_FORCE and (not Mask);
+   end Clear_Force_SM_IRQ;
 
 end RP.PIO;
