@@ -5,7 +5,7 @@
 --
 with RP2040_SVD.Interrupts;
 with RP2040_SVD.TIMER;      use RP2040_SVD.TIMER;
-with Cortex_M_SVD.NVIC;
+with Cortex_M.NVIC;
 with System.Machine_Code;
 
 package body RP.Timer is
@@ -38,11 +38,11 @@ package body RP.Timer is
       (This : in out Delays)
    is
       use RP2040_SVD.Interrupts;
-      use Cortex_M_SVD.NVIC;
    begin
       TIMER_Periph.INTE.ALARM_2 := True;
-      NVIC_Periph.NVIC_ICPR := Shift_Left (1, TIMER_IRQ_2_Interrupt);
-      NVIC_Periph.NVIC_ISER := Shift_Left (1, TIMER_IRQ_2_Interrupt);
+
+      Cortex_M.NVIC.Clear_Pending (TIMER_IRQ_2_Interrupt);
+      Cortex_M.NVIC.Enable_Interrupt (TIMER_IRQ_2_Interrupt);
    end Enable;
 
    procedure Disable

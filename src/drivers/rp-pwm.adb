@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Cortex_M_SVD.NVIC;
+with Cortex_M.NVIC;
 with RP2040_SVD.Interrupts;
 with RP.Reset;
 
@@ -196,11 +196,10 @@ package body RP.PWM is
       (Slice   : PWM_Slice;
        Handler : PWM_Interrupt_Handler)
    is
-      use Cortex_M_SVD.NVIC;
    begin
       Handlers (Slice) := Handler;
-      NVIC_Periph.NVIC_ICPR := Shift_Left (1, RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
-      NVIC_Periph.NVIC_ISER := Shift_Left (1, RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
+      Cortex_M.NVIC.Clear_Pending (RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
+      Cortex_M.NVIC.Enable_Interrupt (RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
       PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
    end Attach;
 
