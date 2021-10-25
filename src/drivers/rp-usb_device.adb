@@ -51,10 +51,6 @@ package body RP.USB_Device is
       (This : in out USB_Device_Controller)
    is
    begin
-      --  TODO: Errata RP2040-E5 requires some GPIO shenanigans to hold DP high
-      --        to force a reset on a busy bus.
-      --  pico-sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c
-
       --  Onboard PHY
       UR.USB_MUXING :=
          (TO_PHY  => True,

@@ -147,9 +147,6 @@ package RP.ROM is
         Convention => C,
         Address    => rom_func_lookup (rom_table_code ('W', 'V'));
 
-   --  2.8.3.2. Fast Floating Point Library
-   --  TODO
-
    --  2.8.3.3. Bootrom Data
    --  TODO these read as null strings?
    copyright_string : access Interfaces.C.char_array
