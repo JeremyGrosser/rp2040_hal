@@ -4,7 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with Cortex_M_SVD.NVIC;
+with Cortex_M.NVIC;
 with RP2040_SVD.SIO; use RP2040_SVD.SIO;
 with RP2040_SVD.Interrupts;
 with RP.Reset;
@@ -16,7 +16,6 @@ package body RP.GPIO is
 
    procedure Enable is
       use RP2040_SVD.Interrupts;
-      use Cortex_M_SVD.NVIC;
       use RP.Reset;
    begin
       Reset_Peripheral (Reset_IO_BANK0);
@@ -37,8 +36,10 @@ package body RP.GPIO is
 
       IO_BANK_Periph.PROC0_INTE := (others => 0);
       IO_BANK_Periph.PROC1_INTE := (others => 0);
-      NVIC_Periph.NVIC_ICPR := Shift_Left (1, IO_IRQ_BANK0_Interrupt);
-      NVIC_Periph.NVIC_ISER := NVIC_Periph.NVIC_ISER or Shift_Left (1, IO_IRQ_BANK0_Interrupt);
+
+      Cortex_M.NVIC.Clear_Pending (IO_IRQ_BANK0_Interrupt);
+      Cortex_M.NVIC.Enable_Interrupt (IO_IRQ_BANK0_Interrupt);
+
       GPIO_Enabled := True;
    end Enable;
 
