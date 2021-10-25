@@ -204,6 +204,72 @@ package RP.PIO is
        SM   : PIO_SM)
       return System.Address;
 
+   type PIO_IRQ_ID is range 0 .. 1;
+
+   type PIO_IRQ_Flag is
+     (SM0_RXNEMPTY, SM1_RXNEMPTY, SM2_RXNEMPTY, SM3_RXNEMPTY,
+      --  FIFO RX Not Empty flag for each State Machine
+
+      SM0_TXNFULL, SM1_TXNFULL, SM2_TXNFULL, SM3_TXNFULL,
+      --  FIFO TX Not Full flag for each State Machine
+
+      SM_IRQ0, SM_IRQ1, SM_IRQ2, SM_IRQ3
+      --  4 Lower State Machine IRQs. These are not tied to a given state
+      --  machine, any state machine can trigger any of the flags. The upper
+      --  4 state machine IRQ are not routed to system-level interrupt.
+     );
+
+   procedure Enable_IRQ (This : in out PIO_Device;
+                         IRQ  :        PIO_IRQ_ID);
+
+   procedure Disable_IRQ (This : in out PIO_Device;
+                          IRQ  :        PIO_IRQ_ID);
+
+   procedure Enable_IRQ_Flag (This : in out PIO_Device;
+                              IRQ  :        PIO_IRQ_ID;
+                              Flag :        PIO_IRQ_Flag);
+   --  Enable a system-level IRQ
+
+   procedure Disable_IRQ_Flag (This : in out PIO_Device;
+                               IRQ  :        PIO_IRQ_ID;
+                               Flag :        PIO_IRQ_Flag);
+   --  Disable a system-level IRQ
+
+   function IRQ_Flag_Status (This : in out PIO_Device;
+                             IRQ  :        PIO_IRQ_ID;
+                             Flag :        PIO_IRQ_Flag)
+                             return Boolean;
+   --  Return True if a system-level IRQ is signaled (after masking and forcing)
+
+   procedure Force_IRQ_Flag (This : in out PIO_Device;
+                             IRQ  :        PIO_IRQ_ID;
+                             Flag :        PIO_IRQ_Flag);
+   --  Force a system-level IRQ
+
+   procedure Clear_Force_IRQ_Flag (This : in out PIO_Device;
+                                   IRQ  :        PIO_IRQ_ID;
+                                   Flag :        PIO_IRQ_Flag);
+   --  Clear force a system-level IRQ
+
+   type PIO_SM_IRQ_Flag is range 0 .. 7;
+
+   procedure Ack_SM_IRQ (This : in out PIO_Device;
+                         Flag :        PIO_SM_IRQ_Flag);
+   --  Acknolege a state-machine-level IRQ
+
+   function SM_IRQ_Status (This : in out PIO_Device;
+                           Flag :        PIO_SM_IRQ_Flag)
+                           return Boolean;
+   --  Return True if a state-machine-level IRQ is signaled
+
+   procedure Force_SM_IRQ (This : in out PIO_Device;
+                           Flag :        PIO_SM_IRQ_Flag);
+   --  Force a state-machine-level IRQ
+
+   procedure Clear_Force_SM_IRQ (This : in out PIO_Device;
+                                 Flag :        PIO_SM_IRQ_Flag);
+   --  Clear force a state-machine-level IRQ
+
 private
 
    function Div_Integer
@@ -272,4 +338,19 @@ private
       (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
    is tagged null record;
+
+   for PIO_IRQ_Flag use
+     (SM0_RXNEMPTY => 2#0000_0000_0001#,
+      SM1_RXNEMPTY => 2#0000_0000_0010#,
+      SM2_RXNEMPTY => 2#0000_0000_0100#,
+      SM3_RXNEMPTY => 2#0000_0000_1000#,
+      SM0_TXNFULL  => 2#0000_0001_0000#,
+      SM1_TXNFULL  => 2#0000_0010_0000#,
+      SM2_TXNFULL  => 2#0000_0100_0000#,
+      SM3_TXNFULL  => 2#0000_1000_0000#,
+      SM_IRQ0      => 2#0001_0000_0000#,
+      SM_IRQ1      => 2#0010_0000_0000#,
+      SM_IRQ2      => 2#0100_0000_0000#,
+      SM_IRQ3      => 2#1000_0000_0000#);
+
 end RP.PIO;
