@@ -19,13 +19,23 @@ package body RP.Timer is
       Low       : UInt32;
    begin
       High := TIMER_Periph.TIMERAWH;
-      loop
-         --  If TIMERAWH changed while we were reading TIMERAWL, try again
-         Low := TIMER_Periph.TIMERAWL;
-         Next_High := TIMER_Periph.TIMERAWH;
-         exit when Next_High = High;
+      Low := TIMER_Periph.TIMERAWL;
+      Next_High := TIMER_Periph.TIMERAWH;
+
+      if Next_High /= High then
+         --  If TIMERAWH changed while we were reading TIMERAWL it means that at
+         --  some point between the two reads TIMERAWL overflowed and the values
+         --  where:
+         --    - TIMERAWL = 0
+         --    - TIMERAWH = Next_High
+         --
+         --  These values denote a valid point in time between the call and the
+         --  return of this function.
+
+         Low := 0;
          High := Next_High;
-      end loop;
+      end if;
+
       return Time (Shift_Left (UInt64 (High), 32) or UInt64 (Low));
    end Clock;
 
