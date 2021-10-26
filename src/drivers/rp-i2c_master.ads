@@ -19,8 +19,9 @@ is
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with private;
 
-   procedure Enable (This     : in out I2C_Master_Port;
-                     Baudrate :        Hertz)
+   procedure Configure
+      (This     : in out I2C_Master_Port;
+       Baudrate : Hertz)
      with Pre => Baudrate < RP.Clock.Frequency (RP.Clock.PERI);
 
    Clock_Speed_Error : exception;

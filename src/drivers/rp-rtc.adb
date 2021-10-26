@@ -11,7 +11,7 @@ with RP.Reset;
 package body RP.RTC is
    use HAL.Real_Time_Clock;
 
-   procedure Initialize
+   procedure Configure
       (This : in out RTC_Device)
    is
       use RP.Reset;
@@ -30,7 +30,7 @@ package body RP.RTC is
          (RP.Clock.Frequency (RP.Clock.RTC));
 
       This.Resume;
-   end Initialize;
+   end Configure;
 
    function Running
       (This : RTC_Device)

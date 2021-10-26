@@ -37,8 +37,9 @@ package body RP.I2C_Master is
    -- Enable --
    ------------
 
-   procedure Enable (This     : in out I2C_Master_Port;
-                     Baudrate : Hertz)
+   procedure Configure
+      (This     : in out I2C_Master_Port;
+       Baudrate : Hertz)
    is
       use RP.Reset;
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
@@ -111,7 +112,7 @@ package body RP.I2C_Master is
       P.IC_ENABLE.ENABLE := ENABLED;
 
       This.Restart_On_Next := False;
-   end Enable;
+   end Configure;
 
    ---------------------
    -- Master_Transmit --

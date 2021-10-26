@@ -11,7 +11,7 @@ package RP.RTC is
 
    --  Configure the RTC and start it.
    --  If the RTC is already running, Initialize resets the time to zero.
-   procedure Initialize
+   procedure Configure
       (This : in out RTC_Device);
 
    function Running
