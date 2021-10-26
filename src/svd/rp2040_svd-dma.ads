@@ -2326,10 +2326,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH0_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH0_DBG_CTDREQ : CH0_DBG_CTDREQ_CH0_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH0_DBG_CTDREQ : CH0_DBG_CTDREQ_CH0_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2346,10 +2347,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH1_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH1_DBG_CTDREQ : CH1_DBG_CTDREQ_CH1_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH1_DBG_CTDREQ : CH1_DBG_CTDREQ_CH1_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2366,10 +2368,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH2_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH2_DBG_CTDREQ : CH2_DBG_CTDREQ_CH2_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH2_DBG_CTDREQ : CH2_DBG_CTDREQ_CH2_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2386,10 +2389,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH3_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH3_DBG_CTDREQ : CH3_DBG_CTDREQ_CH3_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH3_DBG_CTDREQ : CH3_DBG_CTDREQ_CH3_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2406,10 +2410,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH4_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH4_DBG_CTDREQ : CH4_DBG_CTDREQ_CH4_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH4_DBG_CTDREQ : CH4_DBG_CTDREQ_CH4_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2426,10 +2431,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH5_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH5_DBG_CTDREQ : CH5_DBG_CTDREQ_CH5_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH5_DBG_CTDREQ : CH5_DBG_CTDREQ_CH5_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2446,10 +2452,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH6_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH6_DBG_CTDREQ : CH6_DBG_CTDREQ_CH6_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH6_DBG_CTDREQ : CH6_DBG_CTDREQ_CH6_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2466,10 +2473,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH7_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH7_DBG_CTDREQ : CH7_DBG_CTDREQ_CH7_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH7_DBG_CTDREQ : CH7_DBG_CTDREQ_CH7_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2486,10 +2494,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH8_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH8_DBG_CTDREQ : CH8_DBG_CTDREQ_CH8_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH8_DBG_CTDREQ : CH8_DBG_CTDREQ_CH8_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2506,10 +2515,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH9_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH9_DBG_CTDREQ : CH9_DBG_CTDREQ_CH9_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH9_DBG_CTDREQ : CH9_DBG_CTDREQ_CH9_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31  : HAL.UInt26;
+      Reserved_6_31  : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2526,10 +2536,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH10_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH10_DBG_CTDREQ : CH10_DBG_CTDREQ_CH10_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH10_DBG_CTDREQ : CH10_DBG_CTDREQ_CH10_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31   : HAL.UInt26;
+      Reserved_6_31   : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;
@@ -2546,10 +2557,11 @@ package RP2040_SVD.DMA is
    --  value: clears the counter, and cause channel to re-initiate DREQ
    --  handshake.
    type CH11_DBG_CTDREQ_Register is record
-      --  Read-only.
-      CH11_DBG_CTDREQ : CH11_DBG_CTDREQ_CH11_DBG_CTDREQ_Field;
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field.
+      CH11_DBG_CTDREQ : CH11_DBG_CTDREQ_CH11_DBG_CTDREQ_Field := 16#0#;
       --  unspecified
-      Reserved_6_31   : HAL.UInt26;
+      Reserved_6_31   : HAL.UInt26 := 16#0#;
    end record
      with Volatile_Full_Access, Object_Size => 32,
           Bit_Order => System.Low_Order_First;

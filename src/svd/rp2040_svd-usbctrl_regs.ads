@@ -244,13 +244,15 @@ package RP2040_SVD.USBCTRL_REGS is
       Reserved_1_1    : HAL.Bit := 16#0#;
       --  Read-only. USB bus line state
       LINE_STATE      : SIE_STATUS_LINE_STATE_Field := 16#0#;
-      --  Read-only. Bus in suspended state. Valid for device and host. Host
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field. Bus in suspended state. Valid for device and host. Host
       --  and device will go into suspend if neither Keep Alive / SOF frames
       --  are enabled.
       SUSPENDED       : Boolean := False;
       --  unspecified
       Reserved_5_7    : HAL.UInt3 := 16#0#;
-      --  Read-only. Host: device speed. Disconnected = 00, LS = 01, FS = 10
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field. Host: device speed. Disconnected = 00, LS = 01, FS = 10
       SPEED           : SIE_STATUS_SPEED_Field := 16#0#;
       --  Read-only. VBUS over current detected
       VBUS_OVER_CURR  : Boolean := False;
@@ -260,7 +262,8 @@ package RP2040_SVD.USBCTRL_REGS is
       RESUME          : Boolean := False;
       --  unspecified
       Reserved_12_15  : HAL.UInt4 := 16#0#;
-      --  Read-only. Device: connected
+      --  Write data bit of one shall clear (set to zero) the corresponding bit
+      --  in the field. Device: connected
       CONNECTED       : Boolean := False;
       --  Write data bit of one shall clear (set to zero) the corresponding bit
       --  in the field. Device: Setup packet received

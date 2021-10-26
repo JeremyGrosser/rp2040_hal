@@ -82,7 +82,8 @@ package RP2040_SVD.SIO is
 
    --  GPIO output value set
    type GPIO_OUT_SET_Register is record
-      --  Perform an atomic bit-set on GPIO_OUT, i.e. `GPIO_OUT |= wdata`
+      --  Write-only. Perform an atomic bit-set on GPIO_OUT, i.e. `GPIO_OUT |=
+      --  wdata`
       GPIO_OUT_SET   : GPIO_OUT_SET_GPIO_OUT_SET_Field := 16#0#;
       --  unspecified
       Reserved_30_31 : HAL.UInt2 := 16#0#;
@@ -99,7 +100,8 @@ package RP2040_SVD.SIO is
 
    --  GPIO output value clear
    type GPIO_OUT_CLR_Register is record
-      --  Perform an atomic bit-clear on GPIO_OUT, i.e. `GPIO_OUT &= ~wdata`
+      --  Write-only. Perform an atomic bit-clear on GPIO_OUT, i.e. `GPIO_OUT
+      --  &= ~wdata`
       GPIO_OUT_CLR   : GPIO_OUT_CLR_GPIO_OUT_CLR_Field := 16#0#;
       --  unspecified
       Reserved_30_31 : HAL.UInt2 := 16#0#;
@@ -116,7 +118,8 @@ package RP2040_SVD.SIO is
 
    --  GPIO output value XOR
    type GPIO_OUT_XOR_Register is record
-      --  Perform an atomic bitwise XOR on GPIO_OUT, i.e. `GPIO_OUT ^= wdata`
+      --  Write-only. Perform an atomic bitwise XOR on GPIO_OUT, i.e. `GPIO_OUT
+      --  ^= wdata`
       GPIO_OUT_XOR   : GPIO_OUT_XOR_GPIO_OUT_XOR_Field := 16#0#;
       --  unspecified
       Reserved_30_31 : HAL.UInt2 := 16#0#;
@@ -154,7 +157,8 @@ package RP2040_SVD.SIO is
 
    --  GPIO output enable set
    type GPIO_OE_SET_Register is record
-      --  Perform an atomic bit-set on GPIO_OE, i.e. `GPIO_OE |= wdata`
+      --  Write-only. Perform an atomic bit-set on GPIO_OE, i.e. `GPIO_OE |=
+      --  wdata`
       GPIO_OE_SET    : GPIO_OE_SET_GPIO_OE_SET_Field := 16#0#;
       --  unspecified
       Reserved_30_31 : HAL.UInt2 := 16#0#;
@@ -171,7 +175,8 @@ package RP2040_SVD.SIO is
 
    --  GPIO output enable clear
    type GPIO_OE_CLR_Register is record
-      --  Perform an atomic bit-clear on GPIO_OE, i.e. `GPIO_OE &= ~wdata`
+      --  Write-only. Perform an atomic bit-clear on GPIO_OE, i.e. `GPIO_OE &=
+      --  ~wdata`
       GPIO_OE_CLR    : GPIO_OE_CLR_GPIO_OE_CLR_Field := 16#0#;
       --  unspecified
       Reserved_30_31 : HAL.UInt2 := 16#0#;
@@ -188,7 +193,8 @@ package RP2040_SVD.SIO is
 
    --  GPIO output enable XOR
    type GPIO_OE_XOR_Register is record
-      --  Perform an atomic bitwise XOR on GPIO_OE, i.e. `GPIO_OE ^= wdata`
+      --  Write-only. Perform an atomic bitwise XOR on GPIO_OE, i.e. `GPIO_OE
+      --  ^= wdata`
       GPIO_OE_XOR    : GPIO_OE_XOR_GPIO_OE_XOR_Field := 16#0#;
       --  unspecified
       Reserved_30_31 : HAL.UInt2 := 16#0#;
@@ -227,7 +233,8 @@ package RP2040_SVD.SIO is
 
    --  QSPI output value set
    type GPIO_HI_OUT_SET_Register is record
-      --  Perform an atomic bit-set on GPIO_HI_OUT, i.e. `GPIO_HI_OUT |= wdata`
+      --  Write-only. Perform an atomic bit-set on GPIO_HI_OUT, i.e.
+      --  `GPIO_HI_OUT |= wdata`
       GPIO_HI_OUT_SET : GPIO_HI_OUT_SET_GPIO_HI_OUT_SET_Field := 16#0#;
       --  unspecified
       Reserved_6_31   : HAL.UInt26 := 16#0#;
@@ -244,8 +251,8 @@ package RP2040_SVD.SIO is
 
    --  QSPI output value clear
    type GPIO_HI_OUT_CLR_Register is record
-      --  Perform an atomic bit-clear on GPIO_HI_OUT, i.e. `GPIO_HI_OUT &=
-      --  ~wdata`
+      --  Write-only. Perform an atomic bit-clear on GPIO_HI_OUT, i.e.
+      --  `GPIO_HI_OUT &= ~wdata`
       GPIO_HI_OUT_CLR : GPIO_HI_OUT_CLR_GPIO_HI_OUT_CLR_Field := 16#0#;
       --  unspecified
       Reserved_6_31   : HAL.UInt26 := 16#0#;
@@ -262,8 +269,8 @@ package RP2040_SVD.SIO is
 
    --  QSPI output value XOR
    type GPIO_HI_OUT_XOR_Register is record
-      --  Perform an atomic bitwise XOR on GPIO_HI_OUT, i.e. `GPIO_HI_OUT ^=
-      --  wdata`
+      --  Write-only. Perform an atomic bitwise XOR on GPIO_HI_OUT, i.e.
+      --  `GPIO_HI_OUT ^= wdata`
       GPIO_HI_OUT_XOR : GPIO_HI_OUT_XOR_GPIO_HI_OUT_XOR_Field := 16#0#;
       --  unspecified
       Reserved_6_31   : HAL.UInt26 := 16#0#;
@@ -301,7 +308,8 @@ package RP2040_SVD.SIO is
 
    --  QSPI output enable set
    type GPIO_HI_OE_SET_Register is record
-      --  Perform an atomic bit-set on GPIO_HI_OE, i.e. `GPIO_HI_OE |= wdata`
+      --  Write-only. Perform an atomic bit-set on GPIO_HI_OE, i.e. `GPIO_HI_OE
+      --  |= wdata`
       GPIO_HI_OE_SET : GPIO_HI_OE_SET_GPIO_HI_OE_SET_Field := 16#0#;
       --  unspecified
       Reserved_6_31  : HAL.UInt26 := 16#0#;
@@ -318,8 +326,8 @@ package RP2040_SVD.SIO is
 
    --  QSPI output enable clear
    type GPIO_HI_OE_CLR_Register is record
-      --  Perform an atomic bit-clear on GPIO_HI_OE, i.e. `GPIO_HI_OE &=
-      --  ~wdata`
+      --  Write-only. Perform an atomic bit-clear on GPIO_HI_OE, i.e.
+      --  `GPIO_HI_OE &= ~wdata`
       GPIO_HI_OE_CLR : GPIO_HI_OE_CLR_GPIO_HI_OE_CLR_Field := 16#0#;
       --  unspecified
       Reserved_6_31  : HAL.UInt26 := 16#0#;
@@ -336,8 +344,8 @@ package RP2040_SVD.SIO is
 
    --  QSPI output enable XOR
    type GPIO_HI_OE_XOR_Register is record
-      --  Perform an atomic bitwise XOR on GPIO_HI_OE, i.e. `GPIO_HI_OE ^=
-      --  wdata`
+      --  Write-only. Perform an atomic bitwise XOR on GPIO_HI_OE, i.e.
+      --  `GPIO_HI_OE ^= wdata`
       GPIO_HI_OE_XOR : GPIO_HI_OE_XOR_GPIO_HI_OE_XOR_Field := 16#0#;
       --  unspecified
       Reserved_6_31  : HAL.UInt26 := 16#0#;

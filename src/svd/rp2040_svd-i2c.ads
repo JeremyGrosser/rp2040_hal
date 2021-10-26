@@ -11,7 +11,78 @@ pragma Restrictions (No_Elaboration_Code);
 with HAL;
 with System;
 
---  DW_apb_i2c address block
+--  DW_apb_i2c address block\n\n
+--          List of configuration constants for the Synopsys I2C hardware (you
+--  may see references to these in I2C register header; these are *fixed*
+--  values, set at hardware design time):\n\n
+--          IC_ULTRA_FAST_MODE ................ 0x0\n
+--          IC_UFM_TBUF_CNT_DEFAULT ........... 0x8\n
+--          IC_UFM_SCL_LOW_COUNT .............. 0x0008\n
+--          IC_UFM_SCL_HIGH_COUNT ............. 0x0006\n
+--          IC_TX_TL .......................... 0x0\n
+--          IC_TX_CMD_BLOCK ................... 0x1\n
+--          IC_HAS_DMA ........................ 0x1\n
+--          IC_HAS_ASYNC_FIFO ................. 0x0\n
+--          IC_SMBUS_ARP ...................... 0x0\n
+--          IC_FIRST_DATA_BYTE_STATUS ......... 0x1\n
+--          IC_INTR_IO ........................ 0x1\n
+--          IC_MASTER_MODE .................... 0x1\n
+--          IC_DEFAULT_ACK_GENERAL_CALL ....... 0x1\n
+--          IC_INTR_POL ....................... 0x1\n
+--          IC_OPTIONAL_SAR ................... 0x0\n
+--          IC_DEFAULT_TAR_SLAVE_ADDR ......... 0x055\n
+--          IC_DEFAULT_SLAVE_ADDR ............. 0x055\n
+--          IC_DEFAULT_HS_SPKLEN .............. 0x1\n
+--          IC_FS_SCL_HIGH_COUNT .............. 0x0006\n
+--          IC_HS_SCL_LOW_COUNT ............... 0x0008\n
+--          IC_DEVICE_ID_VALUE ................ 0x0\n
+--          IC_10BITADDR_MASTER ............... 0x0\n
+--          IC_CLK_FREQ_OPTIMIZATION .......... 0x0\n
+--          IC_DEFAULT_FS_SPKLEN .............. 0x7\n
+--          IC_ADD_ENCODED_PARAMS ............. 0x0\n
+--          IC_DEFAULT_SDA_HOLD ............... 0x000001\n
+--          IC_DEFAULT_SDA_SETUP .............. 0x64\n
+--          IC_AVOID_RX_FIFO_FLUSH_ON_TX_ABRT . 0x0\n
+--          IC_CLOCK_PERIOD ................... 100\n
+--          IC_EMPTYFIFO_HOLD_MASTER_EN ....... 1\n
+--          IC_RESTART_EN ..................... 0x1\n
+--          IC_TX_CMD_BLOCK_DEFAULT ........... 0x0\n
+--          IC_BUS_CLEAR_FEATURE .............. 0x0\n
+--          IC_CAP_LOADING .................... 100\n
+--          IC_FS_SCL_LOW_COUNT ............... 0x000d\n
+--          APB_DATA_WIDTH .................... 32\n
+--          IC_SDA_STUCK_TIMEOUT_DEFAULT ...... 0xffffffff\n
+--          IC_SLV_DATA_NACK_ONLY ............. 0x1\n
+--          IC_10BITADDR_SLAVE ................ 0x0\n
+--          IC_CLK_TYPE ....................... 0x0\n
+--          IC_SMBUS_UDID_MSB ................. 0x0\n
+--          IC_SMBUS_SUSPEND_ALERT ............ 0x0\n
+--          IC_HS_SCL_HIGH_COUNT .............. 0x0006\n
+--          IC_SLV_RESTART_DET_EN ............. 0x1\n
+--          IC_SMBUS .......................... 0x0\n
+--          IC_OPTIONAL_SAR_DEFAULT ........... 0x0\n
+--          IC_PERSISTANT_SLV_ADDR_DEFAULT .... 0x0\n
+--          IC_USE_COUNTS ..................... 0x0\n
+--          IC_RX_BUFFER_DEPTH ................ 16\n
+--          IC_SCL_STUCK_TIMEOUT_DEFAULT ...... 0xffffffff\n
+--          IC_RX_FULL_HLD_BUS_EN ............. 0x1\n
+--          IC_SLAVE_DISABLE .................. 0x1\n
+--          IC_RX_TL .......................... 0x0\n
+--          IC_DEVICE_ID ...................... 0x0\n
+--          IC_HC_COUNT_VALUES ................ 0x0\n
+--          I2C_DYNAMIC_TAR_UPDATE ............ 0\n
+--          IC_SMBUS_CLK_LOW_MEXT_DEFAULT ..... 0xffffffff\n
+--          IC_SMBUS_CLK_LOW_SEXT_DEFAULT ..... 0xffffffff\n
+--          IC_HS_MASTER_CODE ................. 0x1\n
+--          IC_SMBUS_RST_IDLE_CNT_DEFAULT ..... 0xffff\n
+--          IC_SMBUS_UDID_LSB_DEFAULT ......... 0xffffffff\n
+--          IC_SS_SCL_HIGH_COUNT .............. 0x0028\n
+--          IC_SS_SCL_LOW_COUNT ............... 0x002f\n
+--          IC_MAX_SPEED_MODE ................. 0x2\n
+--          IC_STAT_FOR_CLK_STRETCH ........... 0x0\n
+--          IC_STOP_DET_IF_MASTER_ACTIVE ...... 0x0\n
+--          IC_DEFAULT_UFM_SPKLEN ............. 0x1\n
+--          IC_TX_BUFFER_DEPTH ................ 16
 package RP2040_SVD.I2C is
    pragma Preelaborate;
 
@@ -2900,7 +2971,55 @@ package RP2040_SVD.I2C is
    -- Peripherals --
    -----------------
 
-   --  DW_apb_i2c address block
+   --  DW_apb_i2c address block\n\n List of configuration constants for the
+   --  Synopsys I2C hardware (you may see references to these in I2C register
+   --  header; these are *fixed* values, set at hardware design time):\n\n
+   --  IC_ULTRA_FAST_MODE ................ 0x0\n IC_UFM_TBUF_CNT_DEFAULT
+   --  ........... 0x8\n IC_UFM_SCL_LOW_COUNT .............. 0x0008\n
+   --  IC_UFM_SCL_HIGH_COUNT ............. 0x0006\n IC_TX_TL
+   --  .......................... 0x0\n IC_TX_CMD_BLOCK ...................
+   --  0x1\n IC_HAS_DMA ........................ 0x1\n IC_HAS_ASYNC_FIFO
+   --  ................. 0x0\n IC_SMBUS_ARP ...................... 0x0\n
+   --  IC_FIRST_DATA_BYTE_STATUS ......... 0x1\n IC_INTR_IO
+   --  ........................ 0x1\n IC_MASTER_MODE .................... 0x1\n
+   --  IC_DEFAULT_ACK_GENERAL_CALL ....... 0x1\n IC_INTR_POL
+   --  ....................... 0x1\n IC_OPTIONAL_SAR ................... 0x0\n
+   --  IC_DEFAULT_TAR_SLAVE_ADDR ......... 0x055\n IC_DEFAULT_SLAVE_ADDR
+   --  ............. 0x055\n IC_DEFAULT_HS_SPKLEN .............. 0x1\n
+   --  IC_FS_SCL_HIGH_COUNT .............. 0x0006\n IC_HS_SCL_LOW_COUNT
+   --  ............... 0x0008\n IC_DEVICE_ID_VALUE ................ 0x0\n
+   --  IC_10BITADDR_MASTER ............... 0x0\n IC_CLK_FREQ_OPTIMIZATION
+   --  .......... 0x0\n IC_DEFAULT_FS_SPKLEN .............. 0x7\n
+   --  IC_ADD_ENCODED_PARAMS ............. 0x0\n IC_DEFAULT_SDA_HOLD
+   --  ............... 0x000001\n IC_DEFAULT_SDA_SETUP .............. 0x64\n
+   --  IC_AVOID_RX_FIFO_FLUSH_ON_TX_ABRT . 0x0\n IC_CLOCK_PERIOD
+   --  ................... 100\n IC_EMPTYFIFO_HOLD_MASTER_EN ....... 1\n
+   --  IC_RESTART_EN ..................... 0x1\n IC_TX_CMD_BLOCK_DEFAULT
+   --  ........... 0x0\n IC_BUS_CLEAR_FEATURE .............. 0x0\n
+   --  IC_CAP_LOADING .................... 100\n IC_FS_SCL_LOW_COUNT
+   --  ............... 0x000d\n APB_DATA_WIDTH .................... 32\n
+   --  IC_SDA_STUCK_TIMEOUT_DEFAULT ...... 0xffffffff\n IC_SLV_DATA_NACK_ONLY
+   --  ............. 0x1\n IC_10BITADDR_SLAVE ................ 0x0\n
+   --  IC_CLK_TYPE ....................... 0x0\n IC_SMBUS_UDID_MSB
+   --  ................. 0x0\n IC_SMBUS_SUSPEND_ALERT ............ 0x0\n
+   --  IC_HS_SCL_HIGH_COUNT .............. 0x0006\n IC_SLV_RESTART_DET_EN
+   --  ............. 0x1\n IC_SMBUS .......................... 0x0\n
+   --  IC_OPTIONAL_SAR_DEFAULT ........... 0x0\n IC_PERSISTANT_SLV_ADDR_DEFAULT
+   --  .... 0x0\n IC_USE_COUNTS ..................... 0x0\n IC_RX_BUFFER_DEPTH
+   --  ................ 16\n IC_SCL_STUCK_TIMEOUT_DEFAULT ...... 0xffffffff\n
+   --  IC_RX_FULL_HLD_BUS_EN ............. 0x1\n IC_SLAVE_DISABLE
+   --  .................. 0x1\n IC_RX_TL .......................... 0x0\n
+   --  IC_DEVICE_ID ...................... 0x0\n IC_HC_COUNT_VALUES
+   --  ................ 0x0\n I2C_DYNAMIC_TAR_UPDATE ............ 0\n
+   --  IC_SMBUS_CLK_LOW_MEXT_DEFAULT ..... 0xffffffff\n
+   --  IC_SMBUS_CLK_LOW_SEXT_DEFAULT ..... 0xffffffff\n IC_HS_MASTER_CODE
+   --  ................. 0x1\n IC_SMBUS_RST_IDLE_CNT_DEFAULT ..... 0xffff\n
+   --  IC_SMBUS_UDID_LSB_DEFAULT ......... 0xffffffff\n IC_SS_SCL_HIGH_COUNT
+   --  .............. 0x0028\n IC_SS_SCL_LOW_COUNT ............... 0x002f\n
+   --  IC_MAX_SPEED_MODE ................. 0x2\n IC_STAT_FOR_CLK_STRETCH
+   --  ........... 0x0\n IC_STOP_DET_IF_MASTER_ACTIVE ...... 0x0\n
+   --  IC_DEFAULT_UFM_SPKLEN ............. 0x1\n IC_TX_BUFFER_DEPTH
+   --  ................ 16
    type I2C_Peripheral is record
       --  I2C Control Register. This register can be written only when the
       --  DW_apb_i2c is disabled, which corresponds to the IC_ENABLE[0]
@@ -3146,7 +3265,55 @@ package RP2040_SVD.I2C is
       IC_COMP_TYPE          at 16#FC# range 0 .. 31;
    end record;
 
-   --  DW_apb_i2c address block
+   --  DW_apb_i2c address block\n\n List of configuration constants for the
+   --  Synopsys I2C hardware (you may see references to these in I2C register
+   --  header; these are *fixed* values, set at hardware design time):\n\n
+   --  IC_ULTRA_FAST_MODE ................ 0x0\n IC_UFM_TBUF_CNT_DEFAULT
+   --  ........... 0x8\n IC_UFM_SCL_LOW_COUNT .............. 0x0008\n
+   --  IC_UFM_SCL_HIGH_COUNT ............. 0x0006\n IC_TX_TL
+   --  .......................... 0x0\n IC_TX_CMD_BLOCK ...................
+   --  0x1\n IC_HAS_DMA ........................ 0x1\n IC_HAS_ASYNC_FIFO
+   --  ................. 0x0\n IC_SMBUS_ARP ...................... 0x0\n
+   --  IC_FIRST_DATA_BYTE_STATUS ......... 0x1\n IC_INTR_IO
+   --  ........................ 0x1\n IC_MASTER_MODE .................... 0x1\n
+   --  IC_DEFAULT_ACK_GENERAL_CALL ....... 0x1\n IC_INTR_POL
+   --  ....................... 0x1\n IC_OPTIONAL_SAR ................... 0x0\n
+   --  IC_DEFAULT_TAR_SLAVE_ADDR ......... 0x055\n IC_DEFAULT_SLAVE_ADDR
+   --  ............. 0x055\n IC_DEFAULT_HS_SPKLEN .............. 0x1\n
+   --  IC_FS_SCL_HIGH_COUNT .............. 0x0006\n IC_HS_SCL_LOW_COUNT
+   --  ............... 0x0008\n IC_DEVICE_ID_VALUE ................ 0x0\n
+   --  IC_10BITADDR_MASTER ............... 0x0\n IC_CLK_FREQ_OPTIMIZATION
+   --  .......... 0x0\n IC_DEFAULT_FS_SPKLEN .............. 0x7\n
+   --  IC_ADD_ENCODED_PARAMS ............. 0x0\n IC_DEFAULT_SDA_HOLD
+   --  ............... 0x000001\n IC_DEFAULT_SDA_SETUP .............. 0x64\n
+   --  IC_AVOID_RX_FIFO_FLUSH_ON_TX_ABRT . 0x0\n IC_CLOCK_PERIOD
+   --  ................... 100\n IC_EMPTYFIFO_HOLD_MASTER_EN ....... 1\n
+   --  IC_RESTART_EN ..................... 0x1\n IC_TX_CMD_BLOCK_DEFAULT
+   --  ........... 0x0\n IC_BUS_CLEAR_FEATURE .............. 0x0\n
+   --  IC_CAP_LOADING .................... 100\n IC_FS_SCL_LOW_COUNT
+   --  ............... 0x000d\n APB_DATA_WIDTH .................... 32\n
+   --  IC_SDA_STUCK_TIMEOUT_DEFAULT ...... 0xffffffff\n IC_SLV_DATA_NACK_ONLY
+   --  ............. 0x1\n IC_10BITADDR_SLAVE ................ 0x0\n
+   --  IC_CLK_TYPE ....................... 0x0\n IC_SMBUS_UDID_MSB
+   --  ................. 0x0\n IC_SMBUS_SUSPEND_ALERT ............ 0x0\n
+   --  IC_HS_SCL_HIGH_COUNT .............. 0x0006\n IC_SLV_RESTART_DET_EN
+   --  ............. 0x1\n IC_SMBUS .......................... 0x0\n
+   --  IC_OPTIONAL_SAR_DEFAULT ........... 0x0\n IC_PERSISTANT_SLV_ADDR_DEFAULT
+   --  .... 0x0\n IC_USE_COUNTS ..................... 0x0\n IC_RX_BUFFER_DEPTH
+   --  ................ 16\n IC_SCL_STUCK_TIMEOUT_DEFAULT ...... 0xffffffff\n
+   --  IC_RX_FULL_HLD_BUS_EN ............. 0x1\n IC_SLAVE_DISABLE
+   --  .................. 0x1\n IC_RX_TL .......................... 0x0\n
+   --  IC_DEVICE_ID ...................... 0x0\n IC_HC_COUNT_VALUES
+   --  ................ 0x0\n I2C_DYNAMIC_TAR_UPDATE ............ 0\n
+   --  IC_SMBUS_CLK_LOW_MEXT_DEFAULT ..... 0xffffffff\n
+   --  IC_SMBUS_CLK_LOW_SEXT_DEFAULT ..... 0xffffffff\n IC_HS_MASTER_CODE
+   --  ................. 0x1\n IC_SMBUS_RST_IDLE_CNT_DEFAULT ..... 0xffff\n
+   --  IC_SMBUS_UDID_LSB_DEFAULT ......... 0xffffffff\n IC_SS_SCL_HIGH_COUNT
+   --  .............. 0x0028\n IC_SS_SCL_LOW_COUNT ............... 0x002f\n
+   --  IC_MAX_SPEED_MODE ................. 0x2\n IC_STAT_FOR_CLK_STRETCH
+   --  ........... 0x0\n IC_STOP_DET_IF_MASTER_ACTIVE ...... 0x0\n
+   --  IC_DEFAULT_UFM_SPKLEN ............. 0x1\n IC_TX_BUFFER_DEPTH
+   --  ................ 16
    I2C0_Periph : aliased I2C_Peripheral
      with Import, Address => I2C0_Base;
    I2C1_Periph : aliased I2C_Peripheral

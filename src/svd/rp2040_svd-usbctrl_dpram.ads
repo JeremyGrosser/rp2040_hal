@@ -1666,7 +1666,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP0_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP0_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -1750,7 +1750,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP0_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP0_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -1834,7 +1834,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP1_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP1_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -1918,7 +1918,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP1_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP1_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2002,7 +2002,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP2_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP2_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2086,7 +2086,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP2_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP2_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2170,7 +2170,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP3_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP3_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2254,7 +2254,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP3_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP3_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2338,7 +2338,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP4_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP4_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2422,7 +2422,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP4_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP4_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2506,7 +2506,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP5_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP5_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2590,7 +2590,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP5_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP5_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2674,7 +2674,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP6_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP6_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2758,7 +2758,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP6_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP6_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2842,7 +2842,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP7_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP7_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -2926,7 +2926,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP7_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP7_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3010,7 +3010,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP8_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP8_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3094,7 +3094,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP8_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP8_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3178,7 +3178,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP9_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP9_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3262,7 +3262,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP9_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP9_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3346,7 +3346,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP10_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP10_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3430,7 +3430,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP10_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP10_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3514,7 +3514,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP11_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP11_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3598,7 +3598,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP11_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP11_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3682,7 +3682,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP12_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP12_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3766,7 +3766,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP12_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP12_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3850,7 +3850,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP13_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP13_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -3934,7 +3934,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP13_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP13_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -4018,7 +4018,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP14_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP14_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -4102,7 +4102,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP14_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP14_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -4186,7 +4186,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP15_IN_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP15_IN_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be
@@ -4270,7 +4270,7 @@ package RP2040_SVD.USBCTRL_DPRAM is
    --  are for buffer 1.\n Fields ending in a _0 are for buffer 0. Buffer 1
    --  controls are only valid if the endpoint is in double buffered mode.
    type EP15_OUT_BUFFER_CONTROL_Register is record
-      --  The length of the data in buffer 1.
+      --  The length of the data in buffer 0.
       LENGTH_0                 : EP15_OUT_BUFFER_CONTROL_LENGTH_0_Field :=
                                   16#0#;
       --  Buffer 0 is available. This bit is set to indicate the buffer can be

@@ -289,6 +289,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 0
    type INSTR_MEM0_Register is record
+      --  Write-only.
       INSTR_MEM0     : INSTR_MEM0_INSTR_MEM0_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -305,6 +306,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 1
    type INSTR_MEM1_Register is record
+      --  Write-only.
       INSTR_MEM1     : INSTR_MEM1_INSTR_MEM1_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -321,6 +323,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 2
    type INSTR_MEM2_Register is record
+      --  Write-only.
       INSTR_MEM2     : INSTR_MEM2_INSTR_MEM2_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -337,6 +340,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 3
    type INSTR_MEM3_Register is record
+      --  Write-only.
       INSTR_MEM3     : INSTR_MEM3_INSTR_MEM3_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -353,6 +357,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 4
    type INSTR_MEM4_Register is record
+      --  Write-only.
       INSTR_MEM4     : INSTR_MEM4_INSTR_MEM4_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -369,6 +374,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 5
    type INSTR_MEM5_Register is record
+      --  Write-only.
       INSTR_MEM5     : INSTR_MEM5_INSTR_MEM5_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -385,6 +391,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 6
    type INSTR_MEM6_Register is record
+      --  Write-only.
       INSTR_MEM6     : INSTR_MEM6_INSTR_MEM6_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -401,6 +408,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 7
    type INSTR_MEM7_Register is record
+      --  Write-only.
       INSTR_MEM7     : INSTR_MEM7_INSTR_MEM7_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -417,6 +425,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 8
    type INSTR_MEM8_Register is record
+      --  Write-only.
       INSTR_MEM8     : INSTR_MEM8_INSTR_MEM8_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -433,6 +442,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 9
    type INSTR_MEM9_Register is record
+      --  Write-only.
       INSTR_MEM9     : INSTR_MEM9_INSTR_MEM9_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -449,6 +459,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 10
    type INSTR_MEM10_Register is record
+      --  Write-only.
       INSTR_MEM10    : INSTR_MEM10_INSTR_MEM10_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -465,6 +476,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 11
    type INSTR_MEM11_Register is record
+      --  Write-only.
       INSTR_MEM11    : INSTR_MEM11_INSTR_MEM11_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -481,6 +493,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 12
    type INSTR_MEM12_Register is record
+      --  Write-only.
       INSTR_MEM12    : INSTR_MEM12_INSTR_MEM12_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -497,6 +510,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 13
    type INSTR_MEM13_Register is record
+      --  Write-only.
       INSTR_MEM13    : INSTR_MEM13_INSTR_MEM13_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -513,6 +527,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 14
    type INSTR_MEM14_Register is record
+      --  Write-only.
       INSTR_MEM14    : INSTR_MEM14_INSTR_MEM14_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -529,6 +544,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 15
    type INSTR_MEM15_Register is record
+      --  Write-only.
       INSTR_MEM15    : INSTR_MEM15_INSTR_MEM15_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -545,6 +561,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 16
    type INSTR_MEM16_Register is record
+      --  Write-only.
       INSTR_MEM16    : INSTR_MEM16_INSTR_MEM16_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -561,6 +578,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 17
    type INSTR_MEM17_Register is record
+      --  Write-only.
       INSTR_MEM17    : INSTR_MEM17_INSTR_MEM17_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -577,6 +595,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 18
    type INSTR_MEM18_Register is record
+      --  Write-only.
       INSTR_MEM18    : INSTR_MEM18_INSTR_MEM18_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -593,6 +612,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 19
    type INSTR_MEM19_Register is record
+      --  Write-only.
       INSTR_MEM19    : INSTR_MEM19_INSTR_MEM19_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -609,6 +629,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 20
    type INSTR_MEM20_Register is record
+      --  Write-only.
       INSTR_MEM20    : INSTR_MEM20_INSTR_MEM20_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -625,6 +646,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 21
    type INSTR_MEM21_Register is record
+      --  Write-only.
       INSTR_MEM21    : INSTR_MEM21_INSTR_MEM21_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -641,6 +663,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 22
    type INSTR_MEM22_Register is record
+      --  Write-only.
       INSTR_MEM22    : INSTR_MEM22_INSTR_MEM22_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -657,6 +680,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 23
    type INSTR_MEM23_Register is record
+      --  Write-only.
       INSTR_MEM23    : INSTR_MEM23_INSTR_MEM23_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -673,6 +697,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 24
    type INSTR_MEM24_Register is record
+      --  Write-only.
       INSTR_MEM24    : INSTR_MEM24_INSTR_MEM24_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -689,6 +714,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 25
    type INSTR_MEM25_Register is record
+      --  Write-only.
       INSTR_MEM25    : INSTR_MEM25_INSTR_MEM25_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -705,6 +731,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 26
    type INSTR_MEM26_Register is record
+      --  Write-only.
       INSTR_MEM26    : INSTR_MEM26_INSTR_MEM26_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -721,6 +748,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 27
    type INSTR_MEM27_Register is record
+      --  Write-only.
       INSTR_MEM27    : INSTR_MEM27_INSTR_MEM27_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -737,6 +765,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 28
    type INSTR_MEM28_Register is record
+      --  Write-only.
       INSTR_MEM28    : INSTR_MEM28_INSTR_MEM28_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -753,6 +782,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 29
    type INSTR_MEM29_Register is record
+      --  Write-only.
       INSTR_MEM29    : INSTR_MEM29_INSTR_MEM29_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -769,6 +799,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 30
    type INSTR_MEM30_Register is record
+      --  Write-only.
       INSTR_MEM30    : INSTR_MEM30_INSTR_MEM30_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;
@@ -785,6 +816,7 @@ package RP2040_SVD.PIO is
 
    --  Write-only access to instruction memory location 31
    type INSTR_MEM31_Register is record
+      --  Write-only.
       INSTR_MEM31    : INSTR_MEM31_INSTR_MEM31_Field := 16#0#;
       --  unspecified
       Reserved_16_31 : HAL.UInt16 := 16#0#;

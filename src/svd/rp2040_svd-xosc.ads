@@ -127,14 +127,13 @@ package RP2040_SVD.XOSC is
 
    --  Controls the startup delay
    type STARTUP_Register is record
-      --  in multiples of 256*xtal_period. Set to 0xc4 at reset (approx 50 000
-      --  cycles)
-      DELAY_k        : STARTUP_DELAY_Field := 16#0#;
+      --  in multiples of 256*xtal_period. The reset value of 0xc4 corresponds
+      --  to approx 50 000 cycles.
+      DELAY_k        : STARTUP_DELAY_Field := 16#C4#;
       --  unspecified
       Reserved_14_19 : HAL.UInt6 := 16#0#;
       --  Multiplies the startup_delay by 4. This is of little value to the
-      --  user given that the delay can be programmed directly. Set to 0 at
-      --  reset.
+      --  user given that the delay can be programmed directly.
       X4             : Boolean := False;
       --  unspecified
       Reserved_21_31 : HAL.UInt11 := 16#0#;
