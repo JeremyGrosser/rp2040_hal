@@ -18,8 +18,6 @@ usb_embedded = "~0.1.0"
 gnat_arm_elf = "^11.2.2"
 
 [[pins]]
-atomic = { url='https://github.com/Fabien-Chouteau/atomic' }
-bbqueue = { url='https://github.com/Fabien-Chouteau/bbqueue-spark' }
 usb_embedded = { url='https://github.com/Fabien-Chouteau/usb_embedded' }
 
 [configuration.variables]
