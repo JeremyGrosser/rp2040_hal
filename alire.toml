@@ -7,7 +7,7 @@ authors = ["Jeremy Grosser"]
 maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
 maintainers-logins = ["JeremyGrosser"]
 tags = ["embedded", "nostd", "rp2040", "raspberrypi", "drivers"]
-website = "https://github.com/JeremyGrosser/rp2040_hal"
+website = "https://pico-doc.synack.me/"
 
 [[depends-on]]
 cortex_m = "~0.3"
