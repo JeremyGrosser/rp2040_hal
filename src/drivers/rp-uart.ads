@@ -30,6 +30,7 @@ package RP.UART is
       Stop_Bits    : UART_Stop_Bits := 1;
       Parity_Type  : UART_Parity_Type := Even; --  has no effect when Parity = False
       Frame_Length : Positive := 1; --  Words per frame. Used to calculate break timing.
+      Loopback     : Boolean := False;
    end record;
 
    Default_UART_Configuration : constant UART_Configuration := (others => <>);

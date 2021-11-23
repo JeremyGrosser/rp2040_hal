@@ -49,6 +49,7 @@ package body RP.UART is
          (UARTEN => True,
           TXE    => True,
           RXE    => True,
+          LBE    => Config.Loopback,
           others => <>);
 
       This.Config := Config;
