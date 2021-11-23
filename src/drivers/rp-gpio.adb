@@ -168,14 +168,13 @@ package body RP.GPIO is
       (This : GPIO_Point)
       return HAL.GPIO.GPIO_Mode
    is
-      Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
       if IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL /= SIO then
          return Unknown_Mode;
-      elsif (SIO_Periph.GPIO_OE.GPIO_OE and Mask) /= 0 then
-         return Output;
-      else
+      elsif PADS_BANK_Periph.GPIO (This.Pin).OD then
          return Input;
+      else
+         return Output;
       end if;
    end Mode;
 
