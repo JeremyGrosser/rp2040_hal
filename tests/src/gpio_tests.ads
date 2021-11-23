@@ -17,4 +17,7 @@ package GPIO_Tests is
    procedure Test_Configure
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_HAL
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 end GPIO_Tests;

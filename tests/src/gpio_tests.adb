@@ -4,14 +4,14 @@ with RP.GPIO;
 
 package body GPIO_Tests is
 
+   LED : RP.GPIO.GPIO_Point := (Pin => 25);
+
    procedure Test_Configure
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
       use AUnit.Assertions;
       use HAL.GPIO;
       use RP.GPIO;
-
-      LED : RP.GPIO.GPIO_Point := (Pin => 25);
    begin
       LED.Configure (Input);
       Assert (LED.Mode = Input,
@@ -38,6 +38,34 @@ package body GPIO_Tests is
          "Unable to set pull up");
    end Test_Configure;
 
+   procedure Test_HAL
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      use AUnit.Assertions;
+      use HAL.GPIO;
+   begin
+      for Cap in Capability'Range loop
+         Assert (LED.Support (Cap) = True,
+            "Capability " & Cap'Image & " is not supported");
+      end loop;
+
+      LED.Set_Mode (Input);
+      Assert (LED.Mode = Input, "Unable to set input mode");
+      Assert (LED.Get = False, "Unable to get input");
+
+      LED.Set_Mode (Output);
+      Assert (LED.Mode = Output, "Unable to set output mode");
+      for R in GPIO_Pull_Resistor'Range loop
+         LED.Set_Pull_Resistor (R);
+         Assert (LED.Pull_Resistor = R, "Unable to set pull resistor");
+      end loop;
+
+      LED.Set_Pull_Resistor (Pull_Up);
+      LED.Clear;
+      LED.Set;
+      LED.Toggle;
+   end Test_HAL;
+
    overriding
    procedure Register_Tests
       (T : in out GPIO_Test)
@@ -45,6 +73,7 @@ package body GPIO_Tests is
       use AUnit.Test_Cases.Registration;
    begin
       Register_Routine (T, Test_Configure'Access, "Configure");
+      Register_Routine (T, Test_HAL'Access, "HAL API");
    end Register_Tests;
 
    overriding
