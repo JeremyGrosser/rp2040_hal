@@ -14,7 +14,14 @@ package UART_Tests is
       (T : UART_Test)
       return AUnit.Message_String;
 
+   overriding
+   procedure Set_Up
+      (T : in out UART_Test);
+
    procedure Test_Data
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
+   procedure Test_Break
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
 end UART_Tests;
