@@ -219,7 +219,9 @@ package body RP.PWM is
    is
       I : constant Natural := Natural (V);
    begin
-      if I = 256 or else Divider (I) > V then
+      if V = Divider'Last then
+         return 0;
+      elsif Divider (I) > V then
          return UInt8 (I - 1);
       else
          return UInt8 (I);
@@ -229,12 +231,26 @@ package body RP.PWM is
    function Div_Fraction
       (V : Divider)
       return UInt4
-   is (UInt4 ((V - Divider (Div_Integer (V))) * 2 ** 4));
+   is
+   begin
+      if V = Divider'Last then
+         return 0;
+      else
+         return UInt4 ((V - Divider (Div_Integer (V))) * 2 ** 4);
+      end if;
+   end Div_Fraction;
 
    function Div_Value
       (Int  : UInt8;
        Frac : UInt4)
        return Divider
-   is (Divider (Int) + (Divider (Frac) / 2 ** 4));
+   is
+   begin
+      if Int = 0 then
+         return Divider'Last;
+      else
+         return Divider (Int) + (Divider (Frac) / 2 ** 4);
+      end if;
+   end Div_Value;
 
 end RP.PWM;
