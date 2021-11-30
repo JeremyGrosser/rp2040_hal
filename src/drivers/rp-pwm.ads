@@ -33,7 +33,7 @@ package RP.PWM is
    type PWM_Slice_Array is array (PWM_Slice) of Boolean;
 
    Divider_Fraction : constant := 1.0 / (2.0 ** 4);
-   type Divider is delta Divider_Fraction range Divider_Fraction .. (2.0 ** 8) - Divider_Fraction;
+   type Divider is delta Divider_Fraction range 1.0 .. (2.0 ** 8) - Divider_Fraction;
 
    subtype Period is UInt16;
 
@@ -132,8 +132,7 @@ package RP.PWM is
 
    function Count
       (Slice : PWM_Slice)
-      return Natural
-      with Pre => Enabled (Slice);
+      return Natural;
 
    procedure Set_Count
       (Slice : PWM_Slice;
