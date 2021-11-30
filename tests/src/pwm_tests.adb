@@ -24,9 +24,10 @@ package body PWM_Tests is
          Div := Div + Divider'Small;
       end loop;
 
-      for MHz in 1 .. 125 loop
-         Set_Frequency (P.Slice, MHz * 1_000_000);
-      end loop;
+      Set_Frequency (P.Slice, 488_400);
+      Set_Frequency (P.Slice, 1_000_000);
+      Set_Frequency (P.Slice, 16_000_000);
+      Set_Frequency (P.Slice, RP.Clock.Frequency (RP.Clock.SYS));
    end Test_Divider;
 
    procedure Test_Counter
