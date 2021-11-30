@@ -1,7 +1,6 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with HAL.UART; use HAL.UART;
 with HAL;      use HAL;
-with RP.GPIO;  use RP.GPIO;
 with RP.UART;  use RP.UART;
 with RP.Device;
 with RP.Clock;
