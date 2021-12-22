@@ -3,7 +3,13 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+
+with Cortex_M.NVIC;
+
+with HAL; use HAL;
 with RP.Reset;
+
+with RP2040_SVD.Interrupts;
 
 package body RP.DMA is
    procedure Enable is
@@ -31,6 +37,7 @@ package body RP.DMA is
           BSWAP         => Config.Byte_Swap,
           SNIFF_EN      => Config.Sniff,
           others        => <>);
+
    end Configure;
 
    procedure Disable
@@ -99,5 +106,65 @@ package body RP.DMA is
    function Checksum
       return HAL.UInt32
    is (DMA_Periph.SNIFF_DATA);
+
+   ----------------
+   -- Enable_IRQ --
+   ----------------
+
+   procedure Enable_IRQ (Channel : DMA_Channel_Id;
+                         IRQ     : DMA_IRQ_Id)
+   is
+      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+
+      Line : constant Cortex_M.NVIC.Interrupt_ID :=
+        (case IRQ is
+            when 0 => RP2040_SVD.Interrupts.DMA_IRQ_0_Interrupt,
+            when 1 => RP2040_SVD.Interrupts.DMA_IRQ_1_Interrupt);
+
+   begin
+      DMA_Periph.IRQ (IRQ).INTE.INTE0 :=
+        DMA_Periph.IRQ (IRQ).INTE.INTE0 or Mask;
+
+      Cortex_M.NVIC.Clear_Pending (Line);
+      Cortex_M.NVIC.Enable_Interrupt (Line);
+   end Enable_IRQ;
+
+   -----------------
+   -- Disable_IRQ --
+   -----------------
+
+   procedure Disable_IRQ (Channel : DMA_Channel_Id;
+                          IRQ     : DMA_IRQ_Id)
+   is
+      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+   begin
+      DMA_Periph.IRQ (IRQ).INTE.INTE0 :=
+        DMA_Periph.IRQ (IRQ).INTE.INTE0 and (not Mask);
+   end Disable_IRQ;
+
+   -------------
+   -- Ack_IRQ --
+   -------------
+
+   procedure Ack_IRQ (Channel : DMA_Channel_Id;
+                      IRQ     : DMA_IRQ_Id)
+   is
+      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+   begin
+      DMA_Periph.IRQ (IRQ).INTS.INTS0 := Mask;
+   end Ack_IRQ;
+
+   ----------------
+   -- IRQ_Status --
+   ----------------
+
+   function IRQ_Status (Channel : DMA_Channel_Id;
+                        IRQ     : DMA_IRQ_Id)
+                        return Boolean
+   is
+      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+   begin
+      return (DMA_Periph.IRQ (IRQ).INTS.INTS0 and Mask) /= 0;
+   end IRQ_Status;
 
 end RP.DMA;

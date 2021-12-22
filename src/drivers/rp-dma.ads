@@ -104,6 +104,22 @@ package RP.DMA is
    function Checksum
       return HAL.UInt32;
 
+   subtype DMA_IRQ_Id is Natural range 0 .. 1;
+
+   procedure Enable_IRQ (Channel : DMA_Channel_Id;
+                         IRQ     : DMA_IRQ_Id);
+
+   procedure Disable_IRQ (Channel : DMA_Channel_Id;
+                          IRQ     : DMA_IRQ_Id);
+
+   procedure Ack_IRQ (Channel : DMA_Channel_Id;
+                      IRQ     : DMA_IRQ_Id);
+
+   function IRQ_Status (Channel : DMA_Channel_Id;
+                        IRQ     : DMA_IRQ_Id)
+                        return Boolean;
+   --  Return True if the IRQ is triggered
+
 private
 
    type DMA_CTRL_Register is record
