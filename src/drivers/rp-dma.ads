@@ -197,14 +197,14 @@ private
       AL1_TRANS_COUNT_TRIG at 16#1C# range 0 .. 31;
 
       AL2_CTRL             at 16#20# range 0 .. 31;
-      AL2_READ_ADDR        at 16#24# range 0 .. 31;
-      AL2_WRITE_ADDR_TRIG  at 16#28# range 0 .. 31;
-      AL2_TRANS_COUNT      at 16#2C# range 0 .. 31;
+      AL2_TRANS_COUNT      at 16#24# range 0 .. 31;
+      AL2_READ_ADDR        at 16#28# range 0 .. 31;
+      AL2_WRITE_ADDR_TRIG  at 16#2C# range 0 .. 31;
 
       AL3_CTRL             at 16#30# range 0 .. 31;
-      AL3_READ_ADDR_TRIG   at 16#34# range 0 .. 31;
-      AL3_WRITE_ADDR       at 16#38# range 0 .. 31;
-      AL3_TRANS_COUNT      at 16#3C# range 0 .. 31;
+      AL3_WRITE_ADDR       at 16#34# range 0 .. 31;
+      AL3_TRANS_COUNT      at 16#38# range 0 .. 31;
+      AL3_READ_ADDR_TRIG   at 16#3C# range 0 .. 31;
    end record;
 
    type DMA_Channel_Debug is record

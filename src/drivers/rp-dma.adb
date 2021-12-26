@@ -37,7 +37,6 @@ package body RP.DMA is
           BSWAP         => Config.Byte_Swap,
           SNIFF_EN      => Config.Sniff,
           others        => <>);
-
    end Configure;
 
    procedure Disable
@@ -74,7 +73,7 @@ package body RP.DMA is
         Write_Error => DMA_Periph.CH (Channel).AL1_CTRL.WRITE_ERROR,
         Read_Error  => DMA_Periph.CH (Channel).AL1_CTRL.READ_ERROR,
         AHB_Error   => DMA_Periph.CH (Channel).AL1_CTRL.AHB_ERROR,
-        Transfers_Remaining => Natural (DMA_Periph.CH (Channel).AL2_TRANS_COUNT)));
+        Transfers_Remaining => Natural (DMA_Periph.CH (Channel).TRANS_COUNT)));
 
    procedure Enable_Checksum
       (Channel   : DMA_Channel_Id;
