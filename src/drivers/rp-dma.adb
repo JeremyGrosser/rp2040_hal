@@ -12,6 +12,7 @@ with RP.Reset;
 with RP2040_SVD.Interrupts;
 
 package body RP.DMA is
+
    procedure Enable is
       use RP.Reset;
    begin
@@ -61,6 +62,8 @@ package body RP.DMA is
       (Channel : DMA_Channel_Id)
       return Boolean
    is
+      DP : aliased DMA_Peripheral
+         with Import, Address => RP2040_SVD.DMA_Base;
    begin
       return DMA_Periph.CH (Channel).AL1_CTRL.BUSY;
    end Busy;
