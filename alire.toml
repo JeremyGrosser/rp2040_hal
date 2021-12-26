@@ -1,6 +1,6 @@
 name = "rp2040_hal"
 description = "Drivers and HAL for the RP2040 micro-controller family"
-version = "0.7.0"
+version = "1.0.0"
 licenses = "BSD-3-Clause"
 
 authors = ["Jeremy Grosser"]

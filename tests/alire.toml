@@ -1,6 +1,6 @@
 name = "test_rp2040_hal"
-description = "Shiny new project"
-version = "0.0.0"
+description = "Unit tests for rp2040_hal"
+version = "1.0.0"
 
 authors = ["Jeremy Grosser"]
 maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
@@ -9,7 +9,7 @@ maintainers-logins = ["JeremyGrosser"]
 executables = ["test_rp2040_hal"]
 
 [[depends-on]]  # Added by alr
-rp2040_hal = "~0.7.0"
+rp2040_hal = "~1.0.0"
 aunit = "^22.0.0"
 gnat_arm_elf = "^11.2"
 
