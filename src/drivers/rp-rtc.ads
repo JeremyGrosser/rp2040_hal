@@ -10,7 +10,7 @@ package RP.RTC is
    type RTC_Device is new HAL.Real_Time_Clock.RTC_Device with null record;
 
    --  Configure the RTC and start it.
-   --  If the RTC is already running, Initialize resets the time to zero.
+   --  If the RTC is already running, this procedure resets the time to zero.
    procedure Configure
       (This : in out RTC_Device);
 
