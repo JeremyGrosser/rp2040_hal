@@ -6,7 +6,7 @@ project Rp2040_Hal is
    for Runtime ("Ada") use "zfp-cortex-m0p";
    for Target use "arm-eabi";
 
-   for Languages use ("Ada", "Asm_Cpp");
+   for Languages use ("Ada");
    for Object_Dir use "obj/RP2040";
    for Create_Missing_Dirs use "True";
 
@@ -35,6 +35,7 @@ project Rp2040_Hal is
    Startup_Dirs := ();
    case Rp2040_Hal_Config.Use_Startup is
       when "True" =>
+         for Languages use ("Ada", "Asm_Cpp");
          Startup_Dirs := ("src/startup");
       when others => null;
    end case;
