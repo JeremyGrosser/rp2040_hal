@@ -101,10 +101,10 @@ package body RP.SPI is
          return Full;
       elsif Flags.TFE = False and Flags.TNF = True then
          return Not_Full;
-      elsif Flags.TFE = True and Flags.TNF = True then
-         return Empty;
       elsif Flags.BSY then
          return Busy;
+      elsif Flags.TFE = True and Flags.TNF = True then
+         return Empty;
       else
          return Invalid;
       end if;
