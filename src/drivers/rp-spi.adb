@@ -123,6 +123,8 @@ package body RP.SPI is
    begin
       if Flags.RFF = False and Flags.RNE = False then
          return Empty;
+      elsif Flags.BSY then
+         return Busy;
       elsif Flags.RFF = False and Flags.RNE = True then
          return Not_Full;
       elsif Flags.RFF = True and Flags.RNE = True then
