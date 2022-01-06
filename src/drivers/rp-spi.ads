@@ -18,7 +18,7 @@ package RP.SPI is
    type SPI_Role is (Master, Slave);
    type SPI_Polarity is (Active_Low, Active_High);
    type SPI_Phase is (Rising_Edge, Falling_Edge);
-   type SPI_FIFO_Status is (Empty, Not_Full, Full, Invalid);
+   type SPI_FIFO_Status is (Empty, Not_Full, Full, Busy, Invalid);
 
    type SPI_Configuration is record
       Role      : SPI_Role := Master;
