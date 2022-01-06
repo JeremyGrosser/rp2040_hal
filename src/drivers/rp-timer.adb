@@ -5,8 +5,8 @@
 --
 with RP2040_SVD.Interrupts;
 with RP2040_SVD.TIMER;      use RP2040_SVD.TIMER;
-with Cortex_M.NVIC;
 with System.Machine_Code;
+with System;
 
 package body RP.Timer is
    function Clock
@@ -39,20 +39,26 @@ package body RP.Timer is
       return Time (Shift_Left (UInt64 (High), 32) or UInt64 (Low));
    end Clock;
 
-   procedure TIMER_IRQ_2_Handler is
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID)
+   is
+      pragma Unreferenced (Id);
    begin
       TIMER_Periph.INTR.ALARM_2 := True;
-   end TIMER_IRQ_2_Handler;
+   end IRQ_Handler;
 
    procedure Enable
       (This : in out Delays)
    is
       use RP2040_SVD.Interrupts;
+      use System;
    begin
       TIMER_Periph.INTE.ALARM_2 := True;
 
-      Cortex_M.NVIC.Clear_Pending (TIMER_IRQ_2_Interrupt);
-      Cortex_M.NVIC.Enable_Interrupt (TIMER_IRQ_2_Interrupt);
+      RP_Interrupts.Attach_Handler
+         (Handler => IRQ_Handler'Access,
+          Id      => TIMER_IRQ_2_Interrupt,
+          Prio    => Interrupt_Priority'First);
    end Enable;
 
    procedure Disable

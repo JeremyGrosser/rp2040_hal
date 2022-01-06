@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with Cortex_M.NVIC;
 with RP2040_SVD.SIO; use RP2040_SVD.SIO;
 with RP2040_SVD.Interrupts;
 with RP.Reset;
@@ -17,6 +16,7 @@ package body RP.GPIO is
    procedure Enable is
       use RP2040_SVD.Interrupts;
       use RP.Reset;
+      use System;
    begin
       Reset_Peripheral (Reset_IO_BANK0);
       Reset_Peripheral (Reset_PADS_BANK0);
@@ -37,8 +37,10 @@ package body RP.GPIO is
       IO_BANK_Periph.PROC0_INTE := (others => 0);
       IO_BANK_Periph.PROC1_INTE := (others => 0);
 
-      Cortex_M.NVIC.Clear_Pending (IO_IRQ_BANK0_Interrupt);
-      Cortex_M.NVIC.Enable_Interrupt (IO_IRQ_BANK0_Interrupt);
+      RP_Interrupts.Attach_Handler
+         (Handler => IRQ_Handler'Access,
+          Id      => IO_IRQ_BANK0_Interrupt,
+          Prio    => Interrupt_Priority'First);
 
       GPIO_Enabled := True;
    end Enable;
@@ -136,7 +138,10 @@ package body RP.GPIO is
       IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
    end Disable_Interrupt;
 
-   procedure IO_IRQ_PROC0_Handler is
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID)
+   is
+      pragma Unreferenced (Id);
       Handler : Interrupt_Procedure;
       T       : UInt4;
    begin
@@ -154,7 +159,7 @@ package body RP.GPIO is
             end loop;
          end if;
       end loop;
-   end IO_IRQ_PROC0_Handler;
+   end IRQ_Handler;
 
    overriding
    function Support

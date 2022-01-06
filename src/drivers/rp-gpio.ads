@@ -9,6 +9,7 @@ with RP2040_SVD.PADS_BANK0; use RP2040_SVD.PADS_BANK0;
 with RP2040_SVD;            use RP2040_SVD;
 with HAL;                   use HAL;
 with HAL.GPIO;              use HAL.GPIO;
+with RP_Interrupts;
 with System;
 
 package RP.GPIO is
@@ -124,15 +125,16 @@ package RP.GPIO is
    procedure Toggle
       (This : in out GPIO_Point);
 
+   --  This handler should be called in response to IO_IRQ_PROC0 (IRQ 13). This
+   --  call is made by the handler defined in src/startup/rp_interrupts.adb or
+   --  by the Ravenscar runtime, depending on your build configuration.
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID);
+
 private
 
    GPIO_Interrupt_Handlers : array (GPIO_Pin) of Interrupt_Procedure := (others => null);
    GPIO_Enabled : Boolean := False;
-
-   procedure IO_IRQ_PROC0_Handler
-      with Export => True,
-           Convention => C,
-           External_Name => "isr_irq13";
 
    subtype GPIO_Pin_Mask is UInt30;
 

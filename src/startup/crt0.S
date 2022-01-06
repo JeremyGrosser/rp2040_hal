@@ -114,9 +114,9 @@ decl_isr_bkpt isr_systick
 
 decl_isr isr_irq0
 decl_isr isr_irq1
-decl_isr isr_irq2
+#decl_isr isr_irq2
 decl_isr isr_irq3
-decl_isr isr_irq4
+#decl_isr isr_irq4
 decl_isr isr_irq5
 decl_isr isr_irq6
 decl_isr isr_irq7
@@ -125,7 +125,7 @@ decl_isr isr_irq9
 decl_isr isr_irq10
 decl_isr isr_irq11
 decl_isr isr_irq12
-decl_isr isr_irq13
+#decl_isr isr_irq13
 decl_isr isr_irq14
 decl_isr isr_irq15
 decl_isr isr_irq16
@@ -229,9 +229,7 @@ platform_entry:
     blx r1
     ldr r1, =main
     blx r1
-    ldr r1, =exit
-    blx r1
-
+    bl _exit
 
 .weak _exit
 .type _exit,%function

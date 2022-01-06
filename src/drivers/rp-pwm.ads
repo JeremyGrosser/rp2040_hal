@@ -5,6 +5,7 @@
 --
 with RP2040_SVD.PWM;
 with RP2040_SVD;
+with RP_Interrupts;
 with RP.Clock;
 with RP.GPIO;
 with HAL; use HAL;
@@ -144,6 +145,10 @@ package RP.PWM is
        Handler : PWM_Interrupt_Handler)
    with Pre => Initialized;
 
+   --  This handler should be called in response to PWM_IRQ_WRAP (IRQ 4)
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID);
+
 private
 
    function To_Mask
@@ -162,11 +167,6 @@ private
       (Int  : UInt8;
        Frac : UInt4)
       return Divider;
-
-   procedure PWM_IRQ_WRAP_Interrupt
-      with Export        => True,
-           Convention    => C,
-           External_Name => "isr_irq4";
 
    type PWM_Slice_Register is record
       CSR : aliased RP2040_SVD.PWM.CH0_CSR_Register;

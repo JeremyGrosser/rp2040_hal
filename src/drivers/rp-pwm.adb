@@ -3,9 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Cortex_M.NVIC;
 with RP2040_SVD.Interrupts;
 with RP.Reset;
+with System;
 
 package body RP.PWM is
 
@@ -196,14 +196,20 @@ package body RP.PWM is
       (Slice   : PWM_Slice;
        Handler : PWM_Interrupt_Handler)
    is
+      use System;
    begin
       Handlers (Slice) := Handler;
-      Cortex_M.NVIC.Clear_Pending (RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
-      Cortex_M.NVIC.Enable_Interrupt (RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt);
+      RP_Interrupts.Attach_Handler
+         (Handler => IRQ_Handler'Access,
+          Id      => RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt,
+          Prio    => Interrupt_Priority'First);
       PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
    end Attach;
 
-   procedure PWM_IRQ_WRAP_Interrupt is
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID)
+   is
+      pragma Unreferenced (Id);
    begin
       for Slice in PWM_Slice'Range loop
          if PWM_Periph.INTS.CH.Arr (Natural (Slice)) and Handlers (Slice) /= null then
@@ -211,7 +217,7 @@ package body RP.PWM is
             Handlers (Slice).all;
          end if;
       end loop;
-   end PWM_IRQ_WRAP_Interrupt;
+   end IRQ_Handler;
 
    function Div_Integer
       (V : Divider)

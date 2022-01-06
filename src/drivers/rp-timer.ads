@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with RP_Interrupts;
 with HAL.Time; use HAL.Time;
 with HAL;      use HAL;
 
@@ -55,11 +56,8 @@ package RP.Timer is
        S    : Integer)
        with Pre => Enabled (This);
 
-private
-
-   procedure TIMER_IRQ_2_Handler
-      with Export        => True,
-           Convention    => C,
-           External_Name => "isr_irq2";
+   --  This handler should be called in response to TIMER_IRQ_2 (IRQ 2)
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID);
 
 end RP.Timer;
