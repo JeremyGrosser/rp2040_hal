@@ -116,6 +116,8 @@ package body RP.UART is
          return Not_Full;
       elsif Flags.TXFE = False and Flags.TXFF = True then
          return Full;
+      elsif Flags.BUSY then
+         return Busy;
       elsif Flags.TXFE = True and Flags.TXFF = False then
          return Empty;
       else
@@ -174,7 +176,7 @@ package body RP.UART is
       for D of Data loop
          loop
             FIFO := Transmit_Status (This);
-            exit when FIFO = Empty or FIFO = Not_Full;
+            exit when FIFO = Empty or FIFO = Not_Full or FIFO = Busy;
             if FIFO = Invalid then
                Status := Err_Error;
                return;

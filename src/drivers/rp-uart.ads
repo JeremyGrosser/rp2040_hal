@@ -35,7 +35,7 @@ package RP.UART is
 
    Default_UART_Configuration : constant UART_Configuration := (others => <>);
 
-   type UART_FIFO_Status is (Empty, Not_Full, Full, Invalid);
+   type UART_FIFO_Status is (Empty, Not_Full, Full, Busy, Invalid);
 
    procedure Configure
       (This   : in out UART_Port;
