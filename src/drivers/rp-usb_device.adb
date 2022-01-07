@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2021 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD.USBCTRL_DPRAM; use RP2040_SVD.USBCTRL_DPRAM;
 with RP2040_SVD.USBCTRL_REGS;  use RP2040_SVD.USBCTRL_REGS;
 with RP2040_SVD.PADS_BANK0;

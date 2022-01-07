@@ -223,13 +223,12 @@ bss_fill_test:
     bne bss_fill_loop
 
 platform_entry:
-
-
-    ldr r1, =runtime_init
+    ldr r1, =rp_rom_float_initialize
     blx r1
     ldr r1, =main
     blx r1
-    bl _exit
+    ldr r1, =_exit
+    blx r1
 
 .weak _exit
 .type _exit,%function
@@ -267,27 +266,6 @@ data_cpy_table:
 .word __scratch_y_end__
 
 .word 0
-
-
-
-
-
-.weak runtime_init
-.type runtime_init,%function
-.thumb_func
-runtime_init:
-    bx lr
-
-
-# rom_func_lookup is defined in RP.ROM. This weak symbol causes rom_func_lookup
-# to hang in case RP.ROM is not linked.
-.weak rom_func_lookup
-.type rom_func_lookup,%function
-.thumb_func
-rom_func_lookup:
-1:
-    wfe
-    b 1b
 
 hold_non_core0_in_bootrom:
     ldr r0, = 'W' | ('V' << 8)

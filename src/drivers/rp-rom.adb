@@ -1,46 +1,58 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-
 package body RP.ROM is
-   --  2.8.3.1. Bootrom Functions
-   function rom_hword_as_ptr
-      (Addr : System.Address)
-      return System.Address
-   is
-      Pointer : UInt16;
-      for Pointer'Address use Addr;
-   begin
-      return System'To_Address (Pointer);
-   end rom_hword_as_ptr;
 
-   function rom_table_code
+   function ROM_Table_Code
       (C1, C2 : Character)
-      return UInt32
-   is
-   begin
-      return Shift_Left (UInt32 (Character'Pos (C2)), 8) or UInt32 (Character'Pos (C1));
-   end rom_table_code;
+      return Table_Code
+   is ((Table_Code (Character'Pos (C2)) * 256) or
+       Table_Code (Character'Pos (C1)));
 
-   function rom_func_lookup
-      (Code : UInt32)
-      return System.Address
+   function ROM_Table_Lookup
+      (Table : System.Address;
+       Code  : Table_Code)
+       return System.Address
    is
-      func_table : constant System.Address :=
-         rom_hword_as_ptr (System'To_Address (16#14#));
+      function Internal_Table_Lookup
+        (Table : System.Address;
+         Code  : Table_Code)
+         return System.Address
+      with Import,
+           Convention => C,
+           Address => System'To_Address (Header.Table_Lookup);
    begin
-      return rom_table_lookup (func_table, Code);
-   end rom_func_lookup;
+      return Internal_Table_Lookup (Table, Code);
+   end ROM_Table_Lookup;
 
-   function rom_data_lookup
-      (Code : UInt32)
+   function ROM_Func_Lookup
+      (Code : Table_Code)
       return System.Address
+   is (ROM_Table_Lookup (System'To_Address (Header.Func_Table), Code));
+
+   function ROM_Data_Lookup
+      (Code : Table_Code)
+      return System.Address
+   is (ROM_Table_Lookup (System'To_Address (Header.Data_Table), Code));
+
+   function copyright_string
+      return String
    is
-      data_table : constant System.Address :=
-         rom_hword_as_ptr (System'To_Address (16#16#));
+      --  The copyright string is max 33 characters long in all versions of the
+      --  ROM.
+      S : constant String (1 .. 34)
+         with Import, Address => ROM_Data_Lookup (ROM_Table_Code ('C', 'R'));
+      I : Integer := S'First;
    begin
-      return rom_table_lookup (data_table, Code);
-   end rom_data_lookup;
+      while I <= S'Last loop
+         if S (I) = ASCII.NUL then
+            return S (S'First .. I - 1);
+         end if;
+         I := I + 1;
+      end loop;
+      return S;
+   end copyright_string;
+
 end RP.ROM;

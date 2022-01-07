@@ -1,256 +1,78 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-pragma Style_Checks (Off);
-with Interfaces; use Interfaces;
-
 package RP.ROM.Floating_Point is
+   procedure Initialize
+     with Export,
+          Convention    => C,
+          External_Name => "rp_rom_float_initialize";
+   --  rp_rom_float_initialize must be called before any of the __aeabi
+   --  functions, which means it needs to be called before elaboration.
+   --  crt0.S takes care of this, unless Use_Startup=false.
 
-   type Soft_Float_Table_Fields is record
-      fadd         : System.Address;
-      fsub         : System.Address;
-      fmul         : System.Address;
-      fdiv         : System.Address;
-      deprecated_1 : System.Address;
-      deprecated_2 : System.Address;
-      fsqrt        : System.Address;
-      float2int    : System.Address;
-      float2fix    : System.Address;
-      float2uint   : System.Address;
-      float2ufix   : System.Address;
-      int2float    : System.Address;
-      fix2float    : System.Address;
-      uint2float   : System.Address;
-      ufix2float   : System.Address;
-      fcos         : System.Address;
-      fsin         : System.Address;
-      ftan         : System.Address;
-      deprecated_3 : System.Address;
-      fexp         : System.Address;
-      fln          : System.Address;
+   --  Run-time ABI for the Arm® Architecture
+   --  https://github.com/ARM-software/abi-aa/blob/main/rtabi32/rtabi32.rst
+   function fadd (A, B : C_float) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_fadd";
+   function fsub (A, B : C_float) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_fsub";
+   function frsub (A, B : C_float) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_frsub";
+   function fmul (A, B : C_float) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_fmul";
+   function fdiv (A, B : C_float) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_fdiv";
 
-      --  V2 bootrom only
-      fcmp         : System.Address;
-      fatan2       : System.Address;
-      int642float  : System.Address;
-      fix642float  : System.Address;
-      uint642float : System.Address;
-      ufix642float : System.Address;
-      float2int64  : System.Address;
-      float2fix64  : System.Address;
-      float2uint64 : System.Address;
-      float2ufix64 : System.Address;
-      float2double : System.Address;
-   end record
-      with Size => 16#80# * 8;
+   --  __aeabi_cfcmpeq
+   --  __aeabi_cfrcmple
+   --  __aeabi_cfcmple
+   --  __aeabi_fcmpeq
+   --  __aeabi_fcmplt
+   --  __aeabi_fcmple
+   --  __aeabi_fcmpge
+   --  __aeabi_fcmpgt
+   --  __aeabi_fcmpun
 
-   --  2.8.3.2. Fast Floating Point Library
-   fplib_start : System.Address
-   with Import     => True,
-        Convention => C,
-        Address    => rom_data_lookup (rom_table_code ('F', 'S'));
+   function int2float (V : int) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_i2f";
+   --  pico-sdk doesn't use int2float and instead implements __aeabi_i2f in
+   --  software. Maybe the ROM is missing an edge case?
 
-   Soft_Float_Table : constant Soft_Float_Table_Fields
-   with Import     => True,
-        Address    => rom_data_lookup (rom_table_code ('S', 'F'));
+   function int642float (V : long_long) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_l2f";
+   function uint2float (V : unsigned) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_ui2f";
+   function uint642float (V : unsigned_long_long) return C_float
+      with Export, Convention => C, External_Name => "__aeabi_ul2f";
 
-   function fadd (A, B : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fadd;
+   function float2int (V : C_float) return int
+      with Export, Convention => C, External_Name => "__aeabi_f2iz";
+   --  pico-sdk rewrites this one too
 
-   function fsub (A, B : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fsub;
+   function float2int64 (V : C_float) return long_long
+      with Export, Convention => C, External_Name => "__aeabi_f2lz";
+   function float2uint (V : C_float) return unsigned
+      with Export, Convention => C, External_Name => "__aeabi_f2uiz";
+   function float2uint64 (V : C_float) return unsigned_long_long
+      with Export, Convention => C, External_Name => "__aeabi_f2ulz";
+   function float2double (V : C_float) return double
+      with Export, Convention => C, External_Name => "__aeabi_f2d";
 
-   function fmul (A, B : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fmul;
+   function fsqrt (V : C_float) return C_float
+      with Export, Convention => C, External_Name => "sqrtf";
 
-   function fdiv (A, B : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fdiv;
-
-   function fsqrt (V : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fsqrt;
-
-   function float2int (V : Float)
-      return Integer
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2int;
-
-   function float2fix
-      (V : Float;
-       N : Integer)
-      return Integer
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2fix;
-
-   function float2uint
-      (V : Float)
-      return Unsigned_32
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2uint;
-
-   function float2ufix
-      (V : Float;
-       N : Integer)
-       return Unsigned_32
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2ufix;
-
-   function int2float
-      (V : Integer)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.int2float;
-
-   function fix2float
-      (V : Integer_32;
-       N : Integer)
-       return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fix2float;
-
-   function uint2float
-      (V : Unsigned_32)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.uint2float;
-
-   function ufix2float
-      (V : Unsigned_32;
-       N : Integer)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.ufix2float;
-
-   function fcos
-      (Angle : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fcos;
-
-   function fsin
-      (Angle : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fsin;
-
-   function ftan
-      (Angle : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.ftan;
-
-   function fexp
-      (Angle : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fexp;
-
-   function fln
-      (Angle : Float)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fln;
-
-   --  The following functions are only available in bootrom V2
-
-   function fcmp
-      (A, B : Float)
-      return Integer
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fcmp;
-
-   function fatan2
-      (Y, X : Float)
-      return Integer
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fatan2;
-
-   function int642float
-      (V : Integer_64)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.int642float;
-
-   function fix642float
-      (V : Integer_64;
-       N : Integer)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.fix642float;
-
-   function uint642float
-      (V : Unsigned_64)
-      return Float
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.uint642float;
-
-   function float2int64
-      (V : Float)
-      return Integer_64
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2int64;
-
-   function float2fix64
-      (V : Float)
-      return Integer_64
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2fix64;
-
-   function float2uint64
-      (V : Float)
-      return Unsigned_64
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2uint64;
-
-   function float2ufix64
-      (V : Float)
-      return Unsigned_64
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2ufix64;
-
-   function float2double
-      (V : Float)
-      return Interfaces.C.double
-   with Import => True,
-        Convention => C,
-        Address => Soft_Float_Table.float2double;
-
+   --  These trig functions only work in the range -128.0 .. 128.0 and return
+   --  slightly incorrect values. Use at your own risk.
+   function fsin (V : C_float) return C_float;
+   --   with Export, Convention => C, External_Name => "sinf";
+   function fcos (V : C_float) return C_float;
+   --   with Export, Convention => C, External_Name => "cosf";
+   function ftan (V : C_float) return C_float;
+   --   with Export, Convention => C, External_Name => "tanf";
+   function fexp (V : C_float) return C_float;
+   --   with Export, Convention => C, External_Name => "expf";
+   function fln (V : C_float) return C_float;
+   --   with Export, Convention => C, External_Name => "logf";
 end RP.ROM.Floating_Point;

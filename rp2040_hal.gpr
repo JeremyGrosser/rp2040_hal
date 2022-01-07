@@ -105,6 +105,11 @@ project Rp2040_Hal is
         ("-gnatQ",              -- Don't quit. Generate ALI and tree files even if illegalities
          "-fstack-usage",       -- output stack usage information
          "-ffunction-sections", -- Separate ELF section for each function
-         "-fdata-sections");    -- Separate ELF section for each variable
+         "-fdata-sections",    -- Separate ELF section for each variable
+         "-fno-delete-null-pointer-checks");
+         --  -fdelete-null-pointer-checks assumes that programs cannot safely
+         --  dereference null pointers, and that no code or data element resides
+         --  at address zero, but RP.ROM.Header *does* point to zero and
+         --  definitely should not be optimized out.
    end Compiler;
 end Rp2040_Hal;

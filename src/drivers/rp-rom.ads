@@ -1,159 +1,172 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-
-with HAL; use HAL;
-with Interfaces.C;
+with Interfaces.C; use Interfaces.C;
+with Interfaces;   use Interfaces;
 with System;
 
 package RP.ROM is
-   rom_id : constant array (0 .. 2) of UInt8
-   with Import     => True,
-        Address    => System'To_Address (16#00000010#);
 
-   --  2.8.3.1. Bootrom Functions
-   function rom_hword_as_ptr
-      (Addr : System.Address)
-      return System.Address;
+   type Short_Address is new Unsigned_16;
+   --  Some lookup tables use halfwords
 
-   function rom_table_lookup
-      (Table : System.Address;
-       Code  : UInt32)
-       return System.Address
-   with Import     => True,
-        Convention => C,
-        Address    => rom_hword_as_ptr (System'To_Address (16#00000018#));
+   type Magic_Field is array (1 .. 3) of Unsigned_8;
+   --  Magic should always be ('M', 'u', 1)
 
-   function rom_table_code
+   type Table_Code is new Unsigned_32;
+   --  Function and Data table entries are indexed by a two-character mnemonic,
+   --  stored in a 32-bit field.  The top two bytes are always zero, presumably
+   --  reserved for future use.
+
+   type Header_Fields is record
+      Initial_SP        : System.Address;
+      Reset_Handler     : System.Address;
+      NMI_Handler       : System.Address;
+      HardFault_Handler : System.Address;
+      Magic             : Magic_Field;
+      Version           : Unsigned_8;
+      Func_Table        : Short_Address;
+      Data_Table        : Short_Address;
+      Table_Lookup      : Short_Address;
+   end record
+      with Size => 208;
+
+   Header : aliased Header_Fields
+      with Import, Address => System'To_Address (16#0000_0000#);
+
+   function ROM_Table_Code
       (C1, C2 : Character)
-      return UInt32;
+      return Table_Code;
 
-   --  called from crt0.S
-   function rom_func_lookup
-      (Code : UInt32)
+   function ROM_Table_Lookup
+      (Table : System.Address;
+       Code  : Table_Code)
+       return System.Address;
+
+   function ROM_Func_Lookup
+      (Code : Table_Code)
       return System.Address
-   with Export        => True,
+   with Export,
         Convention    => C,
         External_Name => "rom_func_lookup";
 
-   function rom_data_lookup
-      (Code : UInt32)
+   function ROM_Data_Lookup
+      (Code : Table_Code)
       return System.Address;
 
    --  2.8.3.1.1. Fast Bit Counting / Manipulation Functions
    function popcount32
-      (Value : UInt32)
-       return UInt32
-   with Import     => True,
+      (Value : Unsigned_32)
+       return Unsigned_32
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('P', '3'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('P', '3'));
 
    function reverse32
-      (Value : UInt32)
-       return UInt32
-   with Import     => True,
+      (Value : Unsigned_32)
+       return Unsigned_32
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('R', '3'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('R', '3'));
 
    function clz32
-      (Value : UInt32)
-       return UInt32
-   with Import     => True,
+      (Value : Unsigned_32)
+       return Unsigned_32
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('L', '3'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('L', '3'));
 
    function ctz32
-      (Value : UInt32)
-       return UInt32
-   with Import     => True,
+      (Value : Unsigned_32)
+       return Unsigned_32
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('T', '3'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('T', '3'));
 
    --  2.8.3.1.2. Fast Bulk Memory Fill / Copy Functions
    function memset
       (Ptr : System.Address;
-       C   : UInt8;
-       N   : UInt32)
+       C   : Unsigned_8;
+       N   : Unsigned_32)
        return System.Address
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('M', 'S'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('M', 'S'));
 
    function memset4
       (Ptr : System.Address;
-       C   : UInt8;
-       N   : UInt32)
+       C   : Unsigned_8;
+       N   : Unsigned_32)
        return System.Address
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('M', '4'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('M', '4'));
 
    --  2.8.3.1.3. Flash Access Functions
    procedure connect_internal_flash
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('I', 'F'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('I', 'F'));
 
    procedure flash_exit_xip
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('E', 'X'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('E', 'X'));
 
    procedure flash_range_erase
       (Addr       : System.Address;
        Count      : Interfaces.C.size_t;
-       Block_Size : UInt32;
-       Block_Cmd  : UInt8)
-   with Import     => True,
+       Block_Size : Unsigned_32;
+       Block_Cmd  : Unsigned_8)
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('R', 'E'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('R', 'E'));
 
    procedure flash_range_program
       (Addr       : System.Address;
        Data       : System.Address;
        Count      : Interfaces.C.size_t)
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('R', 'P'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('R', 'P'));
 
    procedure flash_flush_cache
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('F', 'C'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('F', 'C'));
 
    procedure flash_enter_cmd_xip
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('C', 'X'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('C', 'X'));
 
    --  2.8.3.1.4. Debugging Support Functions
    procedure debug_trampoline
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('D', 'T'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('D', 'T'));
 
    --  2.8.3.1.5. Miscellaneous Functions
    procedure reset_to_usb_boot
-      (GPIO_Activity_Pin_Mask : UInt32;
-       Disable_Interface_Mask : UInt32)
-   with Import     => True,
+      (GPIO_Activity_Pin_Mask : Unsigned_32;
+       Disable_Interface_Mask : Unsigned_32)
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('U', 'B'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('U', 'B'));
 
    procedure wait_for_vector
-   with Import     => True,
+   with Import,
         Convention => C,
-        Address    => rom_func_lookup (rom_table_code ('W', 'V'));
+        Address    => ROM_Func_Lookup (ROM_Table_Code ('W', 'V'));
 
    --  2.8.3.3. Bootrom Data
-   --  TODO these read as null strings?
-   copyright_string : access Interfaces.C.char_array
-   with Import     => True,
-        Address    => rom_data_lookup (rom_table_code ('C', 'R'));
+   function copyright_string
+      return String;
 
-   git_revision : access Interfaces.C.char_array
-   with Import     => True,
-        Address    => rom_data_lookup (rom_table_code ('G', 'R'));
+   git_revision : constant Unsigned_32
+   with Import,
+        Address => ROM_Data_Lookup (ROM_Table_Code ('G', 'R'));
+
 end RP.ROM;
