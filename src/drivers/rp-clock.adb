@@ -181,7 +181,8 @@ package body RP.Clock is
       CLOCKS_Periph.CLK (RTC).DIV :=
          (INT  => CLK_DIV_INT_Field (XOSC_Frequency / 46_875),
           FRAC => 0);
-      CLOCKS_Periph.CLK (RTC).CTRL.AUXSRC := XOSC;
+      CLOCKS_Periph.CLK (RTC).CTRL.AUXSRC := PLL_USB;
+      --  PLL_USB is actually XOSC here, CLK_RTC_CTRL_AUXSRC is different from the others.
       --  clk_rtc SELECTED is hardwired, no point in polling it.
 
       --  Switch clk_peri to pll_sys
