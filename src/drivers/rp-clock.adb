@@ -177,12 +177,12 @@ package body RP.Clock is
          null;
       end loop;
 
-      --  Switch clk_rtc to pll_usb / 1024 = 46_875 Hz
-      CLOCKS_Periph.CLK (RTC).DIV := (INT => 1024, FRAC => 0);
-      CLOCKS_Periph.CLK (RTC).CTRL.AUXSRC := PLL_SYS;
-      while CLOCKS_Periph.CLK (RTC).SELECTED /= CLK_SELECTED_Mask (RTC_SRC_USB) loop
-         null;
-      end loop;
+      --  Switch clk_rtc to clk_xosc / 256 = 46_875 Hz
+      CLOCKS_Periph.CLK (RTC).DIV :=
+         (INT  => CLK_DIV_INT_Field (XOSC_Frequency / 46_875),
+          FRAC => 0);
+      CLOCKS_Periph.CLK (RTC).CTRL.AUXSRC := XOSC;
+      --  clk_rtc SELECTED is hardwired, no point in polling it.
 
       --  Switch clk_peri to pll_sys
       CLOCKS_Periph.CLK (PERI).CTRL.AUXSRC := PLL_SYS;

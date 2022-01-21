@@ -19,15 +19,11 @@ package body RP.RTC is
       RP.Clock.Enable (RP.Clock.RTC);
       Reset_Peripheral (Reset_RTC);
 
-      --  RP.Clock.Initialize sets up clk_rtc as 1024 Hz driven by pll_usb.
+      --  RP.Clock.Initialize sets up clk_rtc as 46_875 Hz driven by xosc.
       --  Here we configure the RTC's internal divider to generate a 1 Hz
-      --  reference
-      --
-      --  It's possible to raise Constraint_Error here if clk_rtc running too
-      --  fast, but we don't expose an interface to change it in RP.Clock, so
-      --  that shouldn't happen.
-      RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
-         (RP.Clock.Frequency (RP.Clock.RTC) - 1);
+      --  reference.
+      RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field (46_874);
+      --  (RP.Clock.Frequency (RP.Clock.RTC) - 1);
 
       This.Resume;
    end Configure;
