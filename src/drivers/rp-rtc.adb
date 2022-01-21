@@ -27,7 +27,7 @@ package body RP.RTC is
       --  fast, but we don't expose an interface to change it in RP.Clock, so
       --  that shouldn't happen.
       RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
-         (RP.Clock.Frequency (RP.Clock.RTC));
+         (RP.Clock.Frequency (RP.Clock.RTC) - 1);
 
       This.Resume;
    end Configure;
