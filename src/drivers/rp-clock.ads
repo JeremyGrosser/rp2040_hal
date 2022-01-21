@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with Ada.Unchecked_Conversion;
 with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
 with RP2040_SVD.PLL; use RP2040_SVD.PLL;
 with RP2040_SVD;
@@ -30,13 +31,31 @@ package RP.Clock is
    Invalid_PLL_Config : exception;
 
    type Clock_Id is
-      (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC);
+      (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC,
+       PLL_SYS, GPIN0, GPIN1, PLL_USB, ROSC, XOSC);
 
    procedure Enable
       (CID : Clock_Id);
 
    procedure Disable
       (CID : Clock_Id);
+
+   subtype GP_Output is Clock_Id range GPOUT0 .. GPOUT3;
+   subtype GP_Source is Clock_Id range REF .. XOSC;
+
+   procedure Set_Source
+      (GP     : GP_Output;
+       Source : GP_Source);
+   --  GP will glitch if enabled while changing sources
+
+   GP_Divider_Fraction : constant := 1.0 / (2 ** 8);
+   type GP_Divider is delta GP_Divider_Fraction range 0.0 .. (2.0 ** 24) - GP_Divider_Fraction
+      with Size => 32;
+   --  If GP_Divider is 0.0, then it represents (2.0 ** 16)
+
+   procedure Set_Divider
+      (GP  : GP_Output;
+       Div : GP_Divider);
 
    function Enabled
       (CID : Clock_Id)
@@ -139,6 +158,10 @@ private
       FRAC at 0 range 0 .. 7;
    end record;
 
+   function To_CLK_DIV is new Ada.Unchecked_Conversion
+      (Source => GP_Divider,
+       Target => CLK_DIV_Register);
+
    subtype CLK_SELECTED_Field is UInt32;
    function CLK_SELECTED_Mask (SRC : CLK_CTRL_SRC_Field)
       return CLK_SELECTED_Field;
@@ -157,7 +180,7 @@ private
       SELECTED at 0 range 64 .. 95;
    end record;
 
-   type CLK_Array is array (Clock_Id) of CLK_Register;
+   type CLK_Array is array (Clock_Id range GPOUT0 .. RTC) of CLK_Register;
 
    type CLOCKS_Peripheral is record
       CLK                  : aliased CLK_Array;
@@ -208,7 +231,7 @@ private
      with Volatile;
 
    for CLOCKS_Peripheral use record
-      CLK                   at 16#00# range 0 .. 959;
+      CLK                  at 16#00# range 0 .. 959;
       CLK_SYS_RESUS_CTRL   at 16#78# range 0 .. 31;
       CLK_SYS_RESUS_STATUS at 16#7C# range 0 .. 31;
       FC0_REF_KHZ          at 16#80# range 0 .. 31;

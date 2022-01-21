@@ -206,6 +206,49 @@ package body RP.Clock is
       CLOCKS_Periph.CLK (CID).CTRL.ENABLE := False;
    end Disable;
 
+   procedure Set_Source
+      (GP     : GP_Output;
+       Source : GP_Source)
+   is
+      AUXSRC : CLK_CTRL_AUXSRC_Field renames CLOCKS_Periph.CLK (GP).CTRL.AUXSRC;
+   begin
+      case Source is
+         when REF =>
+            AUXSRC := REF;
+         when SYS =>
+            AUXSRC := SYS;
+         when USB =>
+            AUXSRC := USB;
+         when ADC =>
+            AUXSRC := ADC;
+         when RTC =>
+            AUXSRC := RTC;
+         when PLL_SYS =>
+            AUXSRC := PLL_SYS;
+         when GPIN0 =>
+            AUXSRC := GPIN0;
+         when GPIN1 =>
+            AUXSRC := GPIN1;
+         when PLL_USB =>
+            AUXSRC := PLL_USB;
+         when ROSC =>
+            AUXSRC := ROSC;
+         when XOSC =>
+            AUXSRC := XOSC;
+         when PERI =>
+            --  PERI has no divider, so just copy it's AUXSRC
+            AUXSRC := CLOCKS_Periph.CLK (PERI).CTRL.AUXSRC;
+      end case;
+   end Set_Source;
+
+   procedure Set_Divider
+      (GP  : GP_Output;
+       Div : GP_Divider)
+   is
+   begin
+      CLOCKS_Periph.CLK (GP).DIV := To_CLK_DIV (Div);
+   end Set_Divider;
+
    function Enabled
       (CID : Clock_Id)
       return Boolean
