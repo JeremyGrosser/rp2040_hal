@@ -22,8 +22,8 @@ package body RP.RTC is
       --  RP.Clock.Initialize sets up clk_rtc as 46_875 Hz driven by xosc.
       --  Here we configure the RTC's internal divider to generate a 1 Hz
       --  reference.
-      RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field (46_874);
-      --  (RP.Clock.Frequency (RP.Clock.RTC) - 1);
+      RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
+         (RP.Clock.Frequency (RP.Clock.RTC) - 1);
 
       This.Resume;
    end Configure;
