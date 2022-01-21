@@ -216,6 +216,7 @@ package body RP.Clock is
       return Hertz
    is
       use type RP2040_SVD.CLOCKS.FC0_SRC_FC0_SRC_Field;
+      F : Hertz;
    begin
       --  Get the most accurate clock reading we can.
       CLOCKS_Periph.FC0_INTERVAL.FC0_INTERVAL := FC0_INTERVAL_FC0_INTERVAL_Field'Last;
@@ -238,8 +239,16 @@ package body RP.Clock is
       if CLOCKS_Periph.FC0_STATUS.DIED then
          return 0;
       else
-         --  TODO: FC0_RESULT_FRAC?
-         return Hertz (CLOCKS_Periph.FC0_RESULT.KHZ) * 1_000;
+         F := Hertz (CLOCKS_Periph.FC0_RESULT.KHZ) * 1_000;
+
+         --  FRAC is 5 bits, 1.0/2**5 = 0.03125
+         if CID = REF then
+            --  FRAC always reads a little high when clk_ref is used to measure itself, so subtract 1.
+            F := F + ((Hertz (CLOCKS_Periph.FC0_RESULT.FRAC - 1) * 3125) / 100);
+         else
+            F := F + ((Hertz (CLOCKS_Periph.FC0_RESULT.FRAC) * 3125) / 100);
+         end if;
+         return F;
       end if;
    end Frequency;
 
