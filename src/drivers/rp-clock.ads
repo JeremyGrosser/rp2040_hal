@@ -50,7 +50,8 @@ package RP.Clock is
 
    GP_Divider_Fraction : constant := 1.0 / (2 ** 8);
    type GP_Divider is delta GP_Divider_Fraction range 0.0 .. (2.0 ** 24) - GP_Divider_Fraction
-      with Size => 32;
+      with Small => GP_Divider_Fraction,
+           Size  => 32;
    --  If GP_Divider is 0.0, then it represents (2.0 ** 16)
 
    procedure Set_Divider
