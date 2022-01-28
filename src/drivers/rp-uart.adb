@@ -60,7 +60,7 @@ package body RP.UART is
        Enabled : Boolean)
    is
    begin
-      This.Periph.UARTLCR_H.SPS := True;
+      This.Periph.UARTLCR_H.SPS := Enabled;
    end Set_Stick_Parity;
 
    function Symbol_Time
