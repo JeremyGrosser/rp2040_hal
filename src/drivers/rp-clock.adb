@@ -239,6 +239,9 @@ package body RP.Clock is
             --  PERI has no divider, so just copy it's AUXSRC
             AUXSRC := CLOCKS_Periph.CLK (PERI).CTRL.AUXSRC;
       end case;
+
+      --  Output clock with 50% duty cycle
+      CLOCKS_Periph.CLK (GP).CTRL.DC50 := True;
    end Set_Source;
 
    procedure Set_Divider
