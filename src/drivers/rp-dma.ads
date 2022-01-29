@@ -167,6 +167,16 @@ package RP.DMA is
                         return Boolean;
    --  Return True if the IRQ is triggered
 
+   subtype DMA_Timer_Id is DMA_Request_Trigger range TIMER0 .. TIMER3;
+
+   procedure Set_Pacing_Timer
+      (Timer : DMA_Timer_Id;
+       X, Y  : HAL.UInt16);
+   --  The pacing timer produces TREQ assertions at a rate set by ((X/Y) *
+   --  sys_clk). This equation is evaluated every sys_clk cycles and therefore
+   --  can only generate TREQs at a rate of 1 per sys_clk (i.e. permanent TREQ)
+   --  or less.
+
 private
 
    type DMA_CTRL_Register is record
@@ -282,7 +292,7 @@ private
 
    type DMA_IRQs is array (0 .. 1) of aliased DMA_IRQ;
 
-   type DMA_Timers is array (0 .. 3) of RP2040_SVD.DMA.TIMER_Register;
+   type DMA_Timers is array (DMA_Timer_Id) of RP2040_SVD.DMA.TIMER_Register;
 
    type DMA_Peripheral is record
       CH                 : DMA_Channels;

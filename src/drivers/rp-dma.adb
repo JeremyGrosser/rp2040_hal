@@ -169,4 +169,14 @@ package body RP.DMA is
       return (DMA_Periph.IRQ (IRQ).INTS.INTS0 and Mask) /= 0;
    end IRQ_Status;
 
+   procedure Set_Pacing_Timer
+      (Timer : DMA_Timer_Id;
+       X, Y  : HAL.UInt16)
+   is
+   begin
+      DMA_Periph.TIMER (Timer) :=
+         (Y => Y,
+          X => X);
+   end Set_Pacing_Timer;
+
 end RP.DMA;

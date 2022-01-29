@@ -24,4 +24,7 @@ package DMA_Tests is
    procedure Test_Checksum
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Timer
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 end DMA_Tests;

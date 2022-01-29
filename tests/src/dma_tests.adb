@@ -1,4 +1,7 @@
 with AUnit.Assertions; use AUnit.Assertions;
+with RP.Device;
+with RP.Clock;
+with RP.Timer;
 with RP.DMA;
 with HAL;
 
@@ -80,6 +83,45 @@ package body DMA_Tests is
       RP.DMA.Disable (Ch);
    end Test_Checksum;
 
+   procedure Test_Timer
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      use RP.DMA;
+      use HAL;
+      From   : UInt32 := 0 with Volatile;
+      To     : UInt32 := 0 with Volatile;
+      Ch     : constant DMA_Channel_Id := 0;
+      Config : constant DMA_Configuration :=
+         (Data_Size       => Transfer_32,
+          Increment_Read  => False,
+          Increment_Write => False,
+          Trigger         => TIMER0,
+          others          => <>);
+   begin
+      --  Trigger TIMER0 every 100 microseconds (10 KHz)
+      RP.DMA.Set_Pacing_Timer (TIMER0,
+         X => UInt16 (RP.Clock.Frequency (RP.Clock.SYS) / 10_000),
+         Y => 1);
+      RP.DMA.Configure (Ch, Config);
+      RP.DMA.Start
+         (Channel => Ch,
+          From    => From'Address,
+          To      => To'Address,
+          Count   => 1);
+
+      for I in 1 .. 10 loop
+         From := UInt32 (I);
+         RP.Device.Timer.Delay_Microseconds (100);
+         Assert (To = From, "Paced transfer did not happen on schedule.");
+      end loop;
+
+      while RP.DMA.Busy (Ch) loop
+         null;
+      end loop;
+
+      RP.DMA.Disable (Ch);
+   end Test_Timer;
+
    overriding
    procedure Register_Tests
       (T : in out DMA_Test)
@@ -88,6 +130,7 @@ package body DMA_Tests is
    begin
       Register_Routine (T, Test_Transfer'Access, "Transfer");
       Register_Routine (T, Test_Checksum'Access, "Checksum");
+      Register_Routine (T, Test_Checksum'Access, "Pacing Timer");
    end Register_Tests;
 
    overriding
