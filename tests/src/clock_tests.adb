@@ -1,5 +1,6 @@
 with AUnit.Assertions;
 with RP.Clock;
+with RP;
 
 package body Clock_Tests is
 
@@ -7,10 +8,16 @@ package body Clock_Tests is
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
       use AUnit.Assertions;
+      use RP;
+      Nominal : constant Hertz := 125_000_000;
+      Margin  : constant Hertz := 63; --  The frequency counter is only accurate to +/- 62.5 Hz
+      Minimum : constant Hertz := Nominal - Margin;
+      Maximum : constant Hertz := Nominal + Margin;
+      F       : Hertz;
    begin
       RP.Clock.Initialize (12_000_000);
-      Assert (RP.Clock.Frequency (RP.Clock.SYS) = 125_000_000,
-         "clk_sys is not 125 MHz");
+      F := RP.Clock.Frequency (RP.Clock.SYS);
+      Assert (F in Minimum .. Maximum, "clk_sys is not in expected range : " & F'Image);
    end Test_Initialize;
 
    procedure Test_Enable
