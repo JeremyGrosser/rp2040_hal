@@ -129,53 +129,53 @@ package body RP.ROM.Floating_Point is
       Soft_Float_Table := SFT'Unchecked_Access;
    end Initialize;
 
-   function fadd (A, B : C_float) return C_float is
-      (Soft_Float_Table.fadd (A, B));
-   function fsub (A, B : C_float) return C_float is
-      (Soft_Float_Table.fsub (A, B));
-   function frsub (A, B : C_float) return C_float is
-      (Soft_Float_Table.fsub (B, A));
-   function fmul (A, B : C_float) return C_float is
-      (Soft_Float_Table.fmul (A, B));
+   function fadd (A, B : Float) return Float is
+      (Float (Soft_Float_Table.fadd (C_float (A), C_float (B))));
+   function fsub (A, B : Float) return Float is
+      (Float (Soft_Float_Table.fsub (C_float (A), C_float (B))));
+   function frsub (A, B : Float) return Float is
+      (Float (Soft_Float_Table.fsub (C_float (B), C_float (A))));
+   function fmul (A, B : Float) return Float is
+      (Float (Soft_Float_Table.fmul (C_float (A), C_float (B))));
 
-   function fdiv (A, B : C_float) return C_float is
+   function fdiv (A, B : Float) return Float is
       State  : Atomic.Critical_Section.Interrupt_State;
       Result : C_float;
    begin
       Atomic.Critical_Section.Enter (State);
-      Result := Soft_Float_Table.fdiv (A, B);
+      Result := Soft_Float_Table.fdiv (C_float (A), C_float (B));
       Atomic.Critical_Section.Leave (State);
-      return Result;
+      return Float (Result);
    end fdiv;
 
-   function int2float (V : int) return C_float is
-      (Soft_Float_Table.int2float (V));
-   function int642float (V : long_long) return C_float is
-      (Soft_Float_Table.int642float (V));
-   function uint2float (V : unsigned) return C_float is
-      (Soft_Float_Table.uint2float (V));
-   function uint642float (V : unsigned_long_long) return C_float is
-      (Soft_Float_Table.uint642float (V));
-   function float2int (V : C_float) return int is
-      (Soft_Float_Table.float2int (V));
-   function float2int64 (V : C_float) return long_long is
-      (Soft_Float_Table.float2int64 (V));
-   function float2uint (V : C_float) return unsigned is
-      (Soft_Float_Table.float2uint (V));
-   function float2uint64 (V : C_float) return unsigned_long_long is
-      (Soft_Float_Table.float2uint64 (V));
-   function float2double (V : C_float) return double is
-      (Soft_Float_Table.float2double (V));
-   function fsqrt (V : C_float) return C_float is
-      (Soft_Float_Table.fsqrt (V));
-   function fsin (V : C_float) return C_float is
-      (Soft_Float_Table.fsin (V));
-   function fcos (V : C_float) return C_float is
-      (Soft_Float_Table.fcos (V));
-   function ftan (V : C_float) return C_float is
-      (Soft_Float_Table.ftan (V));
-   function fexp (V : C_float) return C_float is
-      (Soft_Float_Table.fexp (V));
-   function fln (V : C_float) return C_float is
-      (Soft_Float_Table.fln (V));
+   function int2float (V : int) return Float is
+      (Float (Soft_Float_Table.int2float (V)));
+   function int642float (V : long_long) return Float is
+      (Float (Soft_Float_Table.int642float (V)));
+   function uint2float (V : unsigned) return Float is
+      (Float (Soft_Float_Table.uint2float (V)));
+   function uint642float (V : unsigned_long_long) return Float is
+      (Float (Soft_Float_Table.uint642float (V)));
+   function float2int (V : Float) return int is
+      (Soft_Float_Table.float2int (C_float (V)));
+   function float2int64 (V : Float) return long_long is
+      (Soft_Float_Table.float2int64 (C_float (V)));
+   function float2uint (V : Float) return unsigned is
+      (Soft_Float_Table.float2uint (C_float (V)));
+   function float2uint64 (V : Float) return unsigned_long_long is
+      (Soft_Float_Table.float2uint64 (C_float (V)));
+   function float2double (V : Float) return double is
+      (Soft_Float_Table.float2double (C_float (V)));
+   function fsqrt (V : Float) return Float is
+      (Float (Soft_Float_Table.fsqrt (C_float (V))));
+   function fsin (V : Float) return Float is
+      (Float (Soft_Float_Table.fsin (C_float (V))));
+   function fcos (V : Float) return Float is
+      (Float (Soft_Float_Table.fcos (C_float (V))));
+   function ftan (V : Float) return Float is
+      (Float (Soft_Float_Table.ftan (C_float (V))));
+   function fexp (V : Float) return Float is
+      (Float (Soft_Float_Table.fexp (C_float (V))));
+   function fln (V : Float) return Float is
+      (Float (Soft_Float_Table.fln (C_float (V))));
 end RP.ROM.Floating_Point;
