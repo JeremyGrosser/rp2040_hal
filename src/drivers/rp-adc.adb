@@ -101,8 +101,8 @@ package body RP.ADC is
    procedure Set_Sample_Rate
       (Rate : Hertz)
    is
-      clk_adc : constant Hertz := RP.Clock.Frequency (RP.Clock.ADC);
-      Div     : constant ADC_Divider := ADC_Divider (Float (clk_adc) / Float (Rate)) - 1.0;
+      Clk_ADC : constant Hertz := RP.Clock.Frequency (RP.Clock.ADC);
+      Div     : constant ADC_Divider := ADC_Divider (Float (Clk_ADC) / Float (Rate)) - 1.0;
    begin
       Set_Divider (Div);
    end Set_Sample_Rate;

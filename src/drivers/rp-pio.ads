@@ -6,6 +6,7 @@
 with RP2040_SVD.PIO; use RP2040_SVD.PIO;
 with RP2040_SVD;
 with RP.GPIO; use RP.GPIO;
+with Cortex_M.NVIC;
 with HAL; use HAL;
 with System;
 
@@ -279,6 +280,11 @@ private
    function Div_Fraction
       (Div : Divider)
       return SM0_CLKDIV_FRAC_Field;
+
+   function NVIC_IRQ_Line
+      (This : PIO_Device;
+       IRQ  : PIO_IRQ_ID)
+       return Cortex_M.NVIC.Interrupt_ID;
 
    type PIO_SM_Config is record
       CLKDIV    : SM0_CLKDIV_Register;

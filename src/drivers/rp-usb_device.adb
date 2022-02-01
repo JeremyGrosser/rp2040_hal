@@ -211,7 +211,6 @@ package body RP.USB_Device is
        Len  : UInt32)
    is
       use System.Storage_Elements;
-      use System;
       Source : Storage_Array (1 .. Storage_Offset (Len))
          with Address => Addr;
       Target : Storage_Array (1 .. Storage_Offset (Len))

@@ -173,8 +173,8 @@ package body RP.PWM is
       (Slice     : PWM_Slice;
        Frequency : Hertz)
    is
-      clk_sys : constant Hertz := RP.Clock.Frequency (RP.Clock.SYS);
-      Div     : constant Divider := Divider (clk_sys / Frequency);
+      Clk_Sys : constant Hertz := RP.Clock.Frequency (RP.Clock.SYS);
+      Div     : constant Divider := Divider (Clk_Sys / Frequency);
    begin
       Set_Divider (Slice, Div);
    end Set_Frequency;

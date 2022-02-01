@@ -6,8 +6,7 @@
 with Ada.Unchecked_Conversion;
 with RP.Clock;
 with RP.Reset;
-with Cortex_M.NVIC; use Cortex_M.NVIC;
-with RP2040_SVD.Interrupts; use RP2040_SVD.Interrupts;
+with RP2040_SVD.Interrupts;
 
 package body RP.PIO is
    procedure Enable
@@ -453,17 +452,26 @@ package body RP.PIO is
       return System.Address
    is (This.Periph.RXF (SM)'Address);
 
-   function NVIC_IRQ_Line (This : PIO_Device;
-                           IRQ  : PIO_IRQ_ID)
-                           return Cortex_M.NVIC.Interrupt_ID
-   is (case This.Num is
-          when 0 => (case IRQ is
-                        when 0 => PIO0_IRQ_0_Interrupt,
-                        when 1 => PIO0_IRQ_1_Interrupt),
-          when 1 => (case IRQ is
-                        when 0 => PIO1_IRQ_0_Interrupt,
-                        when 1 => PIO1_IRQ_1_Interrupt)
-      );
+   function NVIC_IRQ_Line
+      (This : PIO_Device;
+       IRQ  : PIO_IRQ_ID)
+      return Cortex_M.NVIC.Interrupt_ID
+   is
+      use RP2040_SVD.Interrupts;
+   begin
+      case This.Num is
+         when 0 =>
+            case IRQ is
+               when 0 => return PIO0_IRQ_0_Interrupt;
+               when 1 => return PIO0_IRQ_1_Interrupt;
+            end case;
+         when 1 =>
+            case IRQ is
+               when 0 => return PIO1_IRQ_0_Interrupt;
+               when 1 => return PIO1_IRQ_1_Interrupt;
+            end case;
+      end case;
+   end NVIC_IRQ_Line;
 
    procedure Enable_IRQ (This : in out PIO_Device;
                          IRQ  :        PIO_IRQ_ID)
