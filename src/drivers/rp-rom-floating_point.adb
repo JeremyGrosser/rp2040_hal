@@ -48,7 +48,7 @@ package body RP.ROM.Floating_Point is
       with Convention => C;
 
    --  Table 180
-   --  Single-precision C_floating Point Function Table
+   --  Single-precision Floating Point Function Table
    type Soft_Float_Table_Fields is record
       fadd        : rom_fadd;
       fsub        : rom_fsub;
