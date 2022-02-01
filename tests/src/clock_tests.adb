@@ -43,6 +43,40 @@ package body Clock_Tests is
          "Unable to disable clk_peri");
    end Test_Enable;
 
+   procedure Test_Counter
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      use AUnit.Assertions;
+   begin
+      Assert (RP.Clock.Frequency (RP.Clock.SYS) = 125_000_000, "Unexpected clk_sys value");
+      Assert (RP.Clock.Frequency
+         (RP.Clock.SYS,
+          Rounded  => False,
+          Accuracy => 15)
+          in (125_000_000 - 64) .. (125_000_000 + 64),
+          "Fractional clk_sys out of range");
+      Assert (RP.Clock.Frequency
+         (RP.Clock.SYS,
+          Rounded => False,
+          Accuracy => 5)
+          in (125_000_000 - 65535) .. (125_000_000 + 65535),
+          "Low accuracy clk_sys out of range");
+      RP.Clock.Enable (RP.Clock.USB);
+      Assert (RP.Clock.Frequency
+         (RP.Clock.USB,
+          Rounded => False,
+          Accuracy => 0)
+          in (48_000_000 - 2_048_000) .. (48_000_000 + 2_048_000),
+          "Low accuracy clk_usb out of range");
+      Assert (RP.Clock.Frequency
+         (RP.Clock.USB,
+          Rounded => True)
+          = 48_000_000,
+          "Rounded clk_usb incorrect");
+      RP.Clock.Disable (RP.Clock.USB);
+      Assert (not RP.Clock.Enabled (RP.Clock.USB), "Failed to disable USB clock");
+   end Test_Counter;
+
    overriding
    procedure Register_Tests
       (T : in out Clock_Test)
@@ -51,6 +85,7 @@ package body Clock_Tests is
    begin
       Register_Routine (T, Test_Initialize'Access, "Initialize");
       Register_Routine (T, Test_Enable'Access, "Enable");
+      Register_Routine (T, Test_Counter'Access, "Counter");
    end Register_Tests;
 
    overriding

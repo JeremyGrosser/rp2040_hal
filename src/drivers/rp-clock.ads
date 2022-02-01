@@ -62,10 +62,17 @@ package RP.Clock is
       (CID : Clock_Id)
       return Boolean;
 
+   subtype Countable_Clock_Id is Clock_Id range REF .. RTC;
    function Frequency
-      (CID : Clock_Id)
+      (CID      : Countable_Clock_Id;
+       Rounded  : Boolean := True;
+       Accuracy : UInt4 := 15)
        return Hertz;
-   No_Frequency_Counter : exception;
+   --  By default, the fractional part of the frequency counter result register
+   --  is ignored. Setting Rounded = False includes the fractional
+   --  frequency, which may include up to 64 KHz of error, depending on the
+   --  value of Accuracy. Higher Accuracy values take longer to measure the
+   --  clock, but produce more accurate results.
 
    --  ROSC can vary from 1 .. 12 MHz. Assume that ROSC is running at the
    --  maximum ROSC frequency to avoid unintentional overclocking.

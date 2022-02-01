@@ -20,4 +20,7 @@ package Clock_Tests is
    procedure Test_Enable
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Counter
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 end Clock_Tests;

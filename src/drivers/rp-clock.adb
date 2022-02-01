@@ -258,14 +258,15 @@ package body RP.Clock is
    is (CLOCKS_Periph.CLK (CID).CTRL.ENABLE);
 
    function Frequency
-      (CID : Clock_Id)
+      (CID      : Countable_Clock_Id;
+       Rounded  : Boolean := True;
+       Accuracy : UInt4 := 15)
       return Hertz
    is
       use type RP2040_SVD.CLOCKS.FC0_SRC_FC0_SRC_Field;
       F : Hertz;
    begin
-      --  Get the most accurate clock reading we can.
-      CLOCKS_Periph.FC0_INTERVAL.FC0_INTERVAL := FC0_INTERVAL_FC0_INTERVAL_Field'Last;
+      CLOCKS_Periph.FC0_INTERVAL.FC0_INTERVAL := Accuracy;
 
       case CID is
          when REF  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_ref;
@@ -274,8 +275,6 @@ package body RP.Clock is
          when USB  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_usb;
          when ADC  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_adc;
          when RTC  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_rtc;
-         when others =>
-            raise No_Frequency_Counter with CID'Image;
       end case;
 
       while not CLOCKS_Periph.FC0_STATUS.DONE loop
@@ -286,15 +285,12 @@ package body RP.Clock is
          return 0;
       else
          F := Hertz (CLOCKS_Periph.FC0_RESULT.KHZ) * 1_000;
-
-         --  FRAC is 5 bits, 1.0/2**5 = 0.03125
-         if CID = REF then
-            --  FRAC always reads a little high when clk_ref is used to measure itself, so subtract 1.
-            F := F + ((Hertz (CLOCKS_Periph.FC0_RESULT.FRAC - 1) * 3125) / 100);
+         if Rounded then
+            return F;
          else
-            F := F + ((Hertz (CLOCKS_Periph.FC0_RESULT.FRAC) * 3125) / 100);
+            --  FRAC is 5 bits, 1.0/2**5 = 0.03125
+            return F + ((Hertz (CLOCKS_Periph.FC0_RESULT.FRAC) * 3125) / 100);
          end if;
-         return F;
       end if;
    end Frequency;
 
