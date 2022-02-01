@@ -69,8 +69,8 @@ package RP.Clock is
        Accuracy : UInt4 := 15)
        return Hertz;
    --  By default, the fractional part of the frequency counter result register
-   --  is ignored. Setting Rounded = False includes the fractional
-   --  frequency, which may include up to 64 KHz of error, depending on the
+   --  is ignored. Setting Rounded = False includes the fractional frequency,
+   --  which may include as much as 2048 KHz of error, depending on the
    --  value of Accuracy. Higher Accuracy values take longer to measure the
    --  clock, but produce more accurate results.
 
