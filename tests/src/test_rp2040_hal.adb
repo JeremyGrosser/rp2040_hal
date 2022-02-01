@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with AUnit.Reporter.Text;
 with AUnit.Run;
 with Test_Suite;
