@@ -46,7 +46,9 @@ package body DMA_Tests is
       Assert (RP.DMA.Status (Ch).Transfers_Remaining = 0, "Transfers_Remaining did not count correctly");
 
       Assert (To = From, "transfer copied incorrect data");
+
       RP.DMA.Disable (Ch);
+      Assert (RP.DMA.Status (Ch).Enabled = False, "Disable failed");
    end Test_Transfer;
 
    procedure Test_Checksum
