@@ -55,4 +55,13 @@ package body RP.ROM is
       return S;
    end copyright_string;
 
+   function git_revision
+      return Unsigned_32
+   is
+      GR : constant Unsigned_32
+         with Import, Address => ROM_Data_Lookup (ROM_Table_Code ('G', 'R'));
+   begin
+      return GR;
+   end git_revision;
+
 end RP.ROM;

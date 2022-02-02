@@ -33,7 +33,7 @@ package RP.ROM is
    end record
       with Size => 208;
 
-   Header : aliased Header_Fields
+   Header : constant Header_Fields
       with Import, Address => System'To_Address (16#0000_0000#);
 
    function ROM_Table_Code
@@ -165,8 +165,7 @@ package RP.ROM is
    function copyright_string
       return String;
 
-   git_revision : constant Unsigned_32
-   with Import,
-        Address => ROM_Data_Lookup (ROM_Table_Code ('G', 'R'));
+   function git_revision
+      return Unsigned_32;
 
 end RP.ROM;
