@@ -87,9 +87,7 @@ private
    procedure Enable_ROSC;
 
    procedure Enable_XOSC
-      (XOSC_Frequency     : XOSC_Hertz;
-       XOSC_Startup_Delay : XOSC_Cycles)
-   with Pre => XOSC_Frequency >= 1_000_000;
+      (XOSC_Startup_Delay : XOSC_Cycles);
 
    subtype PLL_Divider is Integer range 1 .. 7;
 

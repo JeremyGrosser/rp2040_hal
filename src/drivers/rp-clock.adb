@@ -14,8 +14,7 @@ package body RP.Clock is
    is (Shift_Left (1, Natural (SRC)));
 
    procedure Enable_XOSC
-      (XOSC_Frequency     : XOSC_Hertz;
-       XOSC_Startup_Delay : XOSC_Cycles)
+      (XOSC_Startup_Delay : XOSC_Cycles)
    is
       use RP2040_SVD.XOSC;
    begin
@@ -102,7 +101,7 @@ package body RP.Clock is
       --  Enable watchdog and maybe XOSC
       if Has_XOSC then
          Reference := XOSC_Frequency;
-         Enable_XOSC (XOSC_Frequency, XOSC_Startup_Delay);
+         Enable_XOSC (XOSC_Startup_Delay);
       else
          Reference := ROSC_Frequency;
          Enable_ROSC;
