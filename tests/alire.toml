@@ -18,3 +18,4 @@ rp2040_hal = { path='../../rp2040_hal' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "zfp-cross"
+RP2040_HAL_BUILD_MODE = "debug"
