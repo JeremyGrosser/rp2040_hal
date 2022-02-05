@@ -8,7 +8,7 @@ with HAL.Time;
 
 package RP.SysTick is
 
-   type Time is new UInt24;
+   type Time is new UInt64;
    Ticks_Per_Second : constant := 1_000;
 
    function Clock
@@ -48,10 +48,14 @@ package RP.SysTick is
        S    : Integer)
    with Pre => Enabled (This);
 
+   procedure Delay_Until
+      (This : in out Delays;
+       T    : Time);
+
 private
 
    Ticks : Time := 0
-      with Atomic;
+      with Volatile;
 
    procedure SysTick_Handler
       with Export        => True,

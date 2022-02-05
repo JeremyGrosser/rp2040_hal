@@ -51,6 +51,15 @@ package body SysTick_Tests is
       Assert (B > A, "Delay_Milliseconds too short");
       Assert ((B - A) = 10, "Delay_Milliseconds too long");
       Assert ((Ref_B - Ref_A) in (10_000 - 1_000) .. (10_000 + 1_000), "Delay_Milliseconds > 1ms error");
+
+      Ref_A := RP.Timer.Clock;
+      A := Clock;
+      ST.Delay_Until (A + Milliseconds (10));
+      B := Clock;
+      Ref_B := RP.Timer.Clock;
+      Assert (B > A, "Delay_Milliseconds too short");
+      Assert ((B - A) = 10, "Delay_Milliseconds too long");
+      Assert ((Ref_B - Ref_A) in (10_000 - 1_000) .. (10_000 + 1_000), "Delay_Until > 1ms error");
    end Test_Delays;
 
    procedure Test_Milliseconds

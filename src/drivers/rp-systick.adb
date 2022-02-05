@@ -86,6 +86,17 @@ package body RP.SysTick is
       Delay_Milliseconds (This, S * 1000);
    end Delay_Seconds;
 
+   procedure Delay_Until
+      (This : in out Delays;
+       T    : Time)
+   is
+   begin
+      loop
+         exit when Ticks >= T;
+         System.Machine_Code.Asm ("wfi", Volatile => True);
+      end loop;
+   end Delay_Until;
+
    procedure SysTick_Handler is
    begin
       Ticks := Ticks + 1;
