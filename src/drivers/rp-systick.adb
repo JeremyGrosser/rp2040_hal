@@ -41,7 +41,7 @@ package body RP.SysTick is
 
    function Clock
       return Time
-   is (Time (SysTick_Periph.CVR.CURRENT));
+   is (Ticks);
 
    function Milliseconds
       (T : Natural)
