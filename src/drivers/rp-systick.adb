@@ -39,6 +39,10 @@ package body RP.SysTick is
       return SysTick_Periph.CSR.ENABLE = Enable;
    end Enabled;
 
+   function Ticks_Per_Second
+      return Time
+   is (1_000);
+
    function Clock
       return Time
    is (Ticks);
@@ -63,15 +67,8 @@ package body RP.SysTick is
       (This : in out Delays;
        Ms   : Integer)
    is
-      T : constant Time := Ticks + Time (Ms);
+      T : constant Time := Ticks + Milliseconds (Ms);
    begin
-      --  Handle UInt32 overflow gracefully
-      if Ticks > T then
-         while Ticks > T loop
-            System.Machine_Code.Asm ("wfi", Volatile => True);
-         end loop;
-      end if;
-
       while Ticks < T loop
          System.Machine_Code.Asm ("wfi", Volatile => True);
       end loop;
@@ -83,7 +80,7 @@ package body RP.SysTick is
        S    : Integer)
    is
    begin
-      Delay_Milliseconds (This, S * 1000);
+      Delay_Milliseconds (This, S * 1_000);
    end Delay_Seconds;
 
    procedure Delay_Until

@@ -9,7 +9,9 @@ with HAL.Time;
 package RP.SysTick is
 
    type Time is new UInt64;
-   Ticks_Per_Second : constant := 1_000;
+
+   function Ticks_Per_Second
+      return Time;
 
    function Clock
       return Time;
