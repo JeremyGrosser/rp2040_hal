@@ -9,7 +9,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          toolchain: gnat_arm_elf gprbuild
       - uses: alire-project/setup-alire@v1
       - run: alr build
