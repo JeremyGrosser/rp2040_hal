@@ -40,8 +40,8 @@ package body RP.Divider is
       while not SIO_Periph.DIV_CSR.READY loop
          null;
       end loop;
-      Result.Quotient := To_Int32 (SIO_Periph.DIV_QUOTIENT);
       Result.Remainder := To_Int32 (SIO_Periph.DIV_REMAINDER);
+      Result.Quotient := To_Int32 (SIO_Periph.DIV_QUOTIENT);
       Atomic.Critical_Section.Leave (State);
       return Result;
    end idivmod;
@@ -84,8 +84,8 @@ package body RP.Divider is
       while not SIO_Periph.DIV_CSR.READY loop
          null;
       end loop;
-      Result.Quotient := SIO_Periph.DIV_QUOTIENT;
       Result.Remainder := SIO_Periph.DIV_REMAINDER;
+      Result.Quotient := SIO_Periph.DIV_QUOTIENT;
       Atomic.Critical_Section.Leave (State);
       return Result;
    end uidivmod;
