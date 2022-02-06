@@ -130,7 +130,7 @@ package body RP.RTC is
    begin
       return (Day         => RTC_Day (R1.DAY),
               Month       => RTC_Month'Val (R1.MONTH - 1),
-              Year        => RTC_Year (R1.YEAR),
+              Year        => RTC_Year (Integer (R1.YEAR) mod (Integer (RTC_Year'Last) + 1)),
               Day_Of_Week => RTC_Day_Of_Week'Val (R0.DOTW));
    end Get_Date;
 

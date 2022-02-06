@@ -11,6 +11,7 @@ with DMA_Tests;
 with ADC_Tests;
 with ROM_Tests;
 with SysTick_Tests;
+with RTC_Tests;
 
 package body Test_Suite is
    Result : aliased AUnit.Test_Suites.Test_Suite;
@@ -23,6 +24,7 @@ package body Test_Suite is
    ADC_Case       : aliased ADC_Tests.ADC_Test;
    ROM_Case       : aliased ROM_Tests.ROM_Test;
    SysTick_Case   : aliased SysTick_Tests.SysTick_Test;
+   RTC_Case       : aliased RTC_Tests.RTC_Test;
 
    function Suite
       return AUnit.Test_Suites.Access_Test_Suite
@@ -37,6 +39,7 @@ package body Test_Suite is
       Add_Test (Result'Access, ADC_Case'Access);
       Add_Test (Result'Access, ROM_Case'Access);
       Add_Test (Result'Access, SysTick_Case'Access);
+      Add_Test (Result'Access, RTC_Case'Access);
       return Result'Access;
    end Suite;
 end Test_Suite;

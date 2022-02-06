@@ -84,9 +84,7 @@ project Test_Rp2040_Hal is
    end Binder;
 
    package Linker is
-      for Switches ("Ada") use Rp2040_Hal.Linker_Switches &
-         ("-Wl,-gc-sections",
-          "-Wl,-Map=tests.map");
+      for Switches ("Ada") use Rp2040_Hal.Linker_Switches;
    end Linker;
 
 end Test_Rp2040_Hal;
