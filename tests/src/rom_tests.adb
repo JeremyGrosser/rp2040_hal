@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions; use AUnit.Assertions;
-with RP.ROM.Floating_Point;
 with RP.ROM;
 with Interfaces.C;
 with Interfaces;

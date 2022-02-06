@@ -5,7 +5,6 @@
 --
 with AUnit.Assertions; use AUnit.Assertions;
 with RP.ADC; use RP.ADC;
-with RP.Clock;
 
 package body ADC_Tests is
    overriding

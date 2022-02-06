@@ -9,7 +9,6 @@ with HAL;      use HAL;
 with RP.UART;  use RP.UART;
 with RP.Device;
 with RP.Clock;
-with RP.Timer;
 
 package body UART_Tests is
    Port    : RP.UART.UART_Port renames RP.Device.UART_0;
