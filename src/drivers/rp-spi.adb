@@ -42,6 +42,7 @@ package body RP.SPI is
       This.Periph.SSPCR1 :=
          (MS     => Config.Role = Slave,
           SSE    => False,
+          LBM    => Config.Loopback,
           others => <>);
 
       --  Enable DMA request. Harmless if DMA is not used.

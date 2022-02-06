@@ -27,6 +27,7 @@ package RP.SPI is
       Polarity  : SPI_Polarity := Active_Low;
       Phase     : SPI_Phase := Rising_Edge;
       Blocking  : Boolean := True; --  Wait for Transmit FIFO to be empty before returning
+      Loopback  : Boolean := False;
    end record;
 
    Default_SPI_Configuration : constant SPI_Configuration := (others => <>);
