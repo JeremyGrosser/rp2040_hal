@@ -12,7 +12,7 @@ eval $(alr printenv)
 gnatcov instrument -P test_rp2040_hal.gpr \
     ${GPR_EXTERNAL} \
     --projects=RP2040_HAL \
-    --level=stmt \
+    --level=stmt+decision \
     --dump-trigger=main-end \
     --dump-channel=base64-stdout
 
@@ -34,7 +34,8 @@ COVERAGE_FLAGS=" \
     ${GPR_EXTERNAL} \
     --projects=RP2040_HAL \
     --no-subprojects \
-    --level=stmt \
+    --level=stmt+decision \
     coverage.trace \
     "
-gnatcov coverage --annotate=html ${COVERAGE_FLAGS}
+gnatcov coverage --annotate=xcov+ ${COVERAGE_FLAGS}
+gnatcov coverage --annotate=html+ ${COVERAGE_FLAGS}
