@@ -39,3 +39,5 @@ COVERAGE_FLAGS=" \
     "
 gnatcov coverage --annotate=xcov+ ${COVERAGE_FLAGS}
 gnatcov coverage --annotate=html+ ${COVERAGE_FLAGS}
+cd obj
+python3 -m http.server
