@@ -1,0 +1,23 @@
+--  Project to provide common units for the runtime of instrumented programs
+--
+--  This is a simple project that contains only type definitions for coverage
+--  buffers and for the format of GNATcoverage's source trace files.
+--
+--  If you need to use GNATcoverage's own implementation of the writer for
+--  source traces files (GNATcov_RTS.Traces.Output), please use the
+--  gnatcov_rts_full.gpr project instead.
+
+project GNATcov_RTS is
+   for Source_Files use
+     ("gnatcov_rts.ads",
+      "gnatcov_rts-buffers.ads",
+      "gnatcov_rts-buffers.adb",
+      "gnatcov_rts-buffers-lists.ads",
+      "gnatcov_rts-traces.ads",
+      "gnatcov_rts-traces.adb",
+      "gnatcov_rts-traces-output.ads",
+      "gnatcov_rts-traces-output.adb",
+      "gnatcov_rts-traces-output-base64.ads",
+      "gnatcov_rts-traces-output-base64.adb");
+   for Object_Dir use "obj-gnatcov_rts";
+end GNATcov_RTS;

@@ -3,3 +3,6 @@ obj/
 lib/
 alire/
 config/
+gnatcov_rts/obj-gnatcov_rts/
+coverage.log
+coverage.trace

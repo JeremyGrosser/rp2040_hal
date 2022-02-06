@@ -12,7 +12,4 @@ procedure Test_Rp2040_Hal is
    Reporter : AUnit.Reporter.Text.Text_Reporter;
 begin
    Run (Reporter);
-   loop
-      null;
-   end loop;
 end Test_Rp2040_Hal;
