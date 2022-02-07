@@ -45,6 +45,9 @@ package body Flash_Tests is
       for I in Data'Range loop
          Assert (Test_Area (I) = Data (I), "verify failed");
       end loop;
+
+      --  Erase after programming to be certain that erase works
+      Test_Erase (T);
    end Test_Program;
 
    overriding
