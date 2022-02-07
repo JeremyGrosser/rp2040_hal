@@ -1,6 +1,8 @@
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Machine_Code; use System.Machine_Code;
+with Interfaces.C;
 with RP.ROM;
+with HAL;
 
 package body RP.Flash is
 
@@ -93,7 +95,7 @@ package body RP.Flash is
 
       RP.ROM.flash_range_erase
         (Addr       => Interfaces.Unsigned_32 (Offset),
-         Count      => size_t (Count),
+         Count      => Interfaces.C.size_t (Count),
          Block_Size => Interfaces.Unsigned_32 (Block_Size),
          Block_Cmd  => Block_Erase_Command);
 

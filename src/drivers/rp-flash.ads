@@ -1,8 +1,5 @@
 with System;
 
-with HAL;
-with Interfaces.C; use Interfaces.C;
-
 package RP.Flash is
 
    Flash_Size  : constant := 16#0100_0000#;
