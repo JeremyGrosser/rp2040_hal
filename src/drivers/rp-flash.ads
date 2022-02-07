@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022 Fabien Chouteau <fabien.chouteau@gmail.com>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with System;
 
 package RP.Flash is

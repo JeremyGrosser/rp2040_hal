@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022 Fabien Chouteau <fabien.chouteau@gmail.com>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Machine_Code; use System.Machine_Code;
 with Interfaces.C;
