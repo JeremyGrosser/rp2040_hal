@@ -1,9 +1,26 @@
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Machine_Code; use System.Machine_Code;
-
 with RP.ROM;
 
 package body RP.Flash is
+
+   function In_Flash
+      (Addr : System.Address)
+      return Boolean
+   is
+   begin
+      return To_Integer (Addr) in XIP_BASE .. (XIP_BASE + Flash_Size);
+   end In_Flash;
+
+   function To_Flash_Offset
+      (Addr : System.Address)
+      return Flash_Offset
+   is (Flash_Offset (To_Integer (Addr) - XIP_BASE));
+
+   function To_Address
+      (Offset : Flash_Offset)
+      return System.Address
+   is (To_Address (Integer_Address (Offset) + XIP_BASE));
 
    procedure Flash_Init_Boot2_Copyout
      with No_Inline, Linker_Section => ".time_critical";
@@ -22,12 +39,10 @@ package body RP.Flash is
    ------------------------------
 
    procedure Flash_Init_Boot2_Copyout is
-      Boot2  : HAL.UInt32_Array (1 .. BOOT_SIZE_WORDS)
+      Boot2  : HAL.UInt32_Array (Boot2_Copyout'Range)
         with Address => System'To_Address (XIP_BASE);
    begin
-      if Boot2_Copyout_Valid then
-         return;
-      else
+      if not Boot2_Copyout_Valid then
          Boot2_Copyout := Boot2;
 
          --  __compiler_memory_barrier();
@@ -54,12 +69,14 @@ package body RP.Flash is
       Boot2_Call;
    end Flash_Enable_XIP_Via_Boot2;
 
-   -----------------------
-   -- Flash_Range_Erase --
-   -----------------------
+   -----------
+   -- Erase --
+   -----------
 
-   procedure Flash_Range_Erase (Offset : HAL.UInt32;
-                                Count  : size_t)
+   procedure Erase
+      (Offset     : Flash_Offset;
+       Block_Size : Natural;
+       Count      : Natural)
    is
    begin
 
@@ -75,23 +92,24 @@ package body RP.Flash is
       RP.ROM.flash_exit_xip;
 
       RP.ROM.flash_range_erase
-        (Addr       => To_Address (Integer_Address (Offset)),
-         Count      => Count,
-         Block_Size => FLASH_BLOCK_SIZE,
-         Block_Cmd  => FLASH_BLOCK_ERASE_CMD);
+        (Addr       => Interfaces.Unsigned_32 (Offset),
+         Count      => size_t (Count),
+         Block_Size => Interfaces.Unsigned_32 (Block_Size),
+         Block_Cmd  => Block_Erase_Command);
 
       RP.ROM.flash_flush_cache;
 
       Flash_Enable_XIP_Via_Boot2;
-   end Flash_Range_Erase;
+   end Erase;
 
-   -------------------------
-   -- Flash_Range_Program --
-   -------------------------
+   -------------
+   -- Program --
+   -------------
 
-   procedure Flash_Range_Program (Offset : HAL.UInt32;
-                                  Src    : System.Address;
-                                  Count  : size_t)
+   procedure Program
+      (Offset : Flash_Offset;
+       Source : System.Address;
+       Length : Natural)
    is
    begin
       Flash_Init_Boot2_Copyout;
@@ -105,12 +123,12 @@ package body RP.Flash is
 
       RP.ROM.flash_exit_xip;
 
-      RP.ROM.flash_range_program (Addr  => To_Address (Integer_Address (Offset)),
-                                  Data  => Src,
-                                  Count => Count);
+      RP.ROM.flash_range_program (Addr  => To_Address (Offset),
+                                  Data  => Source,
+                                  Count => Interfaces.C.size_t (Length));
       RP.ROM.flash_flush_cache;
 
       Flash_Enable_XIP_Via_Boot2;
-   end Flash_Range_Program;
+   end Program;
 
 end RP.Flash;

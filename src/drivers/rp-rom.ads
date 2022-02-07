@@ -116,7 +116,7 @@ package RP.ROM is
         Address    => ROM_Func_Lookup (ROM_Table_Code ('E', 'X'));
 
    procedure flash_range_erase
-      (Addr       : System.Address;
+      (Addr       : Unsigned_32;
        Count      : Interfaces.C.size_t;
        Block_Size : Unsigned_32;
        Block_Cmd  : Unsigned_8)

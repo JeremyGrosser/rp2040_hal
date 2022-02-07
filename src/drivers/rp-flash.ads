@@ -5,11 +5,25 @@ with Interfaces.C; use Interfaces.C;
 
 package RP.Flash is
 
-   FLASH_PAGE_SIZE       : constant := 256;
-   FLASH_SECTOR_SIZE     : constant := 4096;
-   FLASH_BLOCK_SIZE      : constant := 65536;
+   Flash_Size  : constant := 16#0100_0000#;
+   --  XIP maps up to 16 MB of flash. Actual flash chip may be smaller.
+   Page_Size   : constant := 16#100#;
+   Sector_Size : constant := 16#1000#;
 
-   XIP_BASE              : constant := 16#10000000#;
+   type Flash_Offset is range 0 .. Flash_Size;
+
+   function To_Address
+      (Offset : Flash_Offset)
+      return System.Address;
+
+   function In_Flash
+      (Addr : System.Address)
+      return Boolean;
+
+   function To_Flash_Offset
+      (Addr : System.Address)
+      return Flash_Offset
+   with Pre => In_Flash (Addr);
 
    --  At some point during the execution of the procedures of this package
    --  the flash memory will be turned off. Any code that access the flash
@@ -21,24 +35,29 @@ package RP.Flash is
    --  Any interrupt that may execute from flash must be masked. If a second
    --  core is running, make sure it only executes code in RAM or bootrom.
 
-   procedure Flash_Range_Erase (Offset : HAL.UInt32;
-                                Count  : size_t)
+   procedure Erase
+      (Offset     : Flash_Offset;
+       Block_Size : Natural;
+       Count      : Natural)
      with No_Inline, Linker_Section => ".time_critical",
-     Pre => (Count mod FLASH_SECTOR_SIZE) = 0;
-   --  Erase Count bytes of flash starting at Offset bytes from the beginning of
-   --  flash. Count must be a multiple of sector size (4096).
+     Pre => (Block_Size mod Sector_Size) = 0;
+   --  Erase (Block_Size * Count) bytes of flash starting at Offset bytes from
+   --  the beginning of flash. Block_Size must be a multiple of 4096. Larger
+   --  Block_Size will erase faster.
 
-   procedure Flash_Range_Program (Offset : HAL.UInt32;
-                                  Src    : System.Address;
-                                  Count  : size_t)
+   procedure Program
+      (Offset : Flash_Offset;
+       Source : System.Address;
+       Length : Natural)
      with No_Inline, Linker_Section => ".time_critical",
-     Pre => (Count mod FLASH_PAGE_SIZE) = 0;
-   --  Programm Count bytes of flash starting at Offset bytes from the beginning
-   --  of flash using the Src buffer. Count must be a multiple of page size
-   --  (256).
+     Pre => (Length mod Page_Size) = 0
+            and not In_Flash (Source);
+   --  Program Length bytes of flash starting at Offset bytes from the beginning
+   --  of flash using the Src buffer. Count must be a multiple of 256.
 
 private
 
-   FLASH_BLOCK_ERASE_CMD : constant := 16#d8#;
+   XIP_BASE             : constant := 16#10000000#;
+   Block_Erase_Command  : constant := 16#d8#;
 
 end RP.Flash;

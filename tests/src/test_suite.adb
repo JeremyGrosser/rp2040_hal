@@ -13,6 +13,7 @@ with ROM_Tests;
 with SysTick_Tests;
 with RTC_Tests;
 with SPI_Tests;
+with Flash_Tests;
 
 package body Test_Suite is
    Result : aliased AUnit.Test_Suites.Test_Suite;
@@ -27,6 +28,7 @@ package body Test_Suite is
    SysTick_Case   : aliased SysTick_Tests.SysTick_Test;
    RTC_Case       : aliased RTC_Tests.RTC_Test;
    SPI_Case       : aliased SPI_Tests.SPI_Test;
+   Flash_Case     : aliased Flash_Tests.Flash_Test;
 
    function Suite
       return AUnit.Test_Suites.Access_Test_Suite
@@ -43,6 +45,13 @@ package body Test_Suite is
       Add_Test (Result'Access, SysTick_Case'Access);
       Add_Test (Result'Access, RTC_Case'Access);
       Add_Test (Result'Access, SPI_Case'Access);
+
+      --  Flash tests don't work during coverage runs, because gnatcov_rts
+      --  tries to call functions located in flash during RP.Flash.Program
+      --  TODO: Figure out how to get *all* of the GNATcov_RTS functions into
+      --        memory.
+      --
+      --  Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;
 end Test_Suite;
