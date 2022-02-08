@@ -39,15 +39,15 @@ package RP.Flash is
 
    procedure Erase
       (Offset     : Flash_Offset;
-       Block_Size : Natural;
-       Count      : Natural)
+       Length     : Natural;
+       Block_Size : Natural := 65536)
      with No_Inline, Linker_Section => ".time_critical",
-          Pre => (Block_Size mod Sector_Size) = 0
-                 and (Offset mod Page_Size) = 0
-                 and Offset + Flash_Offset (Count * Block_Size) <= Flash_Offset'Last;
-   --  Erase (Block_Size * Count) bytes of flash starting at Offset bytes from
-   --  the beginning of flash. Block_Size must be a multiple of 4096. Larger
-   --  Block_Size will erase faster.
+          Pre => (Length mod Sector_Size) = 0
+                 and (Offset mod Sector_Size) = 0
+                 and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
+   --  Erase Length bytes of flash starting at Offset bytes from
+   --  the beginning of flash. Length and Offset must be multiples of 4096.
+   --  Larger Block_Size will erase faster.
 
    procedure Program
       (Offset : Flash_Offset;

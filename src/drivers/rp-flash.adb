@@ -83,8 +83,8 @@ package body RP.Flash is
 
    procedure Erase
       (Offset     : Flash_Offset;
-       Block_Size : Natural;
-       Count      : Natural)
+       Length     : Natural;
+       Block_Size : Natural := 65536)
    is
       State : Atomic.Critical_Section.Interrupt_State;
    begin
@@ -103,7 +103,7 @@ package body RP.Flash is
 
       RP.ROM.flash_range_erase
         (Addr       => Interfaces.Unsigned_32 (Offset),
-         Count      => Interfaces.C.size_t (Count),
+         Count      => Interfaces.C.size_t (Length),
          Block_Size => Interfaces.Unsigned_32 (Block_Size),
          Block_Cmd  => Block_Erase_Command);
 

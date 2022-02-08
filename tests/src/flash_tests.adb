@@ -18,9 +18,8 @@ package body Flash_Tests is
    is
    begin
       RP.Flash.Erase
-         (Offset     => RP.Flash.To_Flash_Offset (Test_Area'Address),
-          Block_Size => Test_Area'Length,
-          Count      => 1);
+         (Offset => RP.Flash.To_Flash_Offset (Test_Area'Address),
+          Length => Test_Area'Length);
 
       for I in Test_Area'Range loop
          Assert (Test_Area (I) = 16#FF#, "erase didn't");
