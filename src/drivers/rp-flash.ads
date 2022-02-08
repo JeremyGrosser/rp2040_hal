@@ -57,7 +57,7 @@ package RP.Flash is
             and not In_Flash (Source)
             and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
    --  Program Length bytes of flash starting at Offset bytes from the beginning
-   --  of flash using the Src buffer. Count must be a multiple of 256.
+   --  of flash using the Source buffer. Length must be a multiple of 256.
 
 private
 
