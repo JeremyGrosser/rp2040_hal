@@ -44,8 +44,7 @@ package RP.Flash is
      with No_Inline, Linker_Section => ".time_critical",
           Pre => (Length mod Sector_Size) = 0
                  and (Offset mod Sector_Size) = 0
-                 and Offset + Flash_Offset (Length) <= Flash_Offset'Last
-                 and Block_Size;
+                 and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
    --  Block_Size must be a power of 2.
    --  Erase Length bytes of flash starting at Offset bytes from
    --  the beginning of flash. Length and Offset must be multiples of 4096.
