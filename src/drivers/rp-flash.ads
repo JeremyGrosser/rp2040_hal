@@ -44,10 +44,18 @@ package RP.Flash is
      with No_Inline, Linker_Section => ".time_critical",
           Pre => (Length mod Sector_Size) = 0
                  and (Offset mod Sector_Size) = 0
-                 and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
+                 and Offset + Flash_Offset (Length) <= Flash_Offset'Last
+                 and Block_Size;
+   --  Block_Size must be a power of 2.
    --  Erase Length bytes of flash starting at Offset bytes from
    --  the beginning of flash. Length and Offset must be multiples of 4096.
-   --  Larger Block_Size will erase faster.
+   --
+   --  Generally Block_Size > 4096. This accelerates Erase speed.
+   --  To use sector-erase only, set Block_Size to some value larger than flash.
+   --  To override the default 20h erase cmd, set Block_Size == 4096.
+   --
+   --  XXX: This is the behavior from the ROM, which is dumb. I will likely
+   --       reimplement Erase without using the ROM functions soon.
 
    procedure Program
       (Offset : Flash_Offset;
