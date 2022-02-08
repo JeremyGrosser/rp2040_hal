@@ -7,10 +7,10 @@ with System;
 
 package RP.Flash is
 
-   Flash_Size  : constant := 16#0100_0000#;
+   Flash_Size  : constant := 16 * 1024 * 1024;
    --  XIP maps up to 16 MB of flash. Actual flash chip may be smaller.
-   Page_Size   : constant := 16#100#;
-   Sector_Size : constant := 16#1000#;
+   Page_Size   : constant := 256;
+   Sector_Size : constant := 4096;
 
    type Flash_Offset is range 0 .. Flash_Size;
 
