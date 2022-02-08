@@ -11,6 +11,7 @@ package RP.Flash is
    --  XIP maps up to 16 MB of flash. Actual flash chip may be smaller.
    Page_Size   : constant := 256;
    Sector_Size : constant := 4096;
+   Block_Size  : constant := 65536;
 
    type Flash_Offset is range 0 .. Flash_Size;
 
@@ -38,23 +39,14 @@ package RP.Flash is
    --  core is running, make sure it only executes code in RAM or bootrom.
 
    procedure Erase
-      (Offset     : Flash_Offset;
-       Length     : Natural;
-       Block_Size : Natural := 65536)
+      (Offset : Flash_Offset;
+       Length : Natural)
      with No_Inline, Linker_Section => ".time_critical",
           Pre => (Length mod Sector_Size) = 0
                  and (Offset mod Sector_Size) = 0
                  and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
-   --  Block_Size must be a power of 2.
    --  Erase Length bytes of flash starting at Offset bytes from
    --  the beginning of flash. Length and Offset must be multiples of 4096.
-   --
-   --  Generally Block_Size > 4096. This accelerates Erase speed.
-   --  To use sector-erase only, set Block_Size to some value larger than flash.
-   --  To override the default 20h erase cmd, set Block_Size == 4096.
-   --
-   --  XXX: This is the behavior from the ROM, which is dumb. I will likely
-   --       reimplement Erase without using the ROM functions soon.
 
    procedure Program
       (Offset : Flash_Offset;

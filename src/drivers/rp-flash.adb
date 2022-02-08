@@ -82,9 +82,8 @@ package body RP.Flash is
    -----------
 
    procedure Erase
-      (Offset     : Flash_Offset;
-       Length     : Natural;
-       Block_Size : Natural := 65536)
+      (Offset : Flash_Offset;
+       Length : Natural)
    is
       State : Atomic.Critical_Section.Interrupt_State;
    begin
