@@ -42,7 +42,8 @@ package RP.Flash is
        Block_Size : Natural;
        Count      : Natural)
      with No_Inline, Linker_Section => ".time_critical",
-     Pre => (Block_Size mod Sector_Size) = 0;
+          Pre => (Block_Size mod Sector_Size) = 0
+                 and Offset + Flash_Offset (Count * Block_Size) <= Flash_Offset'Last;
    --  Erase (Block_Size * Count) bytes of flash starting at Offset bytes from
    --  the beginning of flash. Block_Size must be a multiple of 4096. Larger
    --  Block_Size will erase faster.
@@ -53,7 +54,8 @@ package RP.Flash is
        Length : Natural)
      with No_Inline, Linker_Section => ".time_critical",
      Pre => (Length mod Page_Size) = 0
-            and not In_Flash (Source);
+            and not In_Flash (Source)
+            and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
    --  Program Length bytes of flash starting at Offset bytes from the beginning
    --  of flash using the Src buffer. Count must be a multiple of 256.
 
