@@ -51,7 +51,7 @@ package body Test_Suite is
       --  TODO: Figure out how to get *all* of the GNATcov_RTS functions into
       --        memory.
       --
-      Add_Test (Result'Access, Flash_Case'Access);
+      --  Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;
 end Test_Suite;
