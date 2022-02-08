@@ -5,6 +5,7 @@
 --
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Machine_Code; use System.Machine_Code;
+with Atomic.Critical_Section;
 with Interfaces.C;
 with RP.ROM;
 with HAL;
@@ -85,11 +86,13 @@ package body RP.Flash is
        Block_Size : Natural;
        Count      : Natural)
    is
+      State : Atomic.Critical_Section.Interrupt_State;
    begin
 
       Flash_Init_Boot2_Copyout;
 
       --  No flash accesses after this point
+      Atomic.Critical_Section.Enter (State);
 
       --  __compiler_memory_barrier();
       Asm ("", Clobber => "memory", Volatile => True);
@@ -107,6 +110,8 @@ package body RP.Flash is
       RP.ROM.flash_flush_cache;
 
       Flash_Enable_XIP_Via_Boot2;
+
+      Atomic.Critical_Section.Leave (State);
    end Erase;
 
    -------------
@@ -118,10 +123,12 @@ package body RP.Flash is
        Source : System.Address;
        Length : Natural)
    is
+      State : Atomic.Critical_Section.Interrupt_State;
    begin
       Flash_Init_Boot2_Copyout;
 
       --  No flash accesses after this point
+      Atomic.Critical_Section.Enter (State);
 
       --  __compiler_memory_barrier();
       Asm ("", Clobber => "memory", Volatile => True);
@@ -136,6 +143,8 @@ package body RP.Flash is
       RP.ROM.flash_flush_cache;
 
       Flash_Enable_XIP_Via_Boot2;
+
+      Atomic.Critical_Section.Leave (State);
    end Program;
 
 end RP.Flash;
