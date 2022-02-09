@@ -3,10 +3,8 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Interfaces; use Interfaces;
 with RP.PIO.Audio_I2S_PIO;
-with HAL; use HAL;
-with RP; use RP;
+with Interfaces;
 
 package body RP.PIO.Audio_I2S is
 
@@ -58,6 +56,7 @@ package body RP.PIO.Audio_I2S is
        Frequency : HAL.Audio.Audio_Frequency;
        Channels  : Channel_Count := 1)
    is
+      use RP.DMA;
       DMA_Config : DMA_Configuration :=
          (Increment_Read => True,
           others         => <>);
@@ -96,7 +95,7 @@ package body RP.PIO.Audio_I2S is
       Count : HAL.UInt32 := Data'Length;
    begin
       --  Wait for previous DMA transfer to finish before modifying the buffer.
-      while Busy (This.DMA_Channel) loop
+      while RP.DMA.Busy (This.DMA_Channel) loop
          null;
       end loop;
 
@@ -122,7 +121,7 @@ package body RP.PIO.Audio_I2S is
    begin
       for I in Data'Range loop
          Get (This.PIO.all, This.SM, D);
-         Data (I) := Integer_16 (D);
+         Data (I) := Interfaces.Integer_16 (D);
       end loop;
    end Receive;
 

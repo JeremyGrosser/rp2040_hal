@@ -3,8 +3,8 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP.DMA; use RP.DMA;
 with RP.GPIO;
+with RP.DMA;
 
 with HAL.Audio;
 with HAL;
@@ -22,7 +22,7 @@ package RP.PIO.Audio_I2S is
        PIO         : not null access RP.PIO.PIO_Device'Class;
        SM          : RP.PIO.PIO_SM;
        Channels    : Channel_Count;
-       DMA_Channel : DMA_Channel_Id;
+       DMA_Channel : RP.DMA.DMA_Channel_Id;
        Buffer_Size : Positive)
    is limited new HAL.Audio.Audio_Stream with private;
 
@@ -66,7 +66,7 @@ private
        PIO         : not null access PIO_Device'Class;
        SM          : PIO_SM;
        Channels    : Channel_Count;
-       DMA_Channel : DMA_Channel_Id;
+       DMA_Channel : RP.DMA.DMA_Channel_Id;
        Buffer_Size : Positive)
    is limited new HAL.Audio.Audio_Stream with record
       Config : PIO_SM_Config;
