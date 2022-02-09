@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP.PIO.WS2812_PIO_ASM;
-with RP.Device;
 
 package body RP.PIO.WS2812 is
 
@@ -27,9 +26,6 @@ package body RP.PIO.WS2812 is
    ----------------
 
    procedure Initialize  (This       : in out Strip;
-                          Pin        : in out GPIO.GPIO_Point;
-                          PIO        : in out PIO_Device;
-                          SM         :        PIO_SM;
                           ASM_Offset :        PIO_Address := 0)
    is
       Config         : PIO_SM_Config := Default_SM_Config;
@@ -41,24 +37,21 @@ package body RP.PIO.WS2812 is
       Bit_Per_LED : constant := 24;
 
    begin
-      This.SM := SM;
-      This.PIO := PIO.Num;
+      This.Pin.Configure (Output, Pull_Up, This.PIO.GPIO_Function);
+      This.PIO.Enable;
 
-      Pin.Configure (Output, Pull_Up, PIO.GPIO_Function);
+      This.PIO.Load
+         (Prog   => WS2812_PIO_ASM.Ws2812_Program_Instructions,
+          Offset => ASM_Offset);
 
-      PIO.Enable;
-
-      PIO.Load (WS2812_PIO_ASM.Ws2812_Program_Instructions,
-                Offset => ASM_Offset);
-
-      PIO.Set_Pin_Direction (SM, Pin.Pin, Output);
+      This.PIO.Set_Pin_Direction (This.SM, This.Pin.Pin, Output);
 
       Set_Sideset (Config,
                    Bit_Count => 1,
                    Optional  => False,
                    Pindirs   => False);
 
-      Set_Sideset_Pins (Config, Sideset_Base => Pin.Pin);
+      Set_Sideset_Pins (Config, Sideset_Base => This.Pin.Pin);
 
       Set_Out_Shift (Config,
                      Shift_Right    => True,
@@ -73,8 +66,8 @@ package body RP.PIO.WS2812 is
 
       Set_Clock_Frequency (Config, Freq * Cycles_Per_Bit);
 
-      PIO.SM_Initialize (SM, ASM_Offset, Config);
-      PIO.Set_Enabled (SM, True);
+      This.PIO.SM_Initialize (This.SM, ASM_Offset, Config);
+      This.PIO.Set_Enabled (This.SM, True);
 
       This.Initialized := True;
    end Initialize;
@@ -90,7 +83,7 @@ package body RP.PIO.WS2812 is
       Config : DMA_Configuration;
 
       Trigger : constant RP.DMA.DMA_Request_Trigger :=
-        (case This.PIO is
+        (case This.PIO.Num is
             when 0 => (case This.SM is
                           when 0 => RP.DMA.PIO0_TX0,
                           when 1 => RP.DMA.PIO0_TX1,
@@ -208,23 +201,12 @@ package body RP.PIO.WS2812 is
             end if;
          end if;
 
-         declare
-            FIFO_Address : constant System.Address :=
-              (case This.PIO is
-                  when 0 => RP.Device.PIO_0.TX_FIFO_Address (This.SM),
-                  when 1 => RP.Device.PIO_1.TX_FIFO_Address (This.SM));
-         begin
-            RP.DMA.Start (Channel => This.DMA_Chan,
-                          From    => This.Data'Address,
-                          To      => FIFO_Address,
-                          Count   => This.Data'Length);
-         end;
+         RP.DMA.Start (Channel => This.DMA_Chan,
+                       From    => This.Data'Address,
+                       To      => This.PIO.TX_FIFO_Address (This.SM),
+                       Count   => This.Data'Length);
       else
-
-         case This.PIO is
-         when 0 => RP.Device.PIO_0.Put (This.SM, This.Data);
-         when 1 => RP.Device.PIO_1.Put (This.SM, This.Data);
-         end case;
+         This.PIO.Put (This.SM, This.Data);
       end if;
    end Update;
 

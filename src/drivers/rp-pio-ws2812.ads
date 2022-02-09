@@ -8,11 +8,14 @@ with RP.DMA;
 
 package RP.PIO.WS2812 is
 
-   type Strip (Number_Of_LEDs : Positive) is record
+   type Strip
+      (PIO : not null access PIO_Device;
+       Pin : not null access RP.GPIO.GPIO_Point;
+       SM  : PIO_SM;
+       Number_Of_LEDs : Positive)
+   is record
       Data        : HAL.UInt32_Array (1 .. Number_Of_LEDs);
       Initialized : Boolean := False;
-      PIO         : PIO_Number;
-      SM          : PIO_SM;
       DMA_Ready   : Boolean;
       DMA_Chan    : RP.DMA.DMA_Channel_Id;
    end record;
@@ -21,9 +24,6 @@ package RP.PIO.WS2812 is
    function DMA_Enabled (This : Strip) return Boolean;
 
    procedure Initialize (This       : in out Strip;
-                         Pin        : in out GPIO.GPIO_Point;
-                         PIO        : in out PIO_Device;
-                         SM         :        PIO_SM;
                          ASM_Offset :        PIO_Address := 0)
      with Post => Initialized (This);
 
