@@ -61,6 +61,10 @@ package RP.Flash is
 
 private
 
+   pragma Inline_Always (To_Address);
+   --  This function is potentially used by subprograms running in RAM or ROM.
+   --  We have always inlined to make sure it is usable in both cases.
+
    XIP_BASE             : constant := 16#10000000#;
    Block_Erase_Command  : constant := 16#d8#;
    Block_Size           : constant := 65536;
