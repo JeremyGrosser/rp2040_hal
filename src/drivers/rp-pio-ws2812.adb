@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP.PIO.WS2812_PIO_ASM;
+with RP.PIO.WS2812_PIO;
 
 package body RP.PIO.WS2812 is
 
@@ -31,8 +31,8 @@ package body RP.PIO.WS2812 is
       Config         : PIO_SM_Config := Default_SM_Config;
 
       Freq           : constant := 80_0000;
-      Cycles_Per_Bit : constant := WS2812_PIO_ASM.T1 +
-        WS2812_PIO_ASM.T2 + WS2812_PIO_ASM.T3;
+      Cycles_Per_Bit : constant := WS2812_PIO.T1 +
+        WS2812_PIO.T2 + WS2812_PIO.T3;
 
       Bit_Per_LED : constant := 24;
 
@@ -41,7 +41,7 @@ package body RP.PIO.WS2812 is
       This.PIO.Enable;
 
       This.PIO.Load
-         (Prog   => WS2812_PIO_ASM.Ws2812_Program_Instructions,
+         (Prog   => WS2812_PIO.Ws2812_Program_Instructions,
           Offset => ASM_Offset);
 
       This.PIO.Set_Pin_Direction (This.SM, This.Pin.Pin, Output);
@@ -61,8 +61,8 @@ package body RP.PIO.WS2812 is
                      Join_TX => True,
                      Join_RX => False);
 
-      Set_Wrap (Config, ASM_Offset + WS2812_PIO_ASM.Ws2812_Wrap_Target,
-                        ASM_Offset + WS2812_PIO_ASM.Ws2812_Wrap);
+      Set_Wrap (Config, ASM_Offset + WS2812_PIO.Ws2812_Wrap_Target,
+                        ASM_Offset + WS2812_PIO.Ws2812_Wrap);
 
       Set_Clock_Frequency (Config, Freq * Cycles_Per_Bit);
 

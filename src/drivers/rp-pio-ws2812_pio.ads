@@ -6,7 +6,7 @@ pragma Style_Checks (Off);
 
 with RP.PIO;
 
-package RP.PIO.WS2812_PIO_ASM is
+package RP.PIO.WS2812_PIO is
 
    ------------
    -- Ws2812 --
@@ -27,4 +27,4 @@ T3 : constant := 3;
          16#a442#); --   3: nop                    side 0 [4]
                     --  .wrap
 
-end RP.PIO.WS2812_PIO_ASM;
+end RP.PIO.WS2812_PIO;
