@@ -9,11 +9,11 @@ with RP.DMA;
 package RP.PIO.WS2812 is
 
    type Strip
-      (PIO : not null access PIO_Device;
-       Pin : not null access RP.GPIO.GPIO_Point;
+      (Pin : not null access RP.GPIO.GPIO_Point;
+       PIO : not null access PIO_Device;
        SM  : PIO_SM;
        Number_Of_LEDs : Positive)
-   is record
+   is tagged record
       Data        : HAL.UInt32_Array (1 .. Number_Of_LEDs);
       Initialized : Boolean := False;
       DMA_Ready   : Boolean;
