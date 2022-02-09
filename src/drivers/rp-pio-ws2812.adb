@@ -81,22 +81,8 @@ package body RP.PIO.WS2812 is
    is
       use RP.DMA;
       Config : DMA_Configuration;
-
-      Trigger : constant RP.DMA.DMA_Request_Trigger :=
-        (case This.PIO.Num is
-            when 0 => (case This.SM is
-                          when 0 => RP.DMA.PIO0_TX0,
-                          when 1 => RP.DMA.PIO0_TX1,
-                          when 2 => RP.DMA.PIO0_TX2,
-                          when 3 => RP.DMA.PIO0_TX3),
-            when 1 => (case This.SM is
-                          when 0 => RP.DMA.PIO1_TX0,
-                          when 1 => RP.DMA.PIO1_TX1,
-                          when 2 => RP.DMA.PIO1_TX2,
-                          when 3 => RP.DMA.PIO1_TX3));
    begin
-
-      Config.Trigger := Trigger;
+      Config.Trigger := This.PIO.DMA_TX_Trigger (This.SM);
       Config.Data_Size := Transfer_32;
       Config.Increment_Read := True;
       Config.Increment_Write := False;

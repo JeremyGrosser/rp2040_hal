@@ -605,4 +605,16 @@ package body RP.PIO is
         This.Periph.IRQ_FORCE.IRQ_FORCE and (not Mask);
    end Clear_Force_SM_IRQ;
 
+   function DMA_TX_Trigger
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return RP.DMA.DMA_Request_Trigger
+   is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM)));
+
+   function DMA_RX_Trigger
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return RP.DMA.DMA_Request_Trigger
+   is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM) + 4));
+
 end RP.PIO;

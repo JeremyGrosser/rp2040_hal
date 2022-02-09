@@ -6,6 +6,7 @@
 with RP2040_SVD.PIO; use RP2040_SVD.PIO;
 with RP2040_SVD;
 with RP.GPIO; use RP.GPIO;
+with RP.DMA;
 with Cortex_M.NVIC;
 with HAL; use HAL;
 with System;
@@ -270,6 +271,16 @@ package RP.PIO is
    procedure Clear_Force_SM_IRQ (This : in out PIO_Device;
                                  Flag :        PIO_SM_IRQ_Flag);
    --  Clear force a state-machine-level IRQ
+
+   function DMA_TX_Trigger
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return RP.DMA.DMA_Request_Trigger;
+
+   function DMA_RX_Trigger
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return RP.DMA.DMA_Request_Trigger;
 
 private
 
