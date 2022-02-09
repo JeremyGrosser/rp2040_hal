@@ -28,9 +28,9 @@ package body RP.PIO.WS2812 is
 
    procedure Initialize  (This       : in out Strip;
                           Pin        : in out GPIO.GPIO_Point;
-                          PIO        : in out RP.PIO.PIO_Device;
-                          SM         :        RP.PIO.PIO_SM;
-                          ASM_Offset :        RP.PIO.PIO_Address := 0)
+                          PIO        : in out PIO_Device;
+                          SM         :        PIO_SM;
+                          ASM_Offset :        PIO_Address := 0)
    is
       Config         : PIO_SM_Config := Default_SM_Config;
 
