@@ -3,12 +3,8 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-
-with RP.Device;
-
-with RP.PIO; use RP.PIO;
-
 with RP.PIO.WS2812_PIO_ASM;
+with RP.Device;
 
 package body RP.PIO.WS2812 is
 

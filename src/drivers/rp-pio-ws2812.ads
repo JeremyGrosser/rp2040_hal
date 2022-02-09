@@ -3,8 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-
-with RP.PIO;
 with RP.GPIO;
 with RP.DMA;
 
@@ -13,8 +11,8 @@ package RP.PIO.WS2812 is
    type Strip (Number_Of_LEDs : Positive) is record
       Data        : HAL.UInt32_Array (1 .. Number_Of_LEDs);
       Initialized : Boolean := False;
-      PIO         : RP.PIO.PIO_Number;
-      SM          : RP.PIO.PIO_SM;
+      PIO         : PIO_Number;
+      SM          : PIO_SM;
       DMA_Ready   : Boolean;
       DMA_Chan    : RP.DMA.DMA_Channel_Id;
    end record;
@@ -24,9 +22,9 @@ package RP.PIO.WS2812 is
 
    procedure Initialize (This       : in out Strip;
                          Pin        : in out GPIO.GPIO_Point;
-                         PIO        : in out RP.PIO.PIO_Device;
-                         SM         :        RP.PIO.PIO_SM;
-                         ASM_Offset :        RP.PIO.PIO_Address := 0)
+                         PIO        : in out PIO_Device;
+                         SM         :        PIO_SM;
+                         ASM_Offset :        PIO_Address := 0)
      with Post => Initialized (This);
 
    procedure Enable_DMA (This : in out Strip;
