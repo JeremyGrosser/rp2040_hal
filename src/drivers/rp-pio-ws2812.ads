@@ -16,7 +16,7 @@ package RP.PIO.WS2812 is
    is tagged record
       Data        : HAL.UInt32_Array (1 .. Number_Of_LEDs);
       Initialized : Boolean := False;
-      DMA_Ready   : Boolean;
+      DMA_Ready   : Boolean := False;
       DMA_Chan    : RP.DMA.DMA_Channel_Id;
    end record;
 
