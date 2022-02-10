@@ -30,7 +30,7 @@ package body RP.PIO.WS2812 is
    is
       Config         : PIO_SM_Config := Default_SM_Config;
 
-      Freq           : constant := 80_0000;
+      Freq           : constant := 800_000;
       Cycles_Per_Bit : constant := WS2812_PIO.T1 +
         WS2812_PIO.T2 + WS2812_PIO.T3;
 
