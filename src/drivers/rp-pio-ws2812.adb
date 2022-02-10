@@ -54,7 +54,7 @@ package body RP.PIO.WS2812 is
       Set_Sideset_Pins (Config, Sideset_Base => This.Pin.Pin);
 
       Set_Out_Shift (Config,
-                     Shift_Right    => True,
+                     Shift_Right    => False,
                      Autopull       => True,
                      Pull_Threshold => Bit_Per_LED);
       Set_FIFO_Join (Config,
