@@ -17,8 +17,10 @@ package body ROM_Tests is
    procedure Test_Data_Lookup
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
+      use Interfaces;
    begin
       Assert (RP.ROM.copyright_string = "(C) 2020 Raspberry Pi Trading Ltd", "ROM copyright mismatch");
+      Assert (RP.ROM.git_revision /= 0, "git_revision is zero");
    end Test_Data_Lookup;
 
    procedure Test_Floating_Point

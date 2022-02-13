@@ -69,6 +69,8 @@ package body GPIO_Tests is
       LED.Clear;
       LED.Set;
       LED.Toggle;
+
+      Assert (LED.Set = True, "Set returned incorrect value");
    end Test_HAL;
 
    overriding
