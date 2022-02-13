@@ -20,21 +20,11 @@ package body RP.ROM.Floating_Point is
       with Convention => C;
    type rom_int2float is access function (V : int) return C_float
       with Convention => C;
-   type rom_int642float is access function (V : long_long) return C_float
-      with Convention => C;
    type rom_uint2float is access function (V : unsigned) return C_float
-      with Convention => C;
-   type rom_uint642float is access function (V : unsigned_long_long) return C_float
       with Convention => C;
    type rom_float2int is access function (V : C_float) return int
       with Convention => C;
-   type rom_float2int64 is access function (V : C_float) return long_long
-      with Convention => C;
    type rom_float2uint is access function (V : C_float) return unsigned
-      with Convention => C;
-   type rom_float2uint64 is access function (V : C_float) return unsigned_long_long
-      with Convention => C;
-   type rom_float2double is access function (V : C_float) return double
       with Convention => C;
    type rom_fsin is access function (V : C_float) return C_float
       with Convention => C;
@@ -72,15 +62,15 @@ package body RP.ROM.Floating_Point is
       --  if Header.Version >= 2
       fcmp           : System.Address;
       fatan2         : System.Address;
-      int642float    : rom_int642float;
+      int642float    : System.Address;
       fix642float    : System.Address;
-      uint642float   : rom_uint642float;
+      uint642float   : System.Address;
       ufix642float   : System.Address;
-      float2int64    : rom_float2int64;
+      float2int64    : System.Address;
       float2fix64    : System.Address;
-      float2uint64   : rom_float2uint64;
+      float2uint64   : System.Address;
       float2ufix64   : System.Address;
-      float2double   : rom_float2double;
+      float2double   : System.Address;
 
       --  if Header.Version >= 3
       fsincos        : System.Address;
@@ -150,22 +140,12 @@ package body RP.ROM.Floating_Point is
 
    function int2float (V : int) return Float is
       (Float (Soft_Float_Table.int2float (V)));
-   function int642float (V : long_long) return Float is
-      (Float (Soft_Float_Table.int642float (V)));
    function uint2float (V : unsigned) return Float is
       (Float (Soft_Float_Table.uint2float (V)));
-   function uint642float (V : unsigned_long_long) return Float is
-      (Float (Soft_Float_Table.uint642float (V)));
    function float2int (V : Float) return int is
       (Soft_Float_Table.float2int (C_float (V)));
-   function float2int64 (V : Float) return long_long is
-      (Soft_Float_Table.float2int64 (C_float (V)));
    function float2uint (V : Float) return unsigned is
       (Soft_Float_Table.float2uint (C_float (V)));
-   function float2uint64 (V : Float) return unsigned_long_long is
-      (Soft_Float_Table.float2uint64 (C_float (V)));
-   function float2double (V : Float) return double is
-      (Soft_Float_Table.float2double (C_float (V)));
    function fsqrt (V : Float) return Float is
       (Float (Soft_Float_Table.fsqrt (C_float (V))));
    function fsin (V : Float) return Float is

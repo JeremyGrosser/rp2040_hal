@@ -40,25 +40,15 @@ package RP.ROM.Floating_Point is
    --  pico-sdk doesn't use int2float and instead implements __aeabi_i2f in
    --  software. Maybe the ROM is missing an edge case?
 
-   function int642float (V : long_long) return Float
-      with Export, Convention => C, External_Name => "__aeabi_l2f";
    function uint2float (V : unsigned) return Float
       with Export, Convention => C, External_Name => "__aeabi_ui2f";
-   function uint642float (V : unsigned_long_long) return Float
-      with Export, Convention => C, External_Name => "__aeabi_ul2f";
 
    function float2int (V : Float) return int
       with Export, Convention => C, External_Name => "__aeabi_f2iz";
    --  pico-sdk rewrites this one too
 
-   function float2int64 (V : Float) return long_long
-      with Export, Convention => C, External_Name => "__aeabi_f2lz";
    function float2uint (V : Float) return unsigned
       with Export, Convention => C, External_Name => "__aeabi_f2uiz";
-   function float2uint64 (V : Float) return unsigned_long_long
-      with Export, Convention => C, External_Name => "__aeabi_f2ulz";
-   function float2double (V : Float) return double
-      with Export, Convention => C, External_Name => "__aeabi_f2d";
 
    function fsqrt (V : Float) return Float
       with Export, Convention => C, External_Name => "sqrtf";
