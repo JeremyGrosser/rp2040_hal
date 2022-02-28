@@ -70,7 +70,7 @@ package body GPIO_Tests is
       LED.Set;
       LED.Toggle;
 
-      Assert (LED.Set = True, "Set returned incorrect value");
+      Assert (LED.Set = False, "Set returned incorrect value");
    end Test_HAL;
 
    overriding
