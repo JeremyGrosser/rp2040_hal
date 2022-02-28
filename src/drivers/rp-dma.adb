@@ -47,7 +47,7 @@ package body RP.DMA is
       DMA_Periph.CH (Channel).AL1_CTRL.EN := False;
    end Disable;
 
-   procedure Start
+   procedure Setup
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
        Count    : HAL.UInt32)
@@ -55,7 +55,24 @@ package body RP.DMA is
    begin
       DMA_Periph.CH (Channel).READ_ADDR := From;
       DMA_Periph.CH (Channel).WRITE_ADDR := To;
-      DMA_Periph.CH (Channel).AL1_TRANS_COUNT_TRIG := Count;
+      DMA_Periph.CH (Channel).TRANS_COUNT := Count;
+   end Setup;
+
+   procedure Start
+      (Channel : DMA_Channel_Id)
+   is
+   begin
+      DMA_Periph.CH (Channel).CTRL_TRIG.EN := True;
+   end Start;
+
+   procedure Start
+      (Channel  : DMA_Channel_Id;
+       From, To : System.Address;
+       Count    : HAL.UInt32)
+   is
+   begin
+      Setup (Channel, From, To, Count);
+      Start (Channel);
    end Start;
 
    function Busy

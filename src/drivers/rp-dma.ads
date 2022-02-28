@@ -114,10 +114,23 @@ package RP.DMA is
       (Channel : DMA_Channel_Id;
        Config  : DMA_Configuration);
 
+   procedure Setup
+      (Channel  : DMA_Channel_Id;
+       From, To : System.Address;
+       Count    : HAL.UInt32);
+
+   procedure Start
+      (Channel : DMA_Channel_Id);
+   --  Setup must be called before Start. If you call Start more than once and
+   --  Increment_Read or Increment_Write are True, these pointers are *not*
+   --  reset to their initial Setup values, unless you've configured the
+   --  channel with Ring_Wrap and Ring_Size.
+
    procedure Start
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
        Count    : HAL.UInt32);
+   --  This version of Start performs the Setup for you.
 
    procedure Disable
       (Channel : DMA_Channel_Id);
