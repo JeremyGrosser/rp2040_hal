@@ -299,32 +299,28 @@ package body RP.I2C_Master is
       Timeout       : Natural := 1_000)
    is
    begin
-
-      This.No_Stop := True;
       case Mem_Addr_Size is
          when Memory_Size_8b =>
-            This.Master_Transmit (Addr    => Addr,
-                                  Data    => (0 => UInt8 (Mem_Addr)),
-                                  Status  => Status,
-                                  Timeout => Timeout);
+            declare
+               A : constant I2C_Data (1 .. 1) := (1 => UInt8 (Mem_Addr));
+            begin
+               This.Master_Transmit (Addr    => Addr,
+                                     Data    => A & Data,
+                                     Status  => Status,
+                                     Timeout => Timeout);
+            end;
          when Memory_Size_16b =>
-            This.Master_Transmit (Addr    => Addr,
-                                  Data    => (UInt8 (Shift_Right (Mem_Addr, 8)),
-                                              UInt8 (Mem_Addr and 16#FF#)),
-                                  Status  => Status,
-                                  Timeout => Timeout);
+            declare
+               A : constant I2C_Data (1 .. 2) :=
+                  (UInt8 (Shift_Right (Mem_Addr, 8)),
+                   UInt8 (Mem_Addr and 16#FF#));
+            begin
+               This.Master_Transmit (Addr    => Addr,
+                                     Data    => A & Data,
+                                     Status  => Status,
+                                     Timeout => Timeout);
+            end;
       end case;
-
-      This.No_Stop := False;
-
-      if Status /= Ok then
-         return;
-      end if;
-
-      This.Master_Transmit (Addr    => Addr,
-                            Data    => Data,
-                            Status  => Status,
-                            Timeout => Timeout);
    end Mem_Write;
 
    --------------
@@ -358,6 +354,7 @@ package body RP.I2C_Master is
       end case;
 
       This.No_Stop := False;
+      This.Restart_On_Next := False;
 
       if Status /= Ok then
          return;
