@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with RP2040_SVD.SIO;
 
 package RP.Multicore.Spinlocks is
 
@@ -30,5 +31,14 @@ package RP.Multicore.Spinlocks is
    pragma Inline_Always (Wait_Lock);
    pragma Inline_Always (Release);
    pragma Inline_Always (Locked);
+
+private
+
+   type Spinlock_Registers is array (Lock_Id) of HAL.UInt32
+      with Component_Size => 32;
+
+   Spinlocks : Spinlock_Registers
+      with Volatile,
+           Address => RP2040_SVD.SIO.SIO_Periph.SPINLOCK0'Address;
 
 end RP.Multicore.Spinlocks;
