@@ -10,6 +10,8 @@ with RP.Clock;
 with RP.GPIO;
 with HAL; use HAL;
 
+with System;
+
 package RP.PWM is
    type PWM_Slice is range 0 .. 7;
    type PWM_Channel is (A, B);
@@ -148,6 +150,9 @@ package RP.PWM is
    --  This handler should be called in response to PWM_IRQ_WRAP (IRQ 4)
    procedure IRQ_Handler
       (Id : RP_Interrupts.Interrupt_ID);
+
+   function Compare_Reg_Address (Slice : PWM_Slice) return System.Address;
+   --  For DMA transfers
 
 private
 
