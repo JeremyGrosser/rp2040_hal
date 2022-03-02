@@ -77,4 +77,8 @@ package body RP.Multicore is
       end if;
    end Launch_Core1;
 
+   function CPU_Id
+      return Natural
+   is (Natural (RP2040_SVD.SIO.SIO_Periph.CPUID));
+
 end RP.Multicore;

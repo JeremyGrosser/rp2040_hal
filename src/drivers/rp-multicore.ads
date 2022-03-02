@@ -18,4 +18,8 @@ package RP.Multicore is
    --  Entry_Point with the stack pointer set to SP and trap vector base set
    --  to Trap_Vect.
 
+   function CPU_Id
+      return Natural;
+   --  Returns the Id of the CPU we're currently executing on.
+
 end RP.Multicore;
