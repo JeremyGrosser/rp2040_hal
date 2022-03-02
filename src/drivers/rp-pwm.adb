@@ -5,7 +5,6 @@
 --
 with RP2040_SVD.Interrupts;
 with RP.Reset;
-with System;
 
 package body RP.PWM is
 
@@ -218,6 +217,11 @@ package body RP.PWM is
          end if;
       end loop;
    end IRQ_Handler;
+
+   function Compare_Reg_Address (Slice : PWM_Slice) return System.Address is
+   begin
+      return PWM_Periph.CH (Slice).CC'Address;
+   end Compare_Reg_Address;
 
    function Div_Integer
       (V : Divider)
