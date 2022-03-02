@@ -5,8 +5,8 @@
 --
 
 with System.Machine_Code; use System.Machine_Code;
-
 with RP2040_SVD.Interrupts;
+with RP2040_SVD.SIO;
 with Cortex_M.NVIC;
 
 with RP.Multicore.FIFO;
@@ -17,9 +17,9 @@ package body RP.Multicore is
    -- Launch_Core1 --
    ------------------
 
-   procedure Launch_Core1 (Trap_Vect   : HAL.UInt32;
-                           SP          : HAL.UInt32;
-                           Entry_Point : HAL.UInt32)
+   procedure Launch_Core1 (Trap_Vector   : HAL.UInt32;
+                           Stack_Pointer : HAL.UInt32;
+                           Entry_Point   : HAL.UInt32)
    is
       Int_Id : constant := RP2040_SVD.Interrupts.SIO_IRQ_PROC0_Interrupt;
       Enabled : constant Boolean := Cortex_M.NVIC.Enabled (Int_Id);
@@ -32,8 +32,8 @@ package body RP.Multicore is
       declare
          Commands : constant UInt32_Array :=
            (0, 0, 1,
-            Trap_Vect,
-            SP,
+            Trap_Vector,
+            Stack_Pointer,
             Entry_Point or 1); -- Thumb mode
 
          Response : UInt32;
