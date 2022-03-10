@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with HAL; use HAL;
 with RP.Reset;
 with RP.Timer;
 
@@ -13,7 +14,6 @@ package body RP.UART is
        Config : UART_Configuration := Default_UART_Configuration)
    is
       use RP.Reset;
-      use HAL;
       Word_Length : constant UInt2 := UInt2
          (Config.Word_Size - UART_Word_Size'First);
    begin
@@ -41,7 +41,7 @@ package body RP.UART is
           EPS    => Config.Parity_Type = Even,
           STP2   => (Config.Stop_Bits = 2),
           SPS    => False, --  Stick parity is disabled by default
-          FEN    => True,  --  FIFO buffer is always enabled
+          FEN    => Config.Enable_FIFOs,
           BRK    => False, --  Don't send break initially
           others => <>);
 
@@ -292,5 +292,67 @@ package body RP.UART is
        Frac : UARTFBRD_BAUD_DIVFRAC_Field)
        return UART_Divider
    is (UART_Divider (Int) + (UART_Divider (Frac) / UART_Divider (2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size)));
+
+   procedure Set_FIFO_IRQ_Level (This : in out UART_Port;
+                                 RX   :        FIFO_IRQ_Level;
+                                 TX   :        FIFO_IRQ_Level)
+   is
+   begin
+      This.Periph.UARTIFLS := (TXIFLSEL => TX'Enum_Rep,
+                               RXIFLSEL => RX'Enum_Rep,
+                               others   => <>);
+   end Set_FIFO_IRQ_Level;
+
+   procedure Enable_IRQ (This : in out UART_Port;
+                         IRQ  :        UART_IRQ_Flag)
+   is
+      Mask : HAL.UInt32
+        with Address => This.Periph.UARTIMSC'Address,
+        Volatile_Full_Access;
+   begin
+      Mask := Mask or IRQ'Enum_Rep;
+   end Enable_IRQ;
+
+   procedure Disable_IRQ (This : in out UART_Port;
+                          IRQ  :        UART_IRQ_Flag)
+   is
+      Mask : HAL.UInt32
+        with Address => This.Periph.UARTIMSC'Address,
+        Volatile_Full_Access;
+   begin
+      Mask := Mask and (not IRQ'Enum_Rep);
+   end Disable_IRQ;
+
+   procedure Clear_IRQ (This : in out UART_Port;
+                        IRQ  :        UART_IRQ_Flag)
+   is
+      Clear : HAL.UInt32
+        with Address => This.Periph.UARTICR'Address,
+        Volatile_Full_Access;
+   begin
+      Clear := IRQ'Enum_Rep;
+   end Clear_IRQ;
+
+   function Masked_IRQ_Status (This : UART_Port;
+                               IRQ  : UART_IRQ_Flag)
+                               return Boolean
+   is
+      Masked_Status : HAL.UInt32
+        with Address => This.Periph.UARTMIS'Address,
+        Volatile_Full_Access;
+   begin
+      return (Masked_Status and IRQ'Enum_Rep) /= 0;
+   end Masked_IRQ_Status;
+
+   function RAW_IRQ_Status (This : UART_Port;
+                            IRQ  : UART_IRQ_Flag)
+                            return Boolean
+   is
+      RAW_Status : HAL.UInt32
+        with Address => This.Periph.UARTRIS'Address,
+        Volatile_Full_Access;
+   begin
+      return (RAW_Status and IRQ'Enum_Rep) /= 0;
+   end RAW_IRQ_Status;
 
 end RP.UART;

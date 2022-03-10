@@ -31,6 +31,7 @@ package RP.UART is
       Parity_Type  : UART_Parity_Type := Even; --  has no effect when Parity = False
       Frame_Length : Positive := 1; --  Words per frame. Used to calculate break timing.
       Loopback     : Boolean := False;
+      Enable_FIFOs : Boolean := False; -- Enable TX and RX FIFOs
    end record;
 
    Default_UART_Configuration : constant UART_Configuration := (others => <>);
@@ -117,6 +118,53 @@ package RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000);
 
+   type FIFO_IRQ_Level is (Lvl_Eighth,
+                           Lvl_Quarter,
+                           Lvl_Half,
+                           Lvl_Three_Quarter,
+                           Lvl_Seven_Eighth);
+
+   procedure Set_FIFO_IRQ_Level (This : in out UART_Port;
+                                 RX   :        FIFO_IRQ_Level;
+                                 TX   :        FIFO_IRQ_Level);
+   --  Set the trigger point for receive and transmit FIFO interrupt. For the
+   --  receive FIFO, the interrupt is triggered when the FIFO level is above or
+   --  equal to the set level. For the transmit FIFO, the interrupt is triggered
+   --  when the FIFO level is below or equal to the set level.
+
+   type UART_IRQ_Flag is
+     (Modem_RI, Modem_CTS, Modem_DCD, Modem_DSR,
+      Receive,
+      Transmit,
+      Receive_Timeout,
+      Framing_Error,
+      Parity_Error,
+      Break_Error,
+      Overrun_Error);
+
+   procedure Enable_IRQ (This : in out UART_Port;
+                         IRQ  :        UART_IRQ_Flag);
+   --  Enable the given IRQ flag
+
+   procedure Disable_IRQ (This : in out UART_Port;
+                          IRQ  :        UART_IRQ_Flag);
+   --  Disable the given IRQ flag
+
+   procedure Clear_IRQ (This : in out UART_Port;
+                        IRQ  :        UART_IRQ_Flag);
+   --  Clear the given IRQ flag
+
+   function Masked_IRQ_Status (This : UART_Port;
+                               IRQ  : UART_IRQ_Flag)
+                               return Boolean;
+   --  Return true if the given IRQ flag is signaled and enabled
+
+   function RAW_IRQ_Status (This : UART_Port;
+                            IRQ  : UART_IRQ_Flag)
+                            return Boolean;
+   --  Return true if the given IRQ flag is signaled even if the flag is not
+   --  enabled.
+
 private
 
    type UART_Port
@@ -142,5 +190,25 @@ private
       (Int  : UARTIBRD_BAUD_DIVINT_Field;
        Frac : UARTFBRD_BAUD_DIVFRAC_Field)
        return UART_Divider;
+
+   for FIFO_IRQ_Level use
+     (Lvl_Eighth        => 2#000#,
+      Lvl_Quarter       => 2#001#,
+      Lvl_Half          => 2#010#,
+      Lvl_Three_Quarter => 2#011#,
+      Lvl_Seven_Eighth  => 2#100#);
+
+   for UART_IRQ_Flag use
+     (Modem_RI        => 2#0000_0000_0001#,
+      Modem_CTS       => 2#0000_0000_0010#,
+      Modem_DCD       => 2#0000_0000_0100#,
+      Modem_DSR       => 2#0000_0000_1000#,
+      Receive         => 2#0000_0001_0000#,
+      Transmit        => 2#0000_0010_0000#,
+      Receive_Timeout => 2#0000_0100_0000#,
+      Framing_Error   => 2#0000_1000_0000#,
+      Parity_Error    => 2#0001_0000_0000#,
+      Break_Error     => 2#0010_0000_0000#,
+      Overrun_Error   => 2#0100_0000_0000#);
 
 end RP.UART;
