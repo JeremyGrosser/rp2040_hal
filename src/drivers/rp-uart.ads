@@ -31,7 +31,7 @@ package RP.UART is
       Parity_Type  : UART_Parity_Type := Even; --  has no effect when Parity = False
       Frame_Length : Positive := 1; --  Words per frame. Used to calculate break timing.
       Loopback     : Boolean := False;
-      Enable_FIFOs : Boolean := False; -- Enable TX and RX FIFOs
+      Enable_FIFOs : Boolean := True; -- Enable TX and RX FIFOs
    end record;
 
    Default_UART_Configuration : constant UART_Configuration := (others => <>);
