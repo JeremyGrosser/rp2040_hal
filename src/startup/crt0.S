@@ -223,12 +223,9 @@ bss_fill_test:
     bne bss_fill_loop
 
 platform_entry:
-    ldr r1, =rp_rom_float_initialize
-    blx r1
-    ldr r1, =main
-    blx r1
-    ldr r1, =_exit
-    blx r1
+    bl __gnat_initialize_bootrom
+    bl main
+    bl _exit
 
 .weak _exit
 .type _exit,%function
