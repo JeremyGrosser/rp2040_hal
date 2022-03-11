@@ -7,8 +7,8 @@ package RP.ROM.Floating_Point is
    procedure Initialize
      with Export,
           Convention    => C,
-          External_Name => "rp_rom_float_initialize";
-   --  rp_rom_float_initialize must be called before any of the __aeabi
+          External_Name => "__gnat_initialize_bootrom";
+   --  __gnat_initialize_bootrom must be called before any of the __aeabi
    --  functions, which means it needs to be called before elaboration.
    --  crt0.S takes care of this, unless Use_Startup=false.
 
