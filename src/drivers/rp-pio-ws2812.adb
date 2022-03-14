@@ -119,9 +119,13 @@ package body RP.PIO.WS2812 is
    procedure Set_RGB (This : in out Strip; Id : Positive; R, G, B : HAL.UInt8)
    is
    begin
-      This.Data (Id) := Shift_Left (UInt32 (B), 16)
-        or Shift_Left (UInt32 (R), 8)
-        or Shift_Left (UInt32 (G), 0);
+      --  Data is shifted left (most signigicant first) from the FIFO by the PIO
+      --  program, see Set_Out_Shift. The MSB of the 24-bit RGB data has to be
+      --  bit 31 of the UInt32 that will go in the FIFO, therefore R, G and B
+      --  are all shifted an extra 8 bits to the left.
+      This.Data (Id) := Shift_Left (UInt32 (G), 16 + 8)
+        or Shift_Left (UInt32 (R), 8 + 8)
+        or Shift_Left (UInt32 (B), 0 + 8);
    end Set_RGB;
 
    -------------
