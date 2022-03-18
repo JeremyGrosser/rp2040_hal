@@ -313,4 +313,56 @@ package body RP.SPI is
       Status := Ok;
    end Receive;
 
+   procedure Enable_IRQ (This : in out SPI_Port;
+                         IRQ  :        SPI_IRQ_Flag)
+   is
+      Mask : HAL.UInt32
+        with Address => This.Periph.SSPIMSC'Address,
+        Volatile_Full_Access;
+   begin
+      Mask := Mask or IRQ'Enum_Rep;
+   end Enable_IRQ;
+
+   procedure Disable_IRQ (This : in out SPI_Port;
+                          IRQ  :        SPI_IRQ_Flag)
+   is
+      Mask : HAL.UInt32
+        with Address => This.Periph.SSPIMSC'Address,
+        Volatile_Full_Access;
+   begin
+      Mask := Mask and (not IRQ'Enum_Rep);
+   end Disable_IRQ;
+
+   procedure Clear_IRQ (This : in out SPI_Port;
+                        IRQ  :        SPI_IRQ_Flag)
+   is
+      Clear : HAL.UInt32
+        with Address => This.Periph.SSPICR'Address,
+        Volatile_Full_Access;
+   begin
+      Clear := IRQ'Enum_Rep;
+   end Clear_IRQ;
+
+   function Masked_IRQ_Status (This : SPI_Port;
+                               IRQ  : SPI_IRQ_Flag)
+                               return Boolean
+   is
+      Masked_Status : HAL.UInt32
+        with Address => This.Periph.SSPMIS'Address,
+        Volatile_Full_Access;
+   begin
+      return (Masked_Status and IRQ'Enum_Rep) /= 0;
+   end Masked_IRQ_Status;
+
+   function RAW_IRQ_Status (This : SPI_Port;
+                            IRQ  : SPI_IRQ_Flag)
+                            return Boolean
+   is
+      RAW_Status : HAL.UInt32
+        with Address => This.Periph.SSPRIS'Address,
+        Volatile_Full_Access;
+   begin
+      return (RAW_Status and IRQ'Enum_Rep) /= 0;
+   end RAW_IRQ_Status;
+
 end RP.SPI;

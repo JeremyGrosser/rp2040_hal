@@ -87,6 +87,35 @@ package RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000);
 
+   type SPI_IRQ_Flag is
+     (Receive_Overrun,
+      Receive_FIFO_Not_Empty,
+      Receive_FIFO_Half_Full,
+      Transmit_FIFO_Half_Empty);
+
+   procedure Enable_IRQ (This : in out SPI_Port;
+                         IRQ  :        SPI_IRQ_Flag);
+   --  Enable the given IRQ flag
+
+   procedure Disable_IRQ (This : in out SPI_Port;
+                          IRQ  :        SPI_IRQ_Flag);
+   --  Disable the given IRQ flag
+
+   procedure Clear_IRQ (This : in out SPI_Port;
+                        IRQ  :        SPI_IRQ_Flag);
+   --  Clear the given IRQ flag
+
+   function Masked_IRQ_Status (This : SPI_Port;
+                               IRQ  : SPI_IRQ_Flag)
+                               return Boolean;
+   --  Return true if the given IRQ flag is signaled and enabled
+
+   function RAW_IRQ_Status (This : SPI_Port;
+                            IRQ  : SPI_IRQ_Flag)
+                            return Boolean;
+   --  Return true if the given IRQ flag is signaled even if the flag is not
+   --  enabled.
+
 private
 
    type SPI_Port
@@ -95,5 +124,11 @@ private
    is new HAL.SPI.SPI_Port with record
       Blocking : Boolean := True;
    end record;
+
+   for SPI_IRQ_Flag use
+     (Receive_Overrun          => 2#0001#,
+      Receive_FIFO_Not_Empty   => 2#0010#,
+      Receive_FIFO_Half_Full   => 2#0100#,
+      Transmit_FIFO_Half_Empty => 2#1000#);
 
 end RP.SPI;
