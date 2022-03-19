@@ -29,4 +29,12 @@ package UART_Tests is
    procedure Test_Break
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Interrupt
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
+   procedure UART0_IRQ_Handler
+      with Export,
+           Convention => C,
+           External_Name => "isr_irq20";
+
 end UART_Tests;
