@@ -51,6 +51,7 @@ package RP.ROM is
    with Export,
         Convention    => C,
         External_Name => "rom_func_lookup";
+   pragma Weak_External (ROM_Func_Lookup);
 
    function ROM_Data_Lookup
       (Code : Table_Code)
