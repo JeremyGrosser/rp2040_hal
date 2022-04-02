@@ -17,6 +17,10 @@ package body RP.Flash.Cache is
       XIP_CTRL_Periph.CTRL.POWER_DOWN := True;
    end Power_Down;
 
+   function Is_Enabled
+      return Boolean
+   is (XIP_CTRL_Periph.CTRL.EN);
+
    procedure Flush
       (Wait : Boolean := True)
    is
@@ -26,4 +30,18 @@ package body RP.Flash.Cache is
          null;
       end loop;
    end Flush;
+
+   function Hit_Count
+      return HAL.UInt32
+   is (XIP_CTRL_Periph.CTR_HIT);
+
+   function Access_Count
+      return HAL.UInt32
+   is (XIP_CTRL_Periph.CTR_ACC);
+
+   procedure Reset_Counters is
+   begin
+      XIP_CTRL_Periph.CTR_HIT := 1;
+      XIP_CTRL_Periph.CTR_ACC := 1;
+   end Reset_Counters;
 end RP.Flash.Cache;
