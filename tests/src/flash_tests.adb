@@ -6,6 +6,7 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with HAL; use HAL;
 with RP.Flash;
+with RP.Flash.Cache;
 with System.Storage_Elements; use System.Storage_Elements;
 
 package body Flash_Tests is
@@ -49,14 +50,48 @@ package body Flash_Tests is
       Test_Erase (T);
    end Test_Program;
 
+   procedure Test_Cache
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      X : UInt8 with Volatile;
+   begin
+      X := Test_Area (1);
+      Assert (RP.Flash.Cache.Access_Count > 0, "access counter not incrementing");
+      Assert (RP.Flash.Cache.Hit_Count > 0, "hit counter not incrementing");
+      Assert (RP.Flash.Cache.Is_Enabled, "not enabled prior to testing");
+
+      RP.Flash.Cache.Disable;
+      Assert (not RP.Flash.Cache.Is_Enabled, "cache disable failed");
+
+      RP.Flash.Cache.Flush;
+      RP.Flash.Cache.Reset_Counters;
+      Assert (RP.Flash.Cache.Access_Count = 0, "access counter did not reset");
+      Assert (RP.Flash.Cache.Hit_Count = 0, "hit counter did not reset");
+
+      RP.Flash.Cache.Enable;
+      Assert (RP.Flash.Cache.Is_Enabled, "enable failed");
+      RP.Flash.Cache.Power_Down;
+      Assert (not RP.Flash.Cache.Is_Enabled, "cache power down failed");
+      RP.Flash.Cache.Enable;
+      Assert (RP.Flash.Cache.Is_Enabled, "power up enable failed");
+
+      X := Test_Area (1);
+      X := Test_Area (1);
+      Assert (RP.Flash.Cache.Hit_Count > 0, "cache hit counter did not increment");
+   end Test_Cache;
+
    overriding
    procedure Register_Tests
       (T : in out Flash_Test)
    is
       use AUnit.Test_Cases.Registration;
    begin
-      Register_Routine (T, Test_Erase'Access, "Erase");
-      Register_Routine (T, Test_Program'Access, "Program");
+      --  Flash programming breaks coverage tests. Uncomment these if you need
+      --  to test flash programming code manually.
+      --
+      --  Register_Routine (T, Test_Erase'Access, "Erase");
+      --  Register_Routine (T, Test_Program'Access, "Program");
+      Register_Routine (T, Test_Cache'Access, "Cache");
    end Register_Tests;
 
    overriding

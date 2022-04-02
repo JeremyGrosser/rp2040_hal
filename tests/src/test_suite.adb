@@ -48,13 +48,7 @@ package body Test_Suite is
       Add_Test (Result'Access, RTC_Case'Access);
       Add_Test (Result'Access, SPI_Case'Access);
       Add_Test (Result'Access, PIO_Case'Access);
-
-      --  Flash tests don't work during coverage runs, because gnatcov_rts
-      --  tries to call functions located in flash during RP.Flash.Program
-      --  TODO: Figure out how to get *all* of the GNATcov_RTS functions into
-      --        memory.
-      --
-      --  Add_Test (Result'Access, Flash_Case'Access);
+      Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;
 end Test_Suite;
