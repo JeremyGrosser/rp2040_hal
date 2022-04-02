@@ -65,15 +65,4 @@ package RP.ROM.Floating_Point is
    --   with Export, Convention => C, External_Name => "expf";
    function fln (V : Float) return Float;
    --   with Export, Convention => C, External_Name => "logf";
-
-   pragma Weak_External (Initialize);
-   pragma Weak_External (fadd);
-   pragma Weak_External (fsub);
-   pragma Weak_External (frsub);
-   pragma Weak_External (fmul);
-   pragma Weak_External (fdiv);
-   pragma Weak_External (int2float);
-   pragma Weak_External (uint2float);
-   pragma Weak_External (float2int);
-   pragma Weak_External (fsqrt);
 end RP.ROM.Floating_Point;
