@@ -5,6 +5,7 @@
 --
 
 with System.Machine_Code; use System.Machine_Code;
+with System.Storage_Elements;
 with RP2040_SVD.Interrupts;
 with RP2040_SVD.SIO;
 with Cortex_M.NVIC;
@@ -75,6 +76,17 @@ package body RP.Multicore is
       if Enabled then
          Cortex_M.NVIC.Enable_Interrupt (Int_Id);
       end if;
+   end Launch_Core1;
+
+   procedure Launch_Core1
+      (Trap_Vector, Stack_Pointer, Entry_Point : System.Address)
+   is
+      use System.Storage_Elements;
+   begin
+      Launch_Core1
+         (Trap_Vector   => UInt32 (To_Integer (Trap_Vector)),
+          Stack_Pointer => UInt32 (To_Integer (Stack_Pointer)),
+          Entry_Point   => UInt32 (To_Integer (Entry_Point)));
    end Launch_Core1;
 
    function CPU_Id
