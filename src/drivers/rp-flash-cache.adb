@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with RP2040_SVD.XIP_CTRL; use RP2040_SVD.XIP_CTRL;
 
 package body RP.Flash.Cache is
