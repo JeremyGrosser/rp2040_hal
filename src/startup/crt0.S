@@ -266,7 +266,7 @@ data_cpy_table:
 
 hold_non_core0_in_bootrom:
     ldr r0, = 'W' | ('V' << 8)
-    bl rom_func_lookup
+    bl __gnat_rom_func_lookup
     bx r0
 
 

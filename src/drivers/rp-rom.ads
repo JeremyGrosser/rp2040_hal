@@ -50,7 +50,7 @@ package RP.ROM is
       return System.Address
    with Export,
         Convention    => C,
-        External_Name => "rom_func_lookup";
+        External_Name => "__gnat_rom_func_lookup";
 
    function ROM_Data_Lookup
       (Code : Table_Code)
