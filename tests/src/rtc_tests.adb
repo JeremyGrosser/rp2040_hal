@@ -11,7 +11,7 @@ with RP.RTC;
 
 package body RTC_Tests is
 
-   RTC : RP.RTC.RTC_Device (RP2040_SVD.RTC.RTC_Periph'Access);
+   RTC : RP.RTC.RTC_Device;
 
    procedure Test_Configure
       (T : in out AUnit.Test_Cases.Test_Case'Class)

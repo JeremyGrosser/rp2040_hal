@@ -3,15 +3,12 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RTC; use RP2040_SVD.RTC;
 with RP_Interrupts;
 with HAL.Real_Time_Clock;
 
 package RP.RTC is
 
-   type RTC_Device
-      (Periph : not null access RP2040_SVD.RTC.RTC_Peripheral)
-   is new HAL.Real_Time_Clock.RTC_Device with null record;
+   type RTC_Device is new HAL.Real_Time_Clock.RTC_Device with null record;
 
    --  Configure the RTC and start it.
    --  If the RTC is already running, this procedure resets the time to zero.

@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with RP2040_SVD.RTC; use RP2040_SVD.RTC;
 with RP2040_SVD.Interrupts;
 with HAL; use HAL;
 with RP.Clock;

@@ -13,11 +13,11 @@ with RP.SPI;         use RP.SPI;
 with RP.I2C_Master;  use RP.I2C_Master;
 with RP.UART;        use RP.UART;
 with RP.PIO;         use RP.PIO;
+with RP.RTC;
 with RP.Interpolator;
 with RP.USB_Device;
 with RP.SysTick;
 with RP.Timer;
-with RP.RTC;
 with System;
 
 package RP.Device is
@@ -46,7 +46,7 @@ package RP.Device is
 
    SysTick : aliased RP.SysTick.Delays;
    Timer   : aliased RP.Timer.Delays;
-   RTC     : aliased RP.RTC.RTC_Device (RP2040_SVD.RTC.RTC_Periph'Access);
+   RTC     : aliased RP.RTC.RTC_Device;
    UDC     : aliased RP.USB_Device.USB_Device_Controller;
 
    ADC     : aliased RP2040_SVD.ADC.ADC_Peripheral
