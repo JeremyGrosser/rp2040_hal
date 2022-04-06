@@ -6,6 +6,7 @@
 with RP.Timer;
 with RP.GPIO;
 with RP.PWM;
+with RP.RTC;
 
 package body RP_Interrupts is
 
@@ -23,6 +24,11 @@ package body RP_Interrupts is
    begin
       RP.GPIO.IRQ_Handler (13);
    end IO_IRQ_PROC0_Handler;
+
+   procedure RTC_Handler is
+   begin
+      RP.RTC.IRQ_Handler (25);
+   end RTC_Handler;
 
    procedure Attach_Handler
       (Handler : not null Interrupt_Handler;

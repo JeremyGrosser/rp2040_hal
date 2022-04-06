@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with RP2040_SVD.RTC;
 with AUnit.Assertions;
 with HAL.Real_Time_Clock;
 with RP.Timer;
@@ -10,7 +11,7 @@ with RP.RTC;
 
 package body RTC_Tests is
 
-   RTC : RP.RTC.RTC_Device;
+   RTC : RP.RTC.RTC_Device (RP2040_SVD.RTC.RTC_Periph'Access);
 
    procedure Test_Configure
       (T : in out AUnit.Test_Cases.Test_Case'Class)
@@ -87,6 +88,29 @@ package body RTC_Tests is
       RTC.Resume;
    end Test_Time_Date;
 
+   procedure Test_Delay
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      use AUnit.Assertions;
+      use HAL.Real_Time_Clock;
+      use RP.Timer;
+      Start, Elapsed, Target : RP.Timer.Time;
+      Date : constant RTC_Date := (Month => January, Day => 1, Year => 1, Day_Of_Week => Monday);
+      Time : RTC_Time := (Hour => 12, Min => 5, Sec => 0);
+   begin
+      if not RTC.Running then
+         RTC.Configure;
+      end if;
+      RTC.Set (Time, Date);
+      Time.Sec := Time.Sec + 2;
+      Start := RP.Timer.Clock;
+      RTC.Delay_Until (Time, Date);
+      Elapsed := RP.Timer.Clock - Start;
+      Target := Ticks_Per_Second * 1; --  RTC.Set takes 1 second to sync, so the actual delay is (2 - 1) seconds.
+      Assert (Elapsed in (Target - (Ticks_Per_Second / 10)) .. (Target + (Ticks_Per_Second / 10)),
+         "delay not within 100ms range of target");
+   end Test_Delay;
+
    overriding
    procedure Register_Tests
       (T : in out RTC_Test)
@@ -96,6 +120,7 @@ package body RTC_Tests is
       Register_Routine (T, Test_Configure'Access, "Configure");
       Register_Routine (T, Test_Pause_Resume'Access, "Pause_Resume");
       Register_Routine (T, Test_Time_Date'Access, "Time_Date");
+      Register_Routine (T, Test_Delay'Access, "Delay");
    end Register_Tests;
 
    overriding

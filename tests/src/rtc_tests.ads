@@ -28,4 +28,7 @@ package RTC_Tests is
    procedure Test_Time_Date
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Delay
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 end RTC_Tests;

@@ -44,4 +44,9 @@ private
            Convention => C,
            External_Name => "isr_irq13";
 
+   procedure RTC_Handler
+      with Export,
+           Convention => C,
+           External_Name => "isr_irq25";
+
 end RP_Interrupts;

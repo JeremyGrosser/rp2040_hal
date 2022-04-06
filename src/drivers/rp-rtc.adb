@@ -3,10 +3,12 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RTC; use RP2040_SVD.RTC;
+with RP2040_SVD.Interrupts;
 with HAL; use HAL;
 with RP.Clock;
 with RP.Reset;
+with System.Machine_Code;
+with System;
 
 package body RP.RTC is
    use HAL.Real_Time_Clock;
@@ -24,6 +26,11 @@ package body RP.RTC is
       --  reference.
       RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
          (RP.Clock.Frequency (RP.Clock.RTC) - 1);
+
+      RP_Interrupts.Attach_Handler
+         (Handler => IRQ_Handler'Access,
+          Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
+          Prio    => System.Interrupt_Priority'First);
 
       This.Resume;
    end Configure;
@@ -52,6 +59,39 @@ package body RP.RTC is
          null;
       end loop;
    end Resume;
+
+   procedure Delay_Until
+      (This : in out RTC_Device;
+       Time : RTC_Time;
+       Date : RTC_Date)
+   is
+   begin
+      RTC_Periph.IRQ_SETUP_0 :=
+         (DAY        => IRQ_SETUP_0_DAY_Field (Date.Day),
+          MONTH      => IRQ_SETUP_0_MONTH_Field (RTC_Month'Pos (Date.Month) + 1),
+          YEAR       => IRQ_SETUP_0_YEAR_Field (Date.Year),
+          DAY_ENA    => True,
+          MONTH_ENA  => True,
+          YEAR_ENA   => True,
+          others     => <>);
+      RTC_Periph.IRQ_SETUP_1 :=
+         (DOTW       => IRQ_SETUP_1_DOTW_Field (RTC_Day_Of_Week'Pos (Date.Day_Of_Week)),
+          HOUR       => IRQ_SETUP_1_HOUR_Field (Time.Hour),
+          MIN        => IRQ_SETUP_1_MIN_Field (Time.Min),
+          SEC        => IRQ_SETUP_1_SEC_Field (Time.Sec),
+          DOTW_ENA   => True,
+          HOUR_ENA   => True,
+          MIN_ENA    => True,
+          SEC_ENA    => True,
+          others     => <>);
+      RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
+
+      RTC_Periph.INTE.RTC := True;
+      while not RTC_Periph.INTR.RTC loop
+         System.Machine_Code.Asm ("wfi", Volatile => True);
+      end loop;
+      RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
+   end Delay_Until;
 
    overriding
    procedure Set
@@ -133,5 +173,13 @@ package body RP.RTC is
               Year        => RTC_Year (Integer (R1.YEAR) mod (Integer (RTC_Year'Last) + 1)),
               Day_Of_Week => RTC_Day_Of_Week'Val (R0.DOTW));
    end Get_Date;
+
+   procedure IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID)
+   is
+      pragma Unreferenced (Id);
+   begin
+      RTC_Periph.INTE.RTC := False;
+   end IRQ_Handler;
 
 end RP.RTC;
