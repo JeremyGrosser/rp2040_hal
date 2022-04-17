@@ -104,7 +104,7 @@ package body RTC_Tests is
       RTC.Set (Time, Date);
       Time.Sec := Time.Sec + 2;
       Start := RP.Timer.Clock;
-      RTC.Delay_Until (Time, Date);
+      RTC.Delay_Until (Time, Date, Mask => (Sec => True, others => False));
       Elapsed := RP.Timer.Clock - Start;
       Target := Ticks_Per_Second * 1; --  RTC.Set takes 1 second to sync, so the actual delay is (2 - 1) seconds.
       Assert (Elapsed in (Target - (Ticks_Per_Second / 10)) .. (Target + (Ticks_Per_Second / 10)),
