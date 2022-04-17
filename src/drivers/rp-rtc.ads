@@ -25,10 +25,23 @@ package RP.RTC is
    procedure Resume
       (This : in out RTC_Device);
 
+   type RTC_Alarm_Mask is record
+      Year        : Boolean := True;
+      Month       : Boolean := True;
+      Day         : Boolean := True;
+      Day_Of_Week : Boolean := True;
+      Hour        : Boolean := True;
+      Min         : Boolean := True;
+      Sec         : Boolean := True;
+   end record;
+
    procedure Delay_Until
       (This : in out RTC_Device;
        Time : HAL.Real_Time_Clock.RTC_Time;
-       Date : HAL.Real_Time_Clock.RTC_Date);
+       Date : HAL.Real_Time_Clock.RTC_Date;
+       Mask : RTC_Alarm_Mask);
+   --  The chip will stop all clocks except the RTC and PLLs until the Time and
+   --  Date are reached. Mask bits set to False will match any value.
 
    overriding
    procedure Set

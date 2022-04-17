@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
 with RP2040_SVD.RTC; use RP2040_SVD.RTC;
 with RP2040_SVD.Interrupts;
 with HAL; use HAL;
@@ -59,7 +60,8 @@ package body RP.RTC is
    procedure Delay_Until
       (This : in out RTC_Device;
        Time : RTC_Time;
-       Date : RTC_Date)
+       Date : RTC_Date;
+       Mask : RTC_Alarm_Mask)
    is
    begin
       RP_Interrupts.Attach_Handler
@@ -71,27 +73,45 @@ package body RP.RTC is
          (DAY        => IRQ_SETUP_0_DAY_Field (Date.Day),
           MONTH      => IRQ_SETUP_0_MONTH_Field (RTC_Month'Pos (Date.Month) + 1),
           YEAR       => IRQ_SETUP_0_YEAR_Field (Date.Year),
-          DAY_ENA    => True,
-          MONTH_ENA  => True,
-          YEAR_ENA   => True,
+          DAY_ENA    => Mask.Day,
+          MONTH_ENA  => Mask.Month,
+          YEAR_ENA   => Mask.Year,
           others     => <>);
       RTC_Periph.IRQ_SETUP_1 :=
          (DOTW       => IRQ_SETUP_1_DOTW_Field (RTC_Day_Of_Week'Pos (Date.Day_Of_Week)),
           HOUR       => IRQ_SETUP_1_HOUR_Field (Time.Hour),
           MIN        => IRQ_SETUP_1_MIN_Field (Time.Min),
           SEC        => IRQ_SETUP_1_SEC_Field (Time.Sec),
-          DOTW_ENA   => True,
-          HOUR_ENA   => True,
-          MIN_ENA    => True,
-          SEC_ENA    => True,
+          DOTW_ENA   => Mask.Day_Of_Week,
+          HOUR_ENA   => Mask.Hour,
+          MIN_ENA    => Mask.Min,
+          SEC_ENA    => Mask.Sec,
           others     => <>);
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
+
+      CLOCKS_Periph.SLEEP_EN0 :=
+         (clk_sys_pll_sys  => True,
+          clk_rtc_rtc      => True,
+          clk_sys_rtc      => True,
+          clk_sys_i2c      => (As_Array => False, Val => 0),
+          clk_sys_pio      => (As_Array => False, Val => 0),
+          clk_sys_sram     => (As_Array => False, Val => 0),
+          others           => False);
+      CLOCKS_Periph.SLEEP_EN1 :=
+         (clk_sys_sram     => (As_Array => False, Val => 0),
+          Reserved_15_31   => 0,
+          clk_sys_xosc     => True,
+          others           => False);
 
       RTC_Periph.INTE.RTC := True;
       while not RTC_Periph.INTR.RTC loop
          System.Machine_Code.Asm ("wfi", Volatile => True);
       end loop;
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
+
+      --  Return SLEEP registers to the default
+      CLOCKS_Periph.SLEEP_EN0 := (others => <>);
+      CLOCKS_Periph.SLEEP_EN1 := (others => <>);
    end Delay_Until;
 
    overriding
