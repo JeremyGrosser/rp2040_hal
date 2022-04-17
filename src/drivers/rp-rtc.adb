@@ -89,8 +89,11 @@ package body RP.RTC is
           others     => <>);
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
 
+      --  Run clk_sys directly from the crystal, sleep will stop PLLs
+      RP.Clock.Set_SYS_Source (RP.Clock.XOSC);
+
       CLOCKS_Periph.SLEEP_EN0 :=
-         (clk_sys_pll_sys  => True,
+         (clk_sys_pll_sys  => False,
           clk_rtc_rtc      => True,
           clk_sys_rtc      => True,
           clk_sys_i2c      => (As_Array => False, Val => 0),
@@ -108,6 +111,9 @@ package body RP.RTC is
          System.Machine_Code.Asm ("wfi", Volatile => True);
       end loop;
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
+
+      --  Switch back to PLL clock
+      RP.Clock.Set_SYS_Source (RP.Clock.PLL_SYS);
 
       --  Return SLEEP registers to the default
       CLOCKS_Periph.SLEEP_EN0 := (others => <>);

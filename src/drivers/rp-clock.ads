@@ -62,6 +62,65 @@ package RP.Clock is
       (CID : Clock_Id)
       return Boolean;
 
+   subtype SYS_Clock_Id is Clock_Id range PLL_SYS .. XOSC;
+   procedure Set_SYS_Source
+      (Source : SYS_Clock_Id);
+
+   subtype PLL_Clock_Id is Clock_Id
+      with Static_Predicate => PLL_Clock_Id in PLL_SYS | PLL_USB;
+   subtype PLL_FREF_Field is Hertz range 5_000_000 .. 800_000_000;
+   type PLL_REFDIV_Field is range 1 .. 63;
+   type PLL_FBDIV_Field is range 16 .. 320;
+   type PLL_POSTDIV_Field is range 1 .. 7;
+   type PLL_Config is record
+      FREF     : PLL_FREF_Field;
+      REFDIV   : PLL_REFDIV_Field;
+      FBDIV    : PLL_FBDIV_Field;
+      POSTDIV1 : PLL_POSTDIV_Field;
+      POSTDIV2 : PLL_POSTDIV_Field;
+   end record;
+   --  2.18.2. Calculating PLL parameters
+   --  PLL = (FREF / REFDIV) * FBDIV / (POSTDIV1 / POSTDIV2)
+   --  Common configurations are included below.
+   --  Use pico-sdk/src/rp2_common/hardware_clocks/scripts/vcocalc.py
+
+   PLL_48_MHz : constant PLL_Config :=
+      (FREF     => 12_000_000,
+       REFDIV   => 1,
+       FBDIV    => 120,
+       POSTDIV1 => 6,
+       POSTDIV2 => 5);
+
+   PLL_125_MHz : constant PLL_Config :=
+      (FREF     => 12_000_000,
+       REFDIV   => 1,
+       FBDIV    => 125,
+       POSTDIV1 => 6,
+       POSTDIV2 => 2);
+
+   PLL_133_MHz : constant PLL_Config :=
+      (FREF     => 12_000_000,
+       REFDIV   => 1,
+       FBDIV    => 133,
+       POSTDIV1 => 6,
+       POSTDIV2 => 2);
+
+   PLL_250_MHz : constant PLL_Config :=
+      (FREF     => 12_000_000,
+       REFDIV   => 1,
+       FBDIV    => 125,
+       POSTDIV1 => 6,
+       POSTDIV2 => 1);
+
+   procedure Configure_PLL
+      (PLL    : PLL_Clock_Id;
+       Config : PLL_Config)
+   with Pre => Config.POSTDIV1 >= Config.POSTDIV2
+               and (Integer (Config.FREF) / Integer (Config.REFDIV)) >= 5_000_000
+               and (Integer (Config.FREF) / Integer (Config.REFDIV)) * Integer (Config.FBDIV)
+                  in 400_000_000 .. 1_600_000_000;
+   --  Remember to switch clk_sys to another source before modifying PLL_SYS
+
    subtype Countable_Clock_Id is Clock_Id range REF .. RTC;
    function Frequency
       (CID      : Countable_Clock_Id;
@@ -86,19 +145,7 @@ private
 
    procedure Enable_ROSC;
 
-   procedure Enable_XOSC
-      (XOSC_Startup_Delay : XOSC_Cycles);
-
-   subtype PLL_Divider is Integer range 1 .. 7;
-
-   procedure Enable_PLL
-      (Periph        : not null access PLL_Peripheral;
-       Reference     : Hertz;
-       Reference_Div : Natural;
-       VCO_Multiple  : Positive;
-       Post_Div_1    : PLL_Divider;
-       Post_Div_2    : PLL_Divider)
-   with Pre => Post_Div_1 >= Post_Div_2;
+   procedure Enable_XOSC;
 
    type CLK_CTRL_AUXSRC_Field is
       (PLL_SYS, GPIN0, GPIN1, PLL_USB, ROSC, XOSC, SYS, USB, ADC, RTC, REF)
