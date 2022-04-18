@@ -10,7 +10,6 @@ with PWM_Tests;
 with DMA_Tests;
 with ADC_Tests;
 with ROM_Tests;
-with SysTick_Tests;
 with RTC_Tests;
 with SPI_Tests;
 with Flash_Tests;
@@ -26,7 +25,6 @@ package body Test_Suite is
    DMA_Case       : aliased DMA_Tests.DMA_Test;
    ADC_Case       : aliased ADC_Tests.ADC_Test;
    ROM_Case       : aliased ROM_Tests.ROM_Test;
-   SysTick_Case   : aliased SysTick_Tests.SysTick_Test;
    RTC_Case       : aliased RTC_Tests.RTC_Test;
    SPI_Case       : aliased SPI_Tests.SPI_Test;
    Flash_Case     : aliased Flash_Tests.Flash_Test;
@@ -44,7 +42,6 @@ package body Test_Suite is
       Add_Test (Result'Access, DMA_Case'Access);
       Add_Test (Result'Access, ADC_Case'Access);
       Add_Test (Result'Access, ROM_Case'Access);
-      Add_Test (Result'Access, SysTick_Case'Access);
       Add_Test (Result'Access, RTC_Case'Access);
       Add_Test (Result'Access, SPI_Case'Access);
       Add_Test (Result'Access, PIO_Case'Access);
