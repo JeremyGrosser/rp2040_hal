@@ -43,13 +43,9 @@ package body RP.Clock is
    begin
       --  Ensure PLL is stopped before configuring
       Periph.PWR := (others => <>);
-      Periph.FBDIV_INT := (others => <>);
 
-      Periph.CS :=
-         (REFDIV => CS_REFDIV_Field (Config.REFDIV),
-          others => <>);
-
-      Periph.FBDIV_INT.FBDIV_INT := FBDIV_INT_FBDIV_INT_Field (Config.FBDIV);
+      Periph.CS.REFDIV := Config.REFDIV;
+      Periph.FBDIV_INT.FBDIV_INT := Config.FBDIV;
 
       --  Turn on PLL
       Periph.PWR.PD := False;
@@ -61,12 +57,8 @@ package body RP.Clock is
       end loop;
 
       --  Setup post dividers
-      Periph.PRIM :=
-         (POSTDIV1 => PRIM_POSTDIV1_Field (Config.POSTDIV1),
-          POSTDIV2 => PRIM_POSTDIV2_Field (Config.POSTDIV2),
-          others   => <>);
-
-      --  Turn on post dividers
+      Periph.PRIM.POSTDIV1 := Config.POSTDIV1;
+      Periph.PRIM.POSTDIV2 := Config.POSTDIV2;
       Periph.PWR.POSTDIVPD := False;
    end Configure_PLL;
 

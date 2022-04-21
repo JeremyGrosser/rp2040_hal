@@ -69,9 +69,9 @@ package RP.Clock is
    subtype PLL_Clock_Id is Clock_Id
       with Static_Predicate => PLL_Clock_Id in PLL_SYS | PLL_USB;
    subtype PLL_FREF_Field is Hertz range 5_000_000 .. 800_000_000;
-   type PLL_REFDIV_Field is range 1 .. 63;
-   type PLL_FBDIV_Field is range 16 .. 320;
-   type PLL_POSTDIV_Field is range 1 .. 7;
+   subtype PLL_REFDIV_Field is UInt6 range 1 .. 63;
+   subtype PLL_FBDIV_Field is UInt12 range 16 .. 320;
+   subtype PLL_POSTDIV_Field is UInt3 range 1 .. 7;
    type PLL_Config is record
       FREF     : PLL_FREF_Field;
       REFDIV   : PLL_REFDIV_Field;
