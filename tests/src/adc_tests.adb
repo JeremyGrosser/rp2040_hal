@@ -53,10 +53,22 @@ package body ADC_Tests is
    is
       Sample : RP.ADC.Analog_Value with Unreferenced;
    begin
-      RP.ADC.Set_Round_Robin (Channels => (0 .. 1 => True, others => False));
+      RP.ADC.Configure
+         (Channels => (0 .. 1 => True, others => False));
+
+      --  These two calls mean the same thing.
+      RP.ADC.Set_Divider (5.0);
+      RP.ADC.Set_Sample_Rate (100_000);
+      RP.ADC.Set_Sample_Bits (8); --  shifts the 12-bit ADC value down to 8-bits upon read
+
+      RP.ADC.Set_Round_Robin
+         (Channels => (0 .. 1 => True, others => False));
       Sample := RP.ADC.Read;
       Sample := RP.ADC.Read;
       Sample := RP.ADC.Read;
+
+      --  Switch to free running mode
+      RP.ADC.Set_Mode (RP.ADC.Free_Running);
    end Test_Round_Robin;
 
    overriding
