@@ -29,4 +29,10 @@ package ADC_Tests is
    procedure Test_Temperature
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Disable
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
+   procedure Test_Round_Robin
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 end ADC_Tests;

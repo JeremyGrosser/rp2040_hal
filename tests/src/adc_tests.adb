@@ -27,11 +27,37 @@ package body ADC_Tests is
    procedure Test_Temperature
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
+      use type RP.ADC.Analog_Value;
       C : constant Celsius := RP.ADC.Temperature;
    begin
       Assert (C in -20 .. 85, "Temperature out of range");
       --  Table 631. Thermal Performance
+
+      RP.ADC.Configure (RP.ADC.Temperature_Sensor);
+      Assert (RP.ADC.Read (RP.ADC.Temperature_Sensor) /= 0,
+         "Direct temperature sensor read returned zero, maybe okay?");
    end Test_Temperature;
+
+   procedure Test_Disable
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+   begin
+      RP.ADC.Disable;
+      Assert (not RP.ADC.Enabled, "not disabled");
+      RP.ADC.Enable;
+      Assert (RP.ADC.Enabled, "not enabled");
+   end Test_Disable;
+
+   procedure Test_Round_Robin
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      Sample : RP.ADC.Analog_Value with Unreferenced;
+   begin
+      RP.ADC.Set_Round_Robin (Channels => (0 .. 1 => True, others => False));
+      Sample := RP.ADC.Read;
+      Sample := RP.ADC.Read;
+      Sample := RP.ADC.Read;
+   end Test_Round_Robin;
 
    overriding
    procedure Register_Tests
@@ -41,6 +67,8 @@ package body ADC_Tests is
    begin
       Register_Routine (T, Test_Read'Access, "Read");
       Register_Routine (T, Test_Temperature'Access, "Temperature");
+      Register_Routine (T, Test_Round_Robin'Access, "Round robin");
+      Register_Routine (T, Test_Disable'Access, "Disable");
    end Register_Tests;
 
    overriding
