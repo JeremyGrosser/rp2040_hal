@@ -31,7 +31,7 @@ package body RP_Interrupts is
       Id   : Interrupt_ID;
    begin
       Asm ("mrs %0, ipsr", UInt32'Asm_Output ("=r", IPSR), Volatile => True);
-      Id := Interrupt_ID ((IPSR and 16#FF#) - 16);
+      Id := Interrupt_ID (IPSR - 16);
 
       if Handlers (Id) /= null then
          Handlers (Id).all (Id);
