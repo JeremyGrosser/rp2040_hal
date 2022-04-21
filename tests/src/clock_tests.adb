@@ -82,6 +82,27 @@ package body Clock_Tests is
       Assert (not RP.Clock.Enabled (RP.Clock.USB), "Failed to disable USB clock");
    end Test_Counter;
 
+   procedure Test_Overclock
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      use AUnit.Assertions;
+      use RP.Clock;
+   begin
+      Set_SYS_Source (XOSC);
+      Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
+      Configure_PLL (PLL_SYS, PLL_250_MHz);
+      Set_SYS_Source (PLL_SYS);
+
+      Assert (Frequency (SYS) = 250_000_000, "Incorrect overclock frequency");
+
+      Set_SYS_Source (XOSC);
+      Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
+      Configure_PLL (PLL_SYS, PLL_125_MHz);
+      Set_SYS_Source (PLL_SYS);
+
+      Assert (Frequency (SYS) = 125_000_000, "Incorrect nominal frequency");
+   end Test_Overclock;
+
    overriding
    procedure Register_Tests
       (T : in out Clock_Test)
@@ -91,6 +112,7 @@ package body Clock_Tests is
       Register_Routine (T, Test_Initialize'Access, "Initialize");
       Register_Routine (T, Test_Enable'Access, "Enable");
       Register_Routine (T, Test_Counter'Access, "Counter");
+      Register_Routine (T, Test_Overclock'Access, "Overclock");
    end Register_Tests;
 
    overriding
