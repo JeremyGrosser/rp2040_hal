@@ -15,8 +15,6 @@ package RP_Interrupts is
    subtype Interrupt_Priority is System.Interrupt_Priority;
    type Interrupt_Handler     is access procedure (Id : Interrupt_ID);
 
-   --  The Handler argument is ignored. The drivers only use three interrupts
-   --  right now, it's not worth setting up a lookup table yet.
    procedure Attach_Handler
       (Handler : not null Interrupt_Handler;
        Id      : Interrupt_ID;
