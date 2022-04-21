@@ -29,6 +29,11 @@ package body RP.RTC is
       RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
          (RP.Clock.Frequency (RP.Clock.RTC) - 1);
 
+      RP_Interrupts.Attach_Handler
+         (Handler => IRQ_Handler'Access,
+          Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
+          Prio    => System.Interrupt_Priority'First);
+
       This.Resume;
    end Configure;
 
@@ -64,11 +69,6 @@ package body RP.RTC is
        Mask : RTC_Alarm_Mask)
    is
    begin
-      RP_Interrupts.Attach_Handler
-         (Handler => IRQ_Handler'Access,
-          Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
-          Prio    => System.Interrupt_Priority'First);
-
       RTC_Periph.IRQ_SETUP_0 :=
          (DAY        => IRQ_SETUP_0_DAY_Field (Date.Day),
           MONTH      => IRQ_SETUP_0_MONTH_Field (RTC_Month'Pos (Date.Month) + 1),
