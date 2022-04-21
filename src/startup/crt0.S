@@ -207,17 +207,6 @@ hold_non_core0_in_bootrom:
     bl __gnat_rom_func_lookup
     bx r0
 
-
-.global __get_current_exception
-.thumb_func
-__get_current_exception:
-    mrs r0, ipsr
-    uxtb r0, r0
-    bx lr
-
-
-
-
 .section .stack
 
 .align 5
