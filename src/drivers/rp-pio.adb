@@ -216,25 +216,23 @@ package body RP.PIO is
 
    function Default_SM_Config
       return PIO_SM_Config
-   is
-      C : PIO_SM_Config := (others => <>);
-   begin
-      Set_Clkdiv_Int_Frac (C,
-         Div_Int  => 1,
-         Div_Frac => 0);
-      Set_Wrap (C,
-         Wrap_Target => 0,
-         Wrap        => 31);
-      Set_In_Shift (C,
-         Shift_Right    => True,
-         Autopush       => False,
-         Push_Threshold => 32);
-      Set_Out_Shift (C,
-         Shift_Right    => True,
-         Autopull       => False,
-         Pull_Threshold => 32);
-      return C;
-   end Default_SM_Config;
+   is (PIO_SM_Config'(others => <>));
+   --  Default_SM_Config is equivalent to:
+   --
+   --  Set_Clkdiv_Int_Frac (C,
+   --      Div_Int  => 1,
+   --      Div_Frac => 0);
+   --   Set_Wrap (C,
+   --      Wrap_Target => 0,
+   --      Wrap        => 31);
+   --   Set_In_Shift (C,
+   --      Shift_Right    => True,
+   --      Autopush       => False,
+   --      Push_Threshold => 32);
+   --   Set_Out_Shift (C,
+   --      Shift_Right    => True,
+   --      Autopull       => False,
+   --      Pull_Threshold => 32);
 
    procedure Set_Config
       (This   : in out PIO_Device;

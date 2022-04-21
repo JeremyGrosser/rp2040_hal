@@ -298,10 +298,10 @@ private
        return Cortex_M.NVIC.Interrupt_ID;
 
    type PIO_SM_Config is record
-      CLKDIV    : SM0_CLKDIV_Register;
-      EXECCTRL  : SM0_EXECCTRL_Register;
-      SHIFTCTRL : SM0_SHIFTCTRL_Register;
-      PINCTRL   : SM0_PINCTRL_Register;
+      CLKDIV    : SM0_CLKDIV_Register := (others => <>);
+      EXECCTRL  : SM0_EXECCTRL_Register := (others => <>);
+      SHIFTCTRL : SM0_SHIFTCTRL_Register := (others => <>);
+      PINCTRL   : SM0_PINCTRL_Register := (others => <>);
    end record;
 
    type FIFO_Register is array (PIO_SM) of UInt32
