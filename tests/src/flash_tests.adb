@@ -86,11 +86,8 @@ package body Flash_Tests is
    is
       use AUnit.Test_Cases.Registration;
    begin
-      --  Flash programming breaks coverage tests. Uncomment these if you need
-      --  to test flash programming code manually.
-      --
-      --  Register_Routine (T, Test_Erase'Access, "Erase");
-      --  Register_Routine (T, Test_Program'Access, "Program");
+      Register_Routine (T, Test_Erase'Access, "Erase");
+      Register_Routine (T, Test_Program'Access, "Program");
       Register_Routine (T, Test_Cache'Access, "Cache");
    end Register_Tests;
 

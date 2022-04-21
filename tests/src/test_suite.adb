@@ -45,7 +45,7 @@ package body Test_Suite is
       Add_Test (Result'Access, RTC_Case'Access);
       Add_Test (Result'Access, SPI_Case'Access);
       Add_Test (Result'Access, PIO_Case'Access);
-      Add_Test (Result'Access, Flash_Case'Access);
+      --  Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;
 end Test_Suite;
