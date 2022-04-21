@@ -34,7 +34,6 @@ package body RP.ADC is
    is
    begin
       ADC_Periph.CS.EN := False;
-      RP.Clock.Disable (RP.Clock.ADC);
    end Disable;
 
    function Enabled
