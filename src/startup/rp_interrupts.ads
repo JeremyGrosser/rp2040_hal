@@ -23,30 +23,9 @@ package RP_Interrupts is
        Prio    : Interrupt_Priority)
    with Inline;
 
-private
-
-   --  These procedures are just calls into the appropriate drivers'
-   --  IRQ_Handler procedures. We proxy these handlers here so that we can use
-   --  a different implementation on Ravenscar runtimes.
-
-   procedure TIMER_IRQ_2_Handler
-      with Export,
-           Convention => C,
-           External_Name => "isr_irq2";
-
-   procedure PWM_IRQ_WRAP_Handler
-      with Export,
-           Convention => C,
-           External_Name => "isr_irq4";
-
-   procedure IO_IRQ_PROC0_Handler
-      with Export,
-           Convention => C,
-           External_Name => "isr_irq13";
-
-   procedure RTC_Handler
-      with Export,
-           Convention => C,
-           External_Name => "isr_irq25";
+   procedure Interrupt_Request_Handler
+   with Export,
+        Convention => Asm,
+        External_Name => "__gnat_irq_trap";
 
 end RP_Interrupts;

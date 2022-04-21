@@ -89,7 +89,10 @@ package body UART_Tests is
       Assert (Data (1) = 16#FF# and Status = Ok, "Failed to recover from break without start");
    end Test_Break;
 
-   procedure UART0_IRQ_Handler is
+   procedure UART0_IRQ_Handler
+      (Id : RP_Interrupts.Interrupt_ID)
+   is
+      pragma Unreferenced (Id);
    begin
       if Port.Masked_IRQ_Status (Receive) then
          Port.Clear_IRQ (Receive);
@@ -113,6 +116,10 @@ package body UART_Tests is
       Status : UART_Status;
       Data   : UART_Data_8b (1 .. 1) := (others => 16#55#);
    begin
+      RP_Interrupts.Attach_Handler
+         (Handler  => UART0_IRQ_Handler'Access,
+          Id       => RP2040_SVD.Interrupts.UART0_Interrupt,
+          Prio     => RP_Interrupts.Interrupt_Priority'First);
       Port.Configure (Config);
       Port.Enable_IRQ (Transmit);
       Port.Enable_IRQ (Receive);

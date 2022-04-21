@@ -3,47 +3,41 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP.Timer;
-with RP.GPIO;
-with RP.PWM;
-with RP.RTC;
+with System.Machine_Code; use System.Machine_Code;
+with HAL; use HAL;
 
 package body RP_Interrupts is
 
-   procedure TIMER_IRQ_2_Handler is
-   begin
-      RP.Timer.IRQ_Handler (2);
-   end TIMER_IRQ_2_Handler;
-
-   procedure PWM_IRQ_WRAP_Handler is
-   begin
-      RP.PWM.IRQ_Handler (4);
-   end PWM_IRQ_WRAP_Handler;
-
-   procedure IO_IRQ_PROC0_Handler is
-   begin
-      RP.GPIO.IRQ_Handler (13);
-   end IO_IRQ_PROC0_Handler;
-
-   procedure RTC_Handler is
-   begin
-      RP.RTC.IRQ_Handler (25);
-   end RTC_Handler;
+   Handlers : array (Interrupt_ID) of Interrupt_Handler := (others => null);
 
    procedure Attach_Handler
       (Handler : not null Interrupt_Handler;
        Id      : Interrupt_ID;
        Prio    : Interrupt_Priority)
    is
-      pragma Unreferenced (Handler);
       use Cortex_M.NVIC;
-
       P : constant Cortex_M.NVIC.Interrupt_Priority :=
          Cortex_M.NVIC.Interrupt_Priority (System.Max_Priority - Prio + 1);
    begin
+      Handlers (Id) := Handler;
       Clear_Pending (Id);
       Set_Priority (Id, P);
       Enable_Interrupt (Id);
    end Attach_Handler;
+
+   procedure Interrupt_Request_Handler
+   is
+      IPSR : UInt32;
+      Id   : Interrupt_ID;
+   begin
+      Asm ("mrs %0, ipsr", UInt32'Asm_Output ("=r", IPSR), Volatile => True);
+      Id := Interrupt_ID ((IPSR and 16#FF#) - 16);
+
+      if Handlers (Id) /= null then
+         Handlers (Id).all (Id);
+      else
+         raise Program_Error with "Unhandled IRQ " & Id'Image;
+      end if;
+   end Interrupt_Request_Handler;
 
 end RP_Interrupts;

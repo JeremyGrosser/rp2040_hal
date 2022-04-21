@@ -5,6 +5,7 @@
 --
 with AUnit.Test_Cases;
 with AUnit;
+with RP_Interrupts;
 
 package UART_Tests is
 
@@ -33,8 +34,6 @@ package UART_Tests is
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
    procedure UART0_IRQ_Handler
-      with Export,
-           Convention => C,
-           External_Name => "isr_irq20";
+      (Id : RP_Interrupts.Interrupt_ID);
 
 end UART_Tests;
