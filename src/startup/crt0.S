@@ -52,39 +52,38 @@ __vectors:
 .word isr_invalid
 .word isr_pendsv
 .word isr_systick
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-.word __gnat_irq_trap
-
+.word isr_irq0
+.word isr_irq1
+.word isr_irq2
+.word isr_irq3
+.word isr_irq4
+.word isr_irq5
+.word isr_irq6
+.word isr_irq7
+.word isr_irq8
+.word isr_irq9
+.word isr_irq10
+.word isr_irq11
+.word isr_irq12
+.word isr_irq13
+.word isr_irq14
+.word isr_irq15
+.word isr_irq16
+.word isr_irq17
+.word isr_irq18
+.word isr_irq19
+.word isr_irq20
+.word isr_irq21
+.word isr_irq22
+.word isr_irq23
+.word isr_irq24
+.word isr_irq25
+.word isr_irq26
+.word isr_irq27
+.word isr_irq28
+.word isr_irq29
+.word isr_irq30
+.word isr_irq31
 
 .macro decl_isr_bkpt name
 .weak \name
@@ -94,6 +93,10 @@ __vectors:
     bkpt #0
 .endm
 
+.macro decl_isr name
+.weak \name
+.thumb_set \name,__gnat_irq_trap
+.endm
 
 decl_isr_bkpt isr_invalid
 decl_isr_bkpt isr_nmi
@@ -101,6 +104,39 @@ decl_isr_bkpt isr_hardfault
 decl_isr_bkpt isr_svcall
 decl_isr_bkpt isr_pendsv
 decl_isr_bkpt isr_systick
+
+decl_isr isr_irq0
+decl_isr isr_irq1
+decl_isr isr_irq2
+decl_isr isr_irq3
+decl_isr isr_irq4
+decl_isr isr_irq5
+decl_isr isr_irq6
+decl_isr isr_irq7
+decl_isr isr_irq8
+decl_isr isr_irq9
+decl_isr isr_irq10
+decl_isr isr_irq11
+decl_isr isr_irq12
+decl_isr isr_irq13
+decl_isr isr_irq14
+decl_isr isr_irq15
+decl_isr isr_irq16
+decl_isr isr_irq17
+decl_isr isr_irq18
+decl_isr isr_irq19
+decl_isr isr_irq20
+decl_isr isr_irq21
+decl_isr isr_irq22
+decl_isr isr_irq23
+decl_isr isr_irq24
+decl_isr isr_irq25
+decl_isr isr_irq26
+decl_isr isr_irq27
+decl_isr isr_irq28
+decl_isr isr_irq29
+decl_isr isr_irq30
+decl_isr isr_irq31
 
 .section .binary_info_header, "a"
 binary_info_header:
