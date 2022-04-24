@@ -32,7 +32,12 @@ package body RP_Interrupts is
    begin
       Asm ("mrs %0, ipsr", UInt32'Asm_Output ("=r", IPSR), Volatile => True);
       Id := Interrupt_ID (IPSR - 16);
-      Handlers (Id).all (Id);
+
+      if Handlers (Id) /= null then
+         Handlers (Id).all (Id);
+      else
+         raise Program_Error with "Unhandled IRQ " & Id'Image;
+      end if;
    end Interrupt_Request_Handler;
 
 end RP_Interrupts;
