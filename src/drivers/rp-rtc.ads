@@ -40,8 +40,7 @@ package RP.RTC is
        Time : HAL.Real_Time_Clock.RTC_Time;
        Date : HAL.Real_Time_Clock.RTC_Date;
        Mask : RTC_Alarm_Mask);
-   --  The chip will stop all clocks except the RTC and PLLs until the Time and
-   --  Date are reached. Mask bits set to False will match any value.
+   --  Mask bits set to False will match any value.
 
    overriding
    procedure Set
