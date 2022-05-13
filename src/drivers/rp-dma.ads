@@ -211,8 +211,7 @@ private
       AHB_ERROR     : Boolean := False;
    end record
       with Volatile_Full_Access,
-           Object_Size => 32,
-           Bit_Order => System.Low_Order_First;
+           Object_Size => 32;
    for DMA_CTRL_Register use record
       EN            at 0 range 0 .. 0;
       HIGH_PRIORITY at 0 range 1 .. 1;

@@ -148,9 +148,7 @@ private
       INOVER  : GPIO0_CTRL_INOVER_Field := NORMAL;
       IRQOVER : GPIO0_CTRL_IRQOVER_Field := NORMAL;
    end record
-      with Size      => 32,
-           Bit_Order => System.Low_Order_First,
-           Volatile_Full_Access;
+      with Volatile_Full_Access, Size => 32;
 
    for GPIO_CTRL_Register use record
       FUNCSEL at 0 range 0 .. 4;
@@ -166,9 +164,7 @@ private
       STATUS : aliased GPIO0_STATUS_Register;
       CTRL   : aliased GPIO_CTRL_Register;
    end record
-      with Bit_Order => System.Low_Order_First,
-           Size      => 64,
-           Volatile;
+      with Volatile, Size => 64;
 
    for GPIO_Register use record
       STATUS at 0 range 0 .. 31;

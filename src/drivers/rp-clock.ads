@@ -185,8 +185,7 @@ private
       PHASE  : CLK_CTRL_PHASE_Field := 0;
       NUDGE  : Boolean := False;
    end record
-      with Volatile_Full_Access, Object_Size => 32,
-           Bit_Order => System.Low_Order_First;
+      with Volatile_Full_Access, Object_Size => 32;
    for CLK_CTRL_Register use record
       SRC    at 0 range 0 .. 1;
       AUXSRC at 0 range 5 .. 8;
@@ -204,8 +203,7 @@ private
       INT  : CLK_DIV_INT_Field := 1;
       FRAC : CLK_DIV_FRAC_Field := 0;
    end record
-      with Volatile_Full_Access, Object_Size => 32,
-           Bit_Order => System.Low_Order_First;
+      with Volatile_Full_Access, Object_Size => 32;
    for CLK_DIV_Register use record
       INT  at 0 range 8 .. 31;
       FRAC at 0 range 0 .. 7;
