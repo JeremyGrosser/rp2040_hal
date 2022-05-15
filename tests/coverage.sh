@@ -7,7 +7,7 @@ GPR_EXTERNAL=" \
     "
 alr clean
 rm -rf ../obj obj
-alr build ${GPR_EXTERNAL}
+alr build --  ${GPR_EXTERNAL}
 eval $(alr printenv)
 gnatcov instrument -P test_rp2040_hal.gpr \
     ${GPR_EXTERNAL} \

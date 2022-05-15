@@ -12,7 +12,7 @@ with ADC_Tests;
 with ROM_Tests;
 with RTC_Tests;
 with SPI_Tests;
-with Flash_Tests;
+--  with Flash_Tests;
 with PIO_Tests;
 
 package body Test_Suite is
@@ -27,7 +27,7 @@ package body Test_Suite is
    ROM_Case       : aliased ROM_Tests.ROM_Test;
    RTC_Case       : aliased RTC_Tests.RTC_Test;
    SPI_Case       : aliased SPI_Tests.SPI_Test;
-   Flash_Case     : aliased Flash_Tests.Flash_Test;
+   --  Flash_Case     : aliased Flash_Tests.Flash_Test;
    PIO_Case       : aliased PIO_Tests.PIO_Test;
 
    function Suite

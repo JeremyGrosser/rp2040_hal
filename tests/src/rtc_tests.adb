@@ -3,7 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.RTC;
 with AUnit.Assertions;
 with HAL.Real_Time_Clock;
 with RP.Timer;
