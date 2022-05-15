@@ -7,7 +7,6 @@ with Ada.Unchecked_Conversion;
 with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
 with RP2040_SVD.PLL; use RP2040_SVD.PLL;
 with RP2040_SVD;
-with System;
 with HAL; use HAL;
 
 package RP.Clock is

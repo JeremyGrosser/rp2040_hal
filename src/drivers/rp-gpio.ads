@@ -10,7 +10,6 @@ with RP2040_SVD;            use RP2040_SVD;
 with HAL;                   use HAL;
 with HAL.GPIO;              use HAL.GPIO;
 with RP_Interrupts;
-with System;
 
 package RP.GPIO is
    type GPIO_Pin is range 0 .. 29;

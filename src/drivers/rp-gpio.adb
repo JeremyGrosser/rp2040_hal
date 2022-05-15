@@ -7,6 +7,7 @@
 with RP2040_SVD.SIO; use RP2040_SVD.SIO;
 with RP2040_SVD.Interrupts;
 with RP.Reset;
+with System;
 
 package body RP.GPIO is
    function Pin_Mask (Pin : GPIO_Pin)
@@ -16,7 +17,6 @@ package body RP.GPIO is
    procedure Enable is
       use RP2040_SVD.Interrupts;
       use RP.Reset;
-      use System;
    begin
       Reset_Peripheral (Reset_IO_BANK0);
       Reset_Peripheral (Reset_PADS_BANK0);
@@ -40,7 +40,7 @@ package body RP.GPIO is
       RP_Interrupts.Attach_Handler
          (Handler => IRQ_Handler'Access,
           Id      => IO_IRQ_BANK0_Interrupt,
-          Prio    => Interrupt_Priority'First);
+          Prio    => System.Interrupt_Priority'First);
 
       GPIO_Enabled := True;
    end Enable;
