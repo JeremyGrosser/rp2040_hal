@@ -7,7 +7,6 @@ with RP2040_SVD.SPI;
 with RP2040_SVD.I2C;
 with RP2040_SVD.UART;
 with RP2040_SVD.ADC;
-with RP2040_SVD.RTC;
 with RP2040_SVD;
 with RP.SPI;         use RP.SPI;
 with RP.I2C_Master;  use RP.I2C_Master;
