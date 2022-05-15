@@ -7,4 +7,4 @@ break Dump_Buffers
 run
 next
 delete break
-monitor shutdown
+monitor shutdown 0
