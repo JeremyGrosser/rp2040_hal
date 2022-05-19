@@ -14,6 +14,7 @@ with RTC_Tests;
 with SPI_Tests;
 --  with Flash_Tests;
 with PIO_Tests;
+with Reset_Tests;
 
 package body Test_Suite is
    Result : aliased AUnit.Test_Suites.Test_Suite;
@@ -29,6 +30,7 @@ package body Test_Suite is
    SPI_Case       : aliased SPI_Tests.SPI_Test;
    --  Flash_Case     : aliased Flash_Tests.Flash_Test;
    PIO_Case       : aliased PIO_Tests.PIO_Test;
+   Reset_Case     : aliased Reset_Tests.Reset_Test;
 
    function Suite
       return AUnit.Test_Suites.Access_Test_Suite
@@ -45,6 +47,7 @@ package body Test_Suite is
       Add_Test (Result'Access, RTC_Case'Access);
       Add_Test (Result'Access, SPI_Case'Access);
       Add_Test (Result'Access, PIO_Case'Access);
+      Add_Test (Result'Access, Reset_Case'Access);
       --  Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;
