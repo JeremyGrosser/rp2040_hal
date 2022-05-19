@@ -5,6 +5,6 @@ file bin/test_rp2040_hal
 load
 break Dump_Buffers
 run
-next
+finish
 delete break
 monitor shutdown 0

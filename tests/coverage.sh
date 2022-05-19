@@ -16,7 +16,7 @@ GPR_EXTERNAL=" \
     "
 alr clean
 rm -rf ../obj obj
-alr build --  ${GPR_EXTERNAL}
+alr build --validation --  ${GPR_EXTERNAL}
 check_error "Build failed"
 
 eval $(alr printenv)

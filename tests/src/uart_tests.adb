@@ -86,7 +86,7 @@ package body UART_Tests is
       Port.Transmit (Data, Status);
       Assert (Status = Ok, "Failed to transmit after break without start");
       Port.Receive (Data, Status);
-      Assert (Data (1) = 16#FF# and Status = Ok, "Failed to recover from break without start");
+      Assert (Data (1) = 16#FF# and then Status = Ok, "Failed to recover from break without start");
    end Test_Break;
 
    procedure UART0_IRQ_Handler

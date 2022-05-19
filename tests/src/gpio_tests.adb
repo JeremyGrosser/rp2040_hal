@@ -107,7 +107,7 @@ package body GPIO_Tests is
       LED.Enable_Interrupt (Low_Level);
 
       Deadline := Clock + Milliseconds (1);
-      while Clock < Deadline and IRQ_Count = 0 loop
+      while Clock < Deadline and then IRQ_Count = 0 loop
          null;
       end loop;
 
