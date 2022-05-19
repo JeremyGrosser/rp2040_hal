@@ -39,7 +39,7 @@ gprbuild -P test_rp2040_hal.gpr \
 check_error "Coverage build failed"
 
 sudo openocd -f interface/picoprobe.cfg -f target/rp2040.cfg &>coverage.log &
-timeout --verbose 60s arm-eabi-gdb --batch --command=coverage.gdb
+timeout --verbose --signal=INT --kill-after=1s 60s arm-eabi-gdb --batch --command=coverage.gdb
 check_error "Test failed"
 
 let first=$(grep --line-number 'Testing...' coverage.log | head -n1 | cut -d':' -f1)
