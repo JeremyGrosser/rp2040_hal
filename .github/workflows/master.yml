@@ -10,5 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: alire-project/setup-alire@v1
+        with:
+          version: 1.2.0-rc1
       - run: alr build
       - run: cd tests; alr build
