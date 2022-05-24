@@ -251,6 +251,7 @@ package body RP.USB_Device is
       EP_CTRL (Ep.Num, Ep.Dir).ENDPOINT_TYPE :=  EP1_IN_CONTROL_ENDPOINT_TYPE_Field'Val (USB.EP_Type'Pos (Typ));
       EP_CTRL (Ep.Num, Ep.Dir).INTERRUPT_PER_BUFF := True;
       EP_CTRL (Ep.Num, Ep.Dir).ENABLE := True;
+      EP_CTRL (Ep.Num, Ep.Dir).DOUBLE_BUFFERED := False;
       EP_CTRL (Ep.Num, Ep.Dir).BUFFER_ADDRESS := UInt16 (This.EP_Status (Ep.Num, Ep.Dir).Buffer_Address);
    end EP_Setup;
 
