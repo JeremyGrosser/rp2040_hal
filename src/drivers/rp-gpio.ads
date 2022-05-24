@@ -27,6 +27,8 @@ package RP.GPIO is
 
    type GPIO_Pull_Mode is (Floating, Pull_Up, Pull_Down, Pull_Both);
 
+   type GPIO_Drive is (Drive_2mA, Drive_4mA, Drive_8mA, Drive_12mA);
+
    for GPIO_Function use
       (SPI   => 1,
        UART  => 2,
@@ -61,7 +63,8 @@ package RP.GPIO is
        Pull      : GPIO_Pull_Mode := Floating;
        Func      : GPIO_Function := SIO;
        Schmitt   : Boolean := False;
-       Slew_Fast : Boolean := False);
+       Slew_Fast : Boolean := False;
+       Drive     : GPIO_Drive := Drive_4mA);
    --  In Analog mode, Pull and Func are ignored and set to Floating and HI_Z
 
    function Get

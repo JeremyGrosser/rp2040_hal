@@ -55,7 +55,8 @@ package body RP.GPIO is
        Pull      : GPIO_Pull_Mode := Floating;
        Func      : GPIO_Function := SIO;
        Schmitt   : Boolean := False;
-       Slew_Fast : Boolean := False)
+       Slew_Fast : Boolean := False;
+       Drive     : GPIO_Drive := Drive_4mA)
    is
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
@@ -76,7 +77,8 @@ package body RP.GPIO is
                 OD       => True,
                 SCHMITT  => Schmitt,
                 SLEWFAST => Slew_Fast,
-                others => <>);
+                DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
+                others   => <>);
          when Output =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
                (PUE      => (Pull = Pull_Both or Pull = Pull_Up),
@@ -85,7 +87,8 @@ package body RP.GPIO is
                 OD       => False,
                 SCHMITT  => Schmitt,
                 SLEWFAST => Slew_Fast,
-                others => <>);
+                DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
+                others   => <>);
             SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
             SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
          when Analog =>
@@ -96,7 +99,8 @@ package body RP.GPIO is
                 OD       => True,
                 SCHMITT  => Schmitt,
                 SLEWFAST => Slew_Fast,
-                others => <>);
+                DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
+                others   => <>);
             IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL := HI_Z;
       end case;
    end Configure;
