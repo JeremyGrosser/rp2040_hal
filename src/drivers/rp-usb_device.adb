@@ -99,26 +99,33 @@ package body RP.USB_Device is
       end if;
 
       if UR.INTS.BUFF_STATUS then
-         for Num in USB.EP_Id'Range loop
-            for Dir in USB.EP_Dir'Range loop
+
+         declare
+            function Find_First_Set (A : UInt32) return UInt32;
+            pragma Import (Intrinsic, Find_First_Set, "__builtin_ffs");
+
+            Bit_Index : constant UInt32 :=
+              Find_First_Set (BUFF_STATUS_U32);
+         begin
+            if Bit_Index /= 0 then
                declare
+                  Num : constant USB.EP_Id :=  USB.EP_Id ((Bit_Index - 1) / 2);
+                  Dir : constant USB.EP_Dir := (if (Bit_Index mod 2) = 1
+                                                then USB.EP_In
+                                                else USB.EP_Out);
                   Bit : constant UInt32 :=
-                    Shift_Left (UInt32 (1),
-                                Natural (Num) * 2 +
-                                (if Dir = USB.EP_In then 0 else 1));
+                    Shift_Left (1, Natural (Bit_Index - 1));
                begin
-                  if (BUFF_STATUS_U32 and Bit) /= 0 then
-                     BUFF_STATUS_U32 := Bit;
-                     if Dir = USB.EP_Out then
-                        Copy_Endpoint_Buffer (This, Num, Dir);
-                     end if;
-                     return (Kind => Transfer_Complete,
-                             EP   => (Num => Num, Dir => Dir),
-                             BCNT => UInt11 (BUFF_CTRL (Num, Dir).LENGTH_0));
+                  BUFF_STATUS_U32 := Bit; -- Write 1 to clear
+                  if Dir = USB.EP_Out then
+                     Copy_Endpoint_Buffer (This, Num, Dir);
                   end if;
+                  return (Kind => Transfer_Complete,
+                          EP   => (Num => Num, Dir => Dir),
+                          BCNT => UInt11 (BUFF_CTRL (Num, Dir).LENGTH_0));
                end;
-            end loop;
-         end loop;
+            end if;
+         end;
       end if;
       if UR.SIE_STATUS.SETUP_REC then
          UR.SIE_STATUS.SETUP_REC := True;
