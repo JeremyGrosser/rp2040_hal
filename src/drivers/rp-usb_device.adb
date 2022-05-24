@@ -21,12 +21,6 @@ package body RP.USB_Device is
       of EP0_IN_BUFFER_CONTROL_Register
       with Size => 64 * 16;
 
-   type BUFF_STATUS_Registers is
-      array (USB.EP_Id, USB.EP_Dir)
-      of Boolean
-      with Component_Size => 1,
-           Size           => 32;
-
    type EP_CTRL_Registers is
       array (USB.EP_Id range 1 .. 15, USB.EP_Dir)
       of EP1_IN_CONTROL_Register
@@ -34,7 +28,7 @@ package body RP.USB_Device is
 
    SETUP_PACKET : aliased USB.Setup_Data
       with Import, Address => UD.SETUP_PACKET_LOW'Address;
-   BUFF_STATUS  : aliased BUFF_STATUS_Registers
+   BUFF_STATUS_U32  : aliased UInt32
       with Import, Address => UR.BUFF_STATUS'Address;
    BUFF_CTRL    : aliased BUFF_CTRL_Registers
       with Import, Address => UD.EP0_IN_BUFFER_CONTROL'Address;
@@ -107,19 +101,25 @@ package body RP.USB_Device is
       if UR.INTS.BUFF_STATUS then
          for Num in USB.EP_Id'Range loop
             for Dir in USB.EP_Dir'Range loop
-               if BUFF_STATUS (Num, Dir) then
-                  BUFF_STATUS (Num, Dir) := True;
-                  if Dir = USB.EP_Out then
-                     Copy_Endpoint_Buffer (This, Num, Dir);
+               declare
+                  Bit : constant UInt32 :=
+                    Shift_Left (UInt32 (1),
+                                Natural (Num) * 2 +
+                                (if Dir = USB.EP_In then 0 else 1));
+               begin
+                  if (BUFF_STATUS_U32 and Bit) /= 0 then
+                     BUFF_STATUS_U32 := Bit;
+                     if Dir = USB.EP_Out then
+                        Copy_Endpoint_Buffer (This, Num, Dir);
+                     end if;
+                     return (Kind => Transfer_Complete,
+                             EP   => (Num => Num, Dir => Dir),
+                             BCNT => UInt11 (BUFF_CTRL (Num, Dir).LENGTH_0));
                   end if;
-                  return (Kind => Transfer_Complete,
-                          EP   => (Num => Num, Dir => Dir),
-                          BCNT => UInt11 (BUFF_CTRL (Num, Dir).LENGTH_0));
-               end if;
+               end;
             end loop;
          end loop;
       end if;
-
       if UR.SIE_STATUS.SETUP_REC then
          UR.SIE_STATUS.SETUP_REC := True;
          This.EP_Status (0, USB.EP_In).Next_PID := True;
@@ -140,7 +140,7 @@ package body RP.USB_Device is
       for Num in USB.EP_Id'Range loop
          for Dir in USB.EP_Dir'Range loop
             BUFF_CTRL (Num, Dir) := (others => <>);
-            BUFF_STATUS (Num, Dir) := True;
+            BUFF_STATUS_U32 := 16#FF_FF_FF_FF#;
          end loop;
       end loop;
    end Reset;
