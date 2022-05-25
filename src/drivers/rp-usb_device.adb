@@ -117,12 +117,9 @@ package body RP.USB_Device is
                     Shift_Left (1, Natural (Bit_Index - 1));
                begin
                   BUFF_STATUS_U32 := Bit; -- Write 1 to clear
-                  if Dir = USB.EP_Out then
-                     Copy_Endpoint_Buffer (This, Num, Dir);
-                  end if;
                   return (Kind => Transfer_Complete,
                           EP   => (Num => Num, Dir => Dir),
-                          BCNT => UInt11 (BUFF_CTRL (Num, Dir).LENGTH_0));
+                          BCNT => USB.Packet_Size (BUFF_CTRL (Num, Dir).LENGTH_0));
                end;
             end if;
          end;
@@ -154,19 +151,13 @@ package body RP.USB_Device is
 
    function Allocate_Buffer
       (This      : in out USB_Device_Controller;
-       Size      : Natural;
-       Alignment : Natural)
+       Size      : Natural)
       return DPRAM_Offset
    is
       use System.Storage_Elements;
-      Addr  : DPRAM_Offset := This.Next_Buffer;
-      A     : constant Natural := Natural (Addr) mod Alignment;
-      Extra : constant Natural := Alignment - A;
+      Addr  : constant DPRAM_Offset := This.Next_Buffer;
    begin
-      if A /= 0 then
-         Addr := Addr + Storage_Offset (Extra);
-      end if;
-      This.Next_Buffer := This.Next_Buffer + Storage_Offset (Extra) + Storage_Offset (Size);
+      This.Next_Buffer := This.Next_Buffer + Storage_Offset (Size);
       return Addr;
    end Allocate_Buffer;
 
@@ -174,22 +165,25 @@ package body RP.USB_Device is
    function Request_Buffer
       (This          : in out USB_Device_Controller;
        Ep            : USB.EP_Addr;
-       Len           : UInt11;
-       Min_Alignment : UInt8 := 1)
+       Len           : USB.Packet_Size)
        return System.Address
    is
       use System.Storage_Elements;
-      Alignment : UInt32 := UInt32 (Min_Alignment);
-      Offset    : DPRAM_Offset;
+      Size   : UInt32 := UInt32 (Len);
+      Offset : DPRAM_Offset;
    begin
-      --  Alignment must be a multiple of 64
-      Alignment := Alignment and (not 16#3F#);
-      if Alignment = 0 or Alignment < UInt32 (Min_Alignment) then
-         Alignment := Alignment + 64;
+      --  Size must be a multiple of 64
+      Size := ((Size + 64 + 1) / 64) * 64;
+
+      if Ep.Num = 0 then
+         --  EP0 IN and OUT use the same buffer
+         Offset := DPRAM_Offset'First;
+      else
+         Offset := Allocate_Buffer (This, Natural (Size));
       end if;
 
-      Offset := Allocate_Buffer (This, Natural (Len), Natural (Alignment));
       This.EP_Status (Ep.Num, Ep.Dir).Buffer_Address := Offset;
+      This.EP_Status (Ep.Num, Ep.Dir).Max_Len := Len;
       return RP2040_SVD.USBCTRL_DPRAM_Base + Offset;
    end Request_Buffer;
 
@@ -216,20 +210,18 @@ package body RP.USB_Device is
    end Endpoint_Buffer_Address;
 
    overriding
-   procedure EP_Write_Packet
+   procedure EP_Send_Packet
       (This : in out USB_Device_Controller;
        Ep   : USB.EP_Id;
-       Addr : System.Address;
-       Len  : UInt32)
+       Len  : USB.Packet_Size)
    is
-      use System.Storage_Elements;
-      Source : Storage_Array (1 .. Storage_Offset (Len))
-         with Address => Addr;
-      Target : Storage_Array (1 .. Storage_Offset (Len))
-         with Address => Endpoint_Buffer_Address ((Num => Ep, Dir => USB.EP_In));
+      use USB;
    begin
+      if Len > This.EP_Status (Ep, USB.EP_In).Max_Len then
+         raise Program_Error;
+      end if;
+
       BUFF_CTRL (Ep, USB.EP_In).AVAILABLE_0 := False;
-      Target := Source;
       BUFF_CTRL (Ep, USB.EP_In) :=
          (LENGTH_0    => EP0_IN_BUFFER_CONTROL_LENGTH_0_Field (Len),
           PID_0       => This.EP_Status (Ep, USB.EP_In).Next_PID,
@@ -240,14 +232,13 @@ package body RP.USB_Device is
           others      => <>);
 
       This.EP_Status (Ep, USB.EP_In).Next_PID := not This.EP_Status (Ep, USB.EP_In).Next_PID;
-   end EP_Write_Packet;
+   end EP_Send_Packet;
 
    overriding
    procedure EP_Setup
       (This     : in out USB_Device_Controller;
        Ep       : USB.EP_Addr;
-       Typ      : USB.EP_Type;
-       Max_Size : UInt16)
+       Typ      : USB.EP_Type)
    is
    begin
       if Ep.Num = 0 then
@@ -266,14 +257,11 @@ package body RP.USB_Device is
    procedure EP_Ready_For_Data
       (This     : in out USB_Device_Controller;
        Ep       : USB.EP_Id;
-       Addr     : System.Address;
-       Max_Len  : UInt32;
+       Max_Len  : USB.Packet_Size;
        Ready    : Boolean := True)
    is
       Dir : constant USB.EP_Dir := USB.EP_Out;
    begin
-      This.EP_Status (Ep, Dir).Addr := Addr;
-
       if Ready then
          BUFF_CTRL (Ep, Dir).LENGTH_0 := EP0_IN_BUFFER_CONTROL_LENGTH_0_Field (Max_Len);
          BUFF_CTRL (Ep, Dir).PID_0 := This.EP_Status (Ep, Dir).Next_PID;
@@ -284,33 +272,6 @@ package body RP.USB_Device is
          BUFF_CTRL (Ep, Dir).AVAILABLE_0 := False;
       end if;
    end EP_Ready_For_Data;
-
-   procedure Copy_Endpoint_Buffer
-      (This : in out USB_Device_Controller;
-       Num  : USB.EP_Id;
-       Dir  : USB.EP_Dir)
-   is
-      use System.Storage_Elements;
-      use System;
-      Length         : constant Storage_Offset := Storage_Offset (BUFF_CTRL (Num, Dir).LENGTH_0);
-      Source_Address : constant Address := Endpoint_Buffer_Address ((Num => Num, Dir => Dir));
-      Target_Address : constant Address := This.EP_Status (Num, Dir).Addr;
-   begin
-      BUFF_CTRL (Num, Dir).AVAILABLE_0 := False;
-
-      if Length = 0 or Target_Address = System.Null_Address or Source_Address = Target_Address then
-         return;
-      end if;
-
-      declare
-         Source : Storage_Array (1 .. Length)
-            with Address => Source_Address;
-         Target : Storage_Array (1 .. Length)
-            with Address => Target_Address;
-      begin
-         Target := Source;
-      end;
-   end Copy_Endpoint_Buffer;
 
    overriding
    procedure EP_Stall
