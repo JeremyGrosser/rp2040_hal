@@ -316,12 +316,7 @@ package body RP.PIO is
       Set_Config (This, SM, Config);
       Clear_FIFOs (This, SM);
 
-      This.Periph.FDEBUG :=
-         (RXSTALL => 1,
-          RXUNDER => 1,
-          TXOVER  => 1,
-          TXSTALL => 1,
-          others  => <>);
+      This.Periph.FDEBUG := (others => (others => True));
 
       This.Periph.CTRL.SM_RESTART := CTRL_SM_RESTART_Field
          (Shift_Left (UInt32 (1), Natural (SM)));
@@ -392,7 +387,7 @@ package body RP.PIO is
        Data : UInt32)
    is
    begin
-      while (UInt32 (This.Periph.FSTAT.TXFULL) and Shift_Left (1, Natural (SM))) /= 0 loop
+      while This.Periph.FSTAT.TXFULL (SM) loop
          null;
       end loop;
       This.Periph.TXF (SM) := Data;
@@ -405,7 +400,7 @@ package body RP.PIO is
    is
    begin
       for D of Data loop
-         while (UInt32 (This.Periph.FSTAT.TXFULL) and Shift_Left (1, Natural (SM))) /= 0 loop
+         while This.Periph.FSTAT.TXFULL (SM) loop
             null;
          end loop;
          This.Periph.TXF (SM) := D;
@@ -418,7 +413,7 @@ package body RP.PIO is
        Data : out UInt32)
    is
    begin
-      while (UInt32 (This.Periph.FSTAT.RXEMPTY) and Shift_Left (1, Natural (SM))) = 0 loop
+      while This.Periph.FSTAT.RXEMPTY (SM) loop
          null;
       end loop;
       Data := This.Periph.RXF (SM);
@@ -431,7 +426,7 @@ package body RP.PIO is
    is
    begin
       for I in Data'Range loop
-         while (UInt32 (This.Periph.FSTAT.RXEMPTY) and Shift_Left (1, Natural (SM))) = 0 loop
+         while This.Periph.FSTAT.RXEMPTY (SM) loop
             null;
          end loop;
          Data (I) := This.Periph.RXF (SM);

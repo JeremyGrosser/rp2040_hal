@@ -325,6 +325,34 @@ private
    type SM_Register_Array is array (PIO_SM) of SM_Register
       with Volatile;
 
+   type FSTAT_Register is record
+      TXEMPTY : PIO_SM_Mask;
+      TXFULL  : PIO_SM_Mask;
+      RXEMPTY : PIO_SM_Mask;
+      RXFULL  : PIO_SM_Mask;
+   end record
+      with Size => 32;
+   for FSTAT_Register use record
+      TXEMPTY at 0 range 24 .. 27;
+      TXFULL  at 0 range 16 .. 19;
+      RXEMPTY at 0 range 8 .. 11;
+      RXFULL  at 0 range 0 .. 3;
+   end record;
+
+   type FDEBUG_Register is record
+      TXSTALL : PIO_SM_Mask;
+      TXOVER  : PIO_SM_Mask;
+      RXUNDER : PIO_SM_Mask;
+      RXSTALL : PIO_SM_Mask;
+   end record
+      with Size => 32;
+   for FDEBUG_Register use record
+      TXSTALL at 0 range 24 .. 27;
+      TXOVER  at 0 range 16 .. 19;
+      RXUNDER at 0 range 8 .. 11;
+      RXSTALL at 0 range 0 .. 3;
+   end record;
+
    type PIO_Peripheral is record
       CTRL              : aliased CTRL_Register;
       FSTAT             : aliased FSTAT_Register;
