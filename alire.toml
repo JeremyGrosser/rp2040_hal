@@ -12,7 +12,7 @@ website = "https://pico-doc.synack.me/"
 [[depends-on]]
 cortex_m = "~0.3"
 hal = "~0.1"
-usb_embedded = "~0.2"
+usb_embedded = "~0.3"
 gnat_arm_elf = "^11.2"
 
 [configuration.variables]
