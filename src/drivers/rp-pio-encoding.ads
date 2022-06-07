@@ -5,7 +5,9 @@
 --
 with Ada.Unchecked_Conversion;
 
-package RP.PIO.Encoding is
+package RP.PIO.Encoding
+   with Preelaborate
+is
 
    type JMP_Condition is
       (Always,

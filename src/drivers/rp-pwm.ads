@@ -12,7 +12,9 @@ with HAL; use HAL;
 
 with System;
 
-package RP.PWM is
+package RP.PWM
+   with Preelaborate
+is
    type PWM_Slice is range 0 .. 7;
    type PWM_Channel is (A, B);
 

@@ -3,7 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-package RP.Reset is
+package RP.Reset
+   with Preelaborate
+is
 
    type Reset_Id is
       (Reset_ADC,

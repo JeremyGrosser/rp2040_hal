@@ -9,7 +9,7 @@ with RP.Clock;
 with HAL;
 
 package RP.I2C_Master
-   with Elaborate_Body
+   with Preelaborate
 is
 
    subtype I2C_Number is Natural range 0 .. 1;
@@ -17,7 +17,10 @@ is
    type I2C_Master_Port
       (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
-   is new HAL.I2C.I2C_Port with private;
+   is new HAL.I2C.I2C_Port with record
+      No_Stop : Boolean := False;
+      Restart_On_Next : Boolean := False;
+   end record;
 
    procedure Configure
       (This     : in out I2C_Master_Port;
@@ -61,15 +64,5 @@ is
       Data          : out I2C_Data;
       Status        : out I2C_Status;
       Timeout       : Natural := 1000);
-
-private
-
-   type I2C_Master_Port
-      (Num    : I2C_Number;
-       Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
-   is new HAL.I2C.I2C_Port with record
-      No_Stop : Boolean := False;
-      Restart_On_Next : Boolean := False;
-   end record;
 
 end RP.I2C_Master;

@@ -7,7 +7,9 @@ with Interfaces.C; use Interfaces.C;
 with Interfaces;   use Interfaces;
 with System;
 
-package RP.ROM is
+package RP.ROM
+   with Preelaborate
+is
 
    type Short_Address is new Unsigned_16;
    --  Some lookup tables use halfwords

@@ -5,7 +5,9 @@
 --
 with RP2040_SVD.SIO;
 
-package RP.Multicore.Spinlocks is
+package RP.Multicore.Spinlocks
+   with Preelaborate
+is
 
    type Lock_Id is range 0 .. 31;
 

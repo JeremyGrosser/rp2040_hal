@@ -9,7 +9,9 @@ with RP2040_SVD.PLL; use RP2040_SVD.PLL;
 with RP2040_SVD;
 with HAL; use HAL;
 
-package RP.Clock is
+package RP.Clock
+   with Preelaborate
+is
    subtype XOSC_Hertz is Hertz range 0 .. 15_000_000
       with Static_Predicate => XOSC_Hertz in 0 | 1_000_000 .. 15_000_000;
    --  The special value 0 indicates that the XOSC is not available.

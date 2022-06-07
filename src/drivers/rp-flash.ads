@@ -5,7 +5,9 @@
 --
 with System;
 
-package RP.Flash is
+package RP.Flash
+   with Preelaborate
+is
 
    Flash_Size  : constant := 16 * 1024 * 1024;
    --  XIP maps up to 16 MB of flash. Actual flash chip may be smaller.

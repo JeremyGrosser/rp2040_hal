@@ -8,7 +8,9 @@ with RP2040_SVD;
 with System;
 with HAL;
 
-package RP.DMA is
+package RP.DMA
+   with Preelaborate
+is
 
    type DMA_Channel_Id is range 0 .. 11
       with Size => 4;

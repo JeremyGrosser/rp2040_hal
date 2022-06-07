@@ -11,7 +11,9 @@ with HAL;                   use HAL;
 with HAL.GPIO;              use HAL.GPIO;
 with RP_Interrupts;
 
-package RP.GPIO is
+package RP.GPIO
+   with Preelaborate
+is
    type GPIO_Pin is range 0 .. 29;
    subtype ADC_Pin is GPIO_Pin range 26 .. 29;
 

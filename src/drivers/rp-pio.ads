@@ -11,13 +11,15 @@ with Cortex_M.NVIC;
 with HAL; use HAL;
 with System;
 
-package RP.PIO is
+package RP.PIO
+   with Preelaborate
+is
    type PIO_Peripheral is private;
    subtype PIO_Number is Natural range 0 .. 1;
    type PIO_Device
       (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
-   is tagged private;
+   is tagged null record;
 
    type PIO_SM is range 0 .. 3;
    type PIO_SM_Mask is array (PIO_SM) of Boolean
@@ -378,11 +380,6 @@ private
    end record
       with Size => 2592,
            Volatile;
-
-   type PIO_Device
-      (Num    : PIO_Number;
-       Periph : not null access PIO_Peripheral)
-   is tagged null record;
 
    for PIO_IRQ_Flag use
      (SM0_RXNEMPTY => 2#0000_0000_0001#,

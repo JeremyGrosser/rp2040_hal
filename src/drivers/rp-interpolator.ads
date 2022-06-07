@@ -16,7 +16,9 @@
 --
 with HAL; use HAL;
 
-package RP.Interpolator is
+package RP.Interpolator
+   with Preelaborate
+is
 
    type Lane_Config is record
       --  Logical right-shift applied to ACCUM before masking

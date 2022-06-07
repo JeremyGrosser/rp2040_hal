@@ -1,5 +1,5 @@
 with "config/rp2040_hal_config.gpr";
-with "cortex_m0.gpr";
+with "cortex_m.gpr";
 
 project Rp2040_Hal is
 

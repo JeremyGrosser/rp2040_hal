@@ -7,7 +7,9 @@ pragma Style_Checks (Off);
 --  This spec has been automatically generated from rp2040.svd
 
 --  Definition of the device's interrupts
-package RP2040_SVD.Interrupts is
+package RP2040_SVD.Interrupts
+   with Preelaborate
+is
 
    ----------------
    -- Interrupts --

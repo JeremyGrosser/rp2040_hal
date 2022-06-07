@@ -6,7 +6,9 @@
 with RP_Interrupts;
 with HAL.Real_Time_Clock;
 
-package RP.RTC is
+package RP.RTC
+   with Preelaborate
+is
 
    type RTC_Device is new HAL.Real_Time_Clock.RTC_Device with null record;
 

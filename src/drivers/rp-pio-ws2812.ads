@@ -6,7 +6,9 @@
 with RP.GPIO;
 with RP.DMA;
 
-package RP.PIO.WS2812 is
+package RP.PIO.WS2812
+   with Preelaborate
+is
 
    type Strip
       (Pin : not null access RP.GPIO.GPIO_Point;

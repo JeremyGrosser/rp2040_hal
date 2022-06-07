@@ -7,7 +7,9 @@ with RP_Interrupts;
 with HAL.Time; use HAL.Time;
 with HAL;      use HAL;
 
-package RP.Timer is
+package RP.Timer
+   with Preelaborate
+is
    type Time is new UInt64;
    Ticks_Per_Second : constant := 1_000_000;
 

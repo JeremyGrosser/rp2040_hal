@@ -9,8 +9,9 @@
 
 pragma Style_Checks (Off);
 
-package RP.PIO.WS2812_PIO is
-
+package RP.PIO.WS2812_PIO
+   with Preelaborate
+is
    ------------
    -- Ws2812 --
    ------------
@@ -18,9 +19,9 @@ package RP.PIO.WS2812_PIO is
    Ws2812_Wrap_Target : constant := 0;
    Ws2812_Wrap        : constant := 3;
 
-T1 : constant := 2;
-T2 : constant := 5;
-T3 : constant := 3;
+   T1 : constant := 2;
+   T2 : constant := 5;
+   T3 : constant := 3;
 
    Ws2812_Program_Instructions : RP.PIO.Program := (
                     --  .wrap_target

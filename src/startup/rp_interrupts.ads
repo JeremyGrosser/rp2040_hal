@@ -6,7 +6,9 @@
 with Cortex_M.NVIC;
 with System;
 
-package RP_Interrupts is
+package RP_Interrupts
+   with Preelaborate
+is
 
    --  This is a minimal version of the System.BB.Interrupts interface
    --  available in Ravenscar. Close enough that these packages can be used

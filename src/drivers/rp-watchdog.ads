@@ -3,7 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-package RP.Watchdog is
+package RP.Watchdog
+   with Preelaborate
+is
    --  Watchdog is clocked by clk_ref
    procedure Configure
       (Cycles : Hertz);

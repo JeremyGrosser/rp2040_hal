@@ -9,17 +9,14 @@ with HAL.Time;
 with RP.Clock;
 with System;
 
-package RP.UART is
-   subtype UART_Number is Natural range 0 .. 1;
-
-   type UART_Port
-      (Num    : UART_Number;
-       Periph : not null access RP2040_SVD.UART.UART_Peripheral)
-   is new HAL.UART.UART_Port with private;
-
+package RP.UART
+   with Preelaborate
+is
    subtype UART_Word_Size is Integer range 5 .. 8;
    subtype UART_Stop_Bits is Integer range 1 .. 2;
    type UART_Parity_Type is (Even, Odd);
+
+   type UART_FIFO_Status is (Empty, Not_Full, Full, Busy, Invalid);
 
    --  Default configuration is 115200 8n1
    --  https://en.wikipedia.org/wiki/8-N-1
@@ -36,7 +33,14 @@ package RP.UART is
 
    Default_UART_Configuration : constant UART_Configuration := (others => <>);
 
-   type UART_FIFO_Status is (Empty, Not_Full, Full, Busy, Invalid);
+   subtype UART_Number is Natural range 0 .. 1;
+
+   type UART_Port
+      (Num    : UART_Number;
+       Periph : not null access RP2040_SVD.UART.UART_Peripheral)
+   is new HAL.UART.UART_Port with record
+      Config : UART_Configuration;
+   end record;
 
    procedure Configure
       (This   : in out UART_Port;
@@ -166,13 +170,6 @@ package RP.UART is
    --  enabled.
 
 private
-
-   type UART_Port
-      (Num    : UART_Number;
-       Periph : not null access RP2040_SVD.UART.UART_Peripheral)
-   is new HAL.UART.UART_Port with record
-      Config : UART_Configuration;
-   end record;
 
    UART_Fraction : constant := 1.0 / 2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size;
    type UART_Divider is delta UART_Fraction

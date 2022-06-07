@@ -9,7 +9,9 @@ with RP.DMA;
 with HAL.Audio;
 with HAL;
 
-package RP.PIO.Audio_I2S is
+package RP.PIO.Audio_I2S
+   with Preelaborate
+is
 
    --  There is only one LRCLK signal, so any more than two channels will need
    --  some external multiplexing logic.

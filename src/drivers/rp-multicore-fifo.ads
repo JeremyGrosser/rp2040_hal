@@ -6,7 +6,9 @@
 
 with HAL;
 
-package RP.Multicore.FIFO is
+package RP.Multicore.FIFO
+   with Preelaborate
+is
 
    function RX_Ready return Boolean;
    function TX_Ready return Boolean;

@@ -6,7 +6,9 @@
 with System;
 with HAL; use HAL;
 
-package RP.Multicore is
+package RP.Multicore
+   with Preelaborate
+is
 
    procedure Launch_Core1
       (Trap_Vector   : HAL.UInt32;

@@ -9,8 +9,9 @@
 
 pragma Style_Checks (Off);
 
-package RP.PIO.Audio_I2S_PIO is
-
+package RP.PIO.Audio_I2S_PIO
+   with Preelaborate
+is
    ---------------
    -- Audio_I2s --
    ---------------

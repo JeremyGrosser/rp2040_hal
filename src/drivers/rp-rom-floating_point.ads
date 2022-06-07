@@ -3,7 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-package RP.ROM.Floating_Point is
+package RP.ROM.Floating_Point
+   with Preelaborate
+is
    procedure Initialize
      with Export,
           Convention    => C,

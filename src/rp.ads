@@ -4,7 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 package RP
-   with Preelaborate
+   with Pure
 is
    Not_Implemented : exception;
 

@@ -8,12 +8,16 @@ with RP2040_SVD.SPI;
 with RP.Clock;
 with System;
 
-package RP.SPI is
+package RP.SPI
+   with Preelaborate
+is
    subtype SPI_Number is Natural range 0 .. 1;
    type SPI_Port
       (Num    : SPI_Number;
-       Periph : not null access RP2040_SVD.SPI.SPI_Peripheral) is
-      new HAL.SPI.SPI_Port with private;
+       Periph : not null access RP2040_SVD.SPI.SPI_Peripheral)
+   is new HAL.SPI.SPI_Port with record
+      Blocking : Boolean := True;
+   end record;
 
    type SPI_Role is (Master, Slave);
    type SPI_Polarity is (Active_Low, Active_High);
@@ -92,6 +96,11 @@ package RP.SPI is
       Receive_FIFO_Not_Empty,
       Receive_FIFO_Half_Full,
       Transmit_FIFO_Half_Empty);
+   for SPI_IRQ_Flag use
+     (Receive_Overrun          => 2#0001#,
+      Receive_FIFO_Not_Empty   => 2#0010#,
+      Receive_FIFO_Half_Full   => 2#0100#,
+      Transmit_FIFO_Half_Empty => 2#1000#);
 
    procedure Enable_IRQ (This : in out SPI_Port;
                          IRQ  :        SPI_IRQ_Flag);
@@ -115,20 +124,5 @@ package RP.SPI is
                             return Boolean;
    --  Return true if the given IRQ flag is signaled even if the flag is not
    --  enabled.
-
-private
-
-   type SPI_Port
-      (Num    : SPI_Number;
-       Periph : not null access RP2040_SVD.SPI.SPI_Peripheral)
-   is new HAL.SPI.SPI_Port with record
-      Blocking : Boolean := True;
-   end record;
-
-   for SPI_IRQ_Flag use
-     (Receive_Overrun          => 2#0001#,
-      Receive_FIFO_Not_Empty   => 2#0010#,
-      Receive_FIFO_Half_Full   => 2#0100#,
-      Transmit_FIFO_Half_Empty => 2#1000#);
 
 end RP.SPI;
