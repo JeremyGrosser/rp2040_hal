@@ -3,6 +3,9 @@ with "cortex_m0.gpr";
 
 project Rp2040_Hal is
 
+   for Runtime ("Ada") use "zfp-cortex-m0p";
+   for Target use "arm-eabi";
+
    for Languages use ("Ada");
    for Object_Dir use "obj/RP2040";
    for Create_Missing_Dirs use "True";
