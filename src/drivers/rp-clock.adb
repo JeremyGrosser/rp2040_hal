@@ -172,7 +172,8 @@ package body RP.Clock is
       (GP     : GP_Output;
        Source : GP_Source)
    is
-      AUXSRC : CLK_CTRL_AUXSRC_Field renames CLOCKS_Periph.CLK (GP).CTRL.AUXSRC;
+      AUXSRC : CLK_CTRL_AUXSRC_Field
+         with Volatile, Address => CLOCKS_Periph.CLK (GP).CTRL.AUXSRC'Address;
    begin
       case Source is
          when REF =>

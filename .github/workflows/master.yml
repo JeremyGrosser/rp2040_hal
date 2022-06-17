@@ -12,5 +12,5 @@ jobs:
       - uses: alire-project/setup-alire@v1
         with:
           version: 1.2.0
-      - run: alr build
+      - run: alr index "--add=git+https://github.com/alire-project/alire-index#gnat_n_gnatprove_12" --name=gnat_fsf_12 --before=community
       - run: cd tests; alr build

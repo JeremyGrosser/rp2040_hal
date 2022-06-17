@@ -11,7 +11,7 @@ executables = ["test_rp2040_hal"]
 [[depends-on]]  # Added by alr
 rp2040_hal = "~1.1.0"
 aunit = "^22.0.0"
-gnat_arm_elf = "^11.2"
+gnat_arm_elf = "^12"
 
 [[pins]]
 rp2040_hal = { path='../../rp2040_hal' }

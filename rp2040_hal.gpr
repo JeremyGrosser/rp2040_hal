@@ -3,7 +3,7 @@ with "cortex_m0.gpr";
 
 project Rp2040_Hal is
 
-   for Runtime ("Ada") use "zfp-cortex-m0p";
+   for Runtime ("Ada") use "light-cortex-m0p";
    for Target use "arm-eabi";
 
    for Languages use ("Ada");

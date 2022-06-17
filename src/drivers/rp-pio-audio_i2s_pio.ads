@@ -9,8 +9,6 @@
 
 pragma Style_Checks (Off);
 
-with RP.PIO;
-
 package RP.PIO.Audio_I2S_PIO is
 
    ---------------

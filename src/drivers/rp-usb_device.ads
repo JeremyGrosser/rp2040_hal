@@ -124,4 +124,8 @@ private
       (This : in out USB_Device_Controller)
       return Line_States;
 
+   function Find_First_Set
+      (A : UInt32)
+      return Natural;
+
 end RP.USB_Device;

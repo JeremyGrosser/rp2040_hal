@@ -9,8 +9,6 @@
 
 pragma Style_Checks (Off);
 
-with RP.PIO;
-
 package RP.PIO.WS2812_PIO is
 
    ------------

@@ -82,6 +82,19 @@ package body RP.USB_Device is
       UR.SIE_CTRL.PULLUP_EN := True;
    end Start;
 
+   function Find_First_Set
+      (A : UInt32)
+      return Natural
+   is
+   begin
+      for I in 0 .. 31 loop
+         if (Shift_Right (A, I) and 1) /= 0 then
+            return I + 1;
+         end if;
+      end loop;
+      return 0;
+   end Find_First_Set;
+
    overriding
    function Poll
       (This : in out USB_Device_Controller)
@@ -99,12 +112,8 @@ package body RP.USB_Device is
       end if;
 
       if UR.INTS.BUFF_STATUS then
-
          declare
-            function Find_First_Set (A : UInt32) return UInt32;
-            pragma Import (Intrinsic, Find_First_Set, "__builtin_ffs");
-
-            Bit_Index : constant UInt32 :=
+            Bit_Index : constant Natural :=
               Find_First_Set (BUFF_STATUS_U32);
          begin
             if Bit_Index /= 0 then
