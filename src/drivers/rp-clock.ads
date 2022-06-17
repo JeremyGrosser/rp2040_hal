@@ -88,9 +88,9 @@ is
    PLL_48_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
        REFDIV   => 1,
-       FBDIV    => 120,
-       POSTDIV1 => 6,
-       POSTDIV2 => 5);
+       FBDIV    => 64,
+       POSTDIV1 => 4,
+       POSTDIV2 => 4);
 
    PLL_125_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
