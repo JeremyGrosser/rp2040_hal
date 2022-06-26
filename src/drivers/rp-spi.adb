@@ -354,7 +354,7 @@ package body RP.SPI is
       return (Masked_Status and IRQ'Enum_Rep) /= 0;
    end Masked_IRQ_Status;
 
-   function RAW_IRQ_Status (This : SPI_Port;
+   function Raw_IRQ_Status (This : SPI_Port;
                             IRQ  : SPI_IRQ_Flag)
                             return Boolean
    is
@@ -363,6 +363,6 @@ package body RP.SPI is
         Volatile_Full_Access;
    begin
       return (RAW_Status and IRQ'Enum_Rep) /= 0;
-   end RAW_IRQ_Status;
+   end Raw_IRQ_Status;
 
 end RP.SPI;

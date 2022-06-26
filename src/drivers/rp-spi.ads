@@ -119,7 +119,7 @@ is
                                return Boolean;
    --  Return true if the given IRQ flag is signaled and enabled
 
-   function RAW_IRQ_Status (This : SPI_Port;
+   function Raw_IRQ_Status (This : SPI_Port;
                             IRQ  : SPI_IRQ_Flag)
                             return Boolean;
    --  Return true if the given IRQ flag is signaled even if the flag is not

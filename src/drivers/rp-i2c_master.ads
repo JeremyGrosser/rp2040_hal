@@ -3,31 +3,29 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+private with RP.I2C;
 with HAL.I2C; use HAL.I2C;
 with RP2040_SVD.I2C;
-with RP.Clock;
 with HAL;
 
+--  This package implements the HAL.I2C interface by using RP.I2C.
+--  Applications that do not require the portability of the HAL.I2C interface
+--  are encouraged to use RP.I2C directly, as it provides more control and
+--  flexibility.
 package RP.I2C_Master
    with Preelaborate
 is
-
    subtype I2C_Number is Natural range 0 .. 1;
 
    type I2C_Master_Port
       (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
-   is new HAL.I2C.I2C_Port with record
-      No_Stop : Boolean := False;
-      Restart_On_Next : Boolean := False;
-   end record;
+   is new HAL.I2C.I2C_Port with private;
 
    procedure Configure
       (This     : in out I2C_Master_Port;
        Baudrate : Hertz)
-     with Pre => Baudrate < RP.Clock.Frequency (RP.Clock.PERI);
-
-   Clock_Speed_Error : exception;
+   with Pre => Baudrate in 100_000 | 400_000 | 1_000_000;
 
    overriding
    procedure Master_Transmit
@@ -64,5 +62,14 @@ is
       Data          : out I2C_Data;
       Status        : out I2C_Status;
       Timeout       : Natural := 1000);
+
+private
+
+   type I2C_Master_Port
+      (Num    : I2C_Number;
+       Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
+   is new HAL.I2C.I2C_Port with record
+      Port : RP.I2C.I2C_Port (Num, Periph);
+   end record;
 
 end RP.I2C_Master;
