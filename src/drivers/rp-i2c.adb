@@ -107,18 +107,36 @@ package body RP.I2C is
 
    procedure Set_Address
       (This : in out I2C_Port;
-       Addr : HAL.I2C.I2C_Address;
-       Size : I2C_Address_Size := Addr_7b)
+       Addr : HAL.UInt7)
    is
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
       This.Disable;
       case This.Role is
          when Controller =>
-            P.IC_CON.IC_10BITADDR_MASTER := (if Size = Addr_7b then ADDR_7BITS else ADDR_10BITS);
+            P.IC_CON.IC_10BITADDR_MASTER := ADDR_7BITS;
             P.IC_TAR.IC_TAR := IC_TAR_IC_TAR_Field (Addr);
          when Target =>
-            P.IC_CON.IC_10BITADDR_SLAVE := (if Size = Addr_7b then ADDR_7BITS else ADDR_10BITS);
+            P.IC_CON.IC_10BITADDR_SLAVE := ADDR_7BITS;
+            P.IC_SAR.IC_SAR := IC_SAR_IC_SAR_Field (Addr);
+      end case;
+      This.Repeated_Start := False;
+      This.Enable;
+   end Set_Address;
+
+   procedure Set_Address
+      (This : in out I2C_Port;
+       Addr : HAL.UInt10)
+   is
+      P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
+   begin
+      This.Disable;
+      case This.Role is
+         when Controller =>
+            P.IC_CON.IC_10BITADDR_MASTER := ADDR_10BITS;
+            P.IC_TAR.IC_TAR := IC_TAR_IC_TAR_Field (Addr);
+         when Target =>
+            P.IC_CON.IC_10BITADDR_SLAVE := ADDR_10BITS;
             P.IC_SAR.IC_SAR := IC_SAR_IC_SAR_Field (Addr);
       end case;
       This.Repeated_Start := False;

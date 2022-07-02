@@ -43,8 +43,6 @@ is
        others => <>);
 
    type I2C_Role is (Controller, Target);
-   type I2C_Address_Size is (Addr_7b, Addr_10b);
-
    type I2C_Config is record
       Role   : I2C_Role := Controller;
       Timing : I2C_Timing := Standard_Mode;
@@ -77,8 +75,12 @@ is
 
    procedure Set_Address
       (This : in out I2C_Port;
-       Addr : HAL.I2C.I2C_Address;
-       Size : I2C_Address_Size := Addr_7b)
+       Addr : HAL.UInt7)
+   with Post => This.Enabled;
+
+   procedure Set_Address
+      (This : in out I2C_Port;
+       Addr : HAL.UInt10)
    with Post => This.Enabled;
    --  When configured as a Controller, Set_Address indicates the address of the Target for Transmit and Receive.
    --  When configured as a Target, Set_Address indicates this device's address.

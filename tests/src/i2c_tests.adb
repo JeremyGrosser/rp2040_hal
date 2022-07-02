@@ -21,7 +21,7 @@ package body I2C_Tests is
    I2C1_SDA    : aliased RP.GPIO.GPIO_Point := (Pin => 2);
    I2C1_SCL    : aliased RP.GPIO.GPIO_Point := (Pin => 3);
    I2C1        : RP.I2C.I2C_Port (1, RP2040_SVD.I2C.I2C1_Periph'Access);
-   Target_Addr : constant HAL.I2C.I2C_Address := 16#42#;
+   Target_Addr : constant HAL.UInt7 := 16#42#;
 
    overriding
    procedure Set_Up
