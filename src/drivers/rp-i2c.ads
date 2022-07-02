@@ -198,11 +198,11 @@ is
    type I2C_State is record
       Abort_Source   : I2C_Abort_Source;
       Last_Command   : RP2040_SVD.I2C.IC_DATA_CMD_Register;
-      Repeated_Start : Boolean;
       RX_Remaining   : Natural;
       TX_Remaining   : Natural;
       TX_Empty       : Boolean;
       RX_Empty       : Boolean;
+      Repeated_Start : Boolean;
       Is_Error       : Boolean;
    end record;
 
@@ -221,9 +221,9 @@ private
    is tagged record
       Role           : I2C_Role;
       Last_Command   : RP2040_SVD.I2C.IC_DATA_CMD_Register;
-      Repeated_Start : Boolean;
       RX_Remaining   : Natural;
       TX_Remaining   : Natural;
+      Repeated_Start : Boolean;
    end record;
 
    for I2C_Abort_Source use record
