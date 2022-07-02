@@ -72,4 +72,8 @@ private
       Port : RP.I2C.I2C_Port (Num, Periph);
    end record;
 
+   procedure Set_Address
+      (This : in out I2C_Master_Port;
+       Addr : I2C_Address);
+
 end RP.I2C_Master;

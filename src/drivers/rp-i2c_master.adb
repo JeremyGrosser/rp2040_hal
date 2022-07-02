@@ -22,6 +22,19 @@ package body RP.I2C_Master is
       end if;
    end Configure;
 
+   procedure Set_Address
+      (This : in out I2C_Master_Port;
+       Addr : I2C_Address)
+   is
+   begin
+      --  HAL.I2C doesn't differentiate between 7 and 10 bit addresses, so we guess.
+      if Addr > I2C_Address (UInt7'Last) then
+         This.Port.Set_Address (UInt10 (Addr));
+      else
+         This.Port.Set_Address (UInt7 (Addr));
+      end if;
+   end Set_Address;
+
    overriding
    procedure Master_Transmit
      (This    : in out I2C_Master_Port;
@@ -34,7 +47,7 @@ package body RP.I2C_Master is
       Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
       S : I2C_Status;
    begin
-      This.Port.Set_Address (Addr);
+      This.Set_Address (Addr);
       This.Port.Start_Write (Data'Length);
 
       for D of Data loop
@@ -61,7 +74,7 @@ package body RP.I2C_Master is
       Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
       S : I2C_Status;
    begin
-      This.Port.Set_Address (Addr);
+      This.Set_Address (Addr);
       This.Port.Start_Read (Data'Length);
 
       for I in Data'Range loop
@@ -90,7 +103,7 @@ package body RP.I2C_Master is
       Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
       S : I2C_Status;
    begin
-      This.Port.Set_Address (Addr);
+      This.Set_Address (Addr);
 
       case Mem_Addr_Size is
          when Memory_Size_8b =>
@@ -128,7 +141,7 @@ package body RP.I2C_Master is
       Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
       S : I2C_Status;
    begin
-      This.Port.Set_Address (Addr);
+      This.Set_Address (Addr);
 
       case Mem_Addr_Size is
          when Memory_Size_8b =>
