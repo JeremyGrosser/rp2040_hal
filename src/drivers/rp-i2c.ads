@@ -21,7 +21,9 @@ is
    --  These default timing modes do not include SCL rise and fall times. For
    --  more accurate timing, measure the actual rise and fall time of your bus
    --  with an oscilloscope and instantiate an I2C_Timing record with the Rise
-   --  and Fall parameters populated.
+   --  and Fall parameters populated. With Rise and Fall set to 0, SCL will run
+   --  a little slow, but no minimum clock is specified for I2C, so this is
+   --  fine.
    Standard_Mode  : constant I2C_Timing :=
       (High   => 5_200,
        Low    => 4_700,
@@ -48,9 +50,6 @@ is
       Timing : I2C_Timing := Standard_Mode;
    end record;
 
-   --  There are many ways for I2C to fail. I've tried to translate the error
-   --  codes into something closer to english here. Good luck.
-   --
    function Enabled
       (This : I2C_Port)
       return Boolean;
@@ -82,7 +81,7 @@ is
       (This : in out I2C_Port;
        Addr : HAL.UInt10)
    with Post => This.Enabled;
-   --  When configured as a Controller, Set_Address indicates the address of the Target for Transmit and Receive.
+   --  When configured as a Controller, Set_Address indicates the address of the Target for Read and Write.
    --  When configured as a Target, Set_Address indicates this device's address.
 
    procedure Start_Read
