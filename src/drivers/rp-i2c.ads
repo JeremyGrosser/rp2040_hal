@@ -60,12 +60,12 @@ is
    with Post => not This.Enabled;
 
    procedure Enable
-      (This : in out I2C_Port)
-   with Post => This.Enabled;
+      (This     : in out I2C_Port;
+       Deadline : RP.Timer.Time := RP.Timer.Time'Last);
 
    procedure Disable
-      (This : in out I2C_Port)
-   with Post => not This.Enabled;
+      (This     : in out I2C_Port;
+       Deadline : RP.Timer.Time := RP.Timer.Time'Last);
 
    procedure Set_Timing
       (This : in out I2C_Port;
@@ -75,24 +75,23 @@ is
    procedure Set_Address
       (This : in out I2C_Port;
        Addr : HAL.UInt7)
-   with Post => This.Enabled;
+   with Pre => not This.Enabled;
 
    procedure Set_Address
       (This : in out I2C_Port;
        Addr : HAL.UInt10)
-   with Post => This.Enabled;
+   with Pre => not This.Enabled;
    --  When configured as a Controller, Set_Address indicates the address of the Target for Read and Write.
    --  When configured as a Target, Set_Address indicates this device's address.
 
    procedure Start_Read
       (This   : in out I2C_Port;
        Length : Positive := 1;
-       Stop   : Boolean := True);
+       Stop   : Boolean := True)
+   with Pre => This.Enabled;
    --  If Stop is False, the Controller does not release the bus after this
    --  transaction completes and will issue a repeated start before the first
    --  byte of the next transaction. Stop has no effect if Role = Target.
-   --
-   --  If the port is not Enabled, Start_Read will Enable it.
 
    function Read_Ready
       (This : I2C_Port)
@@ -219,11 +218,11 @@ private
       (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is tagged record
-      Role           : I2C_Role;
-      Last_Command   : RP2040_SVD.I2C.IC_DATA_CMD_Register;
-      RX_Remaining   : Natural;
-      TX_Remaining   : Natural;
-      Repeated_Start : Boolean;
+      Role           : I2C_Role := Controller;
+      Last_Command   : RP2040_SVD.I2C.IC_DATA_CMD_Register := (others => <>);
+      RX_Remaining   : Natural := 0;
+      TX_Remaining   : Natural := 0;
+      Repeated_Start : Boolean := False;
    end record;
 
    for I2C_Abort_Source use record

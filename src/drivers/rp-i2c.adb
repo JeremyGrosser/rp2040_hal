@@ -111,7 +111,6 @@ package body RP.I2C is
    is
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
-      This.Disable;
       case This.Role is
          when Controller =>
             P.IC_CON.IC_10BITADDR_MASTER := ADDR_7BITS;
@@ -121,7 +120,6 @@ package body RP.I2C is
             P.IC_SAR.IC_SAR := IC_SAR_IC_SAR_Field (Addr);
       end case;
       This.Repeated_Start := False;
-      This.Enable;
    end Set_Address;
 
    procedure Set_Address
@@ -130,7 +128,6 @@ package body RP.I2C is
    is
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
-      This.Disable;
       case This.Role is
          when Controller =>
             P.IC_CON.IC_10BITADDR_MASTER := ADDR_10BITS;
@@ -140,12 +137,13 @@ package body RP.I2C is
             P.IC_SAR.IC_SAR := IC_SAR_IC_SAR_Field (Addr);
       end case;
       This.Repeated_Start := False;
-      This.Enable;
    end Set_Address;
 
    procedure Enable
-      (This : in out I2C_Port)
+      (This     : in out I2C_Port;
+       Deadline : RP.Timer.Time := RP.Timer.Time'Last)
    is
+      use type RP.Timer.Time;
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
       P.IC_ENABLE :=
@@ -155,15 +153,18 @@ package body RP.I2C is
          (RDMAE  => ENABLED,
           TDMAE  => ENABLED,
           others => <>);
-
-      while P.IC_ENABLE_STATUS.IC_EN /= ENABLED loop
-         null;
+      while not This.Enabled loop
+         if RP.Timer.Clock >= Deadline then
+            return;
+         end if;
       end loop;
    end Enable;
 
    procedure Disable
-      (This : in out I2C_Port)
+      (This     : in out I2C_Port;
+       Deadline : RP.Timer.Time := RP.Timer.Time'Last)
    is
+      use type RP.Timer.Time;
       P : RP2040_SVD.I2C.I2C_Peripheral renames This.Periph.all;
    begin
       P.IC_DMA_CR :=
@@ -174,11 +175,11 @@ package body RP.I2C is
          (ENABLE  => DISABLED,
           ABORT_k => (if This.Role = Controller and then This.Last_Command.STOP /= ENABLE then ENABLED else DISABLE),
           others  => <>);
-
-      while P.IC_ENABLE_STATUS.IC_EN /= DISABLED loop
-         null;
+      while This.Enabled loop
+         if RP.Timer.Clock >= Deadline then
+            return;
+         end if;
       end loop;
-
       This.Clear_Error;
    end Disable;
 
@@ -196,11 +197,6 @@ package body RP.I2C is
       Cmd : IC_DATA_CMD_Register;
    begin
       This.RX_Remaining := Natural (Length);
-
-      if not This.Enabled then
-         This.Enable;
-      end if;
-
       if This.Role = Controller then
          Cmd :=
             (RESTART => (if This.Repeated_Start then ENABLE else DISABLE),
