@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 private with RP.I2C;
+private with RP.Timer;
 with HAL.I2C; use HAL.I2C;
 with RP2040_SVD.I2C;
 with HAL;
@@ -22,9 +23,12 @@ is
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with private;
 
+   type I2C_Address_Size is (Address_Size_7b, Address_Size_10b);
+
    procedure Configure
-      (This     : in out I2C_Master_Port;
-       Baudrate : Hertz)
+      (This         : in out I2C_Master_Port;
+       Baudrate     : Hertz;
+       Address_Size : I2C_Address_Size := Address_Size_7b)
    with Pre => Baudrate in 100_000 | 400_000 | 1_000_000;
 
    overriding
@@ -69,11 +73,14 @@ private
       (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with record
-      Port : RP.I2C.I2C_Port (Num, Periph);
+      Port         : RP.I2C.I2C_Port (Num, Periph);
+      Address_Size : I2C_Address_Size;
    end record;
 
    procedure Set_Address
-      (This : in out I2C_Master_Port;
-       Addr : I2C_Address);
+      (This     : in out I2C_Master_Port;
+       Addr     : I2C_Address;
+       Status   : out I2C_Status;
+       Deadline : RP.Timer.Time);
 
 end RP.I2C_Master;
