@@ -36,6 +36,12 @@ package I2C_Tests is
    procedure Test_Long_Transfer
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Timing
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
+   procedure Test_10b_Address
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 private
 
    function Is_Jumper_Present

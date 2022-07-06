@@ -38,11 +38,13 @@ package body I2C_Tests is
       I2C0_SCL.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
       I2C0.Configure (Controller_Config);
       I2C0.Set_Address (Target_Addr);
+      I2C0.Enable;
 
       I2C1_SDA.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
       I2C1_SCL.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
       I2C1.Configure (Target_Config);
       I2C1.Set_Address (Target_Addr);
+      I2C1.Enable;
    end Set_Up;
 
    procedure Test_Single
@@ -195,6 +197,55 @@ package body I2C_Tests is
       end loop;
    end Test_Long_Transfer;
 
+   procedure Test_Timing
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+   begin
+      I2C0.Disable;
+      I2C0.Set_Timing (RP.I2C.Fast_Mode);
+      I2C0.Enable;
+
+      I2C1.Disable;
+      I2C1.Set_Timing (RP.I2C.Fast_Mode);
+      I2C1.Enable;
+
+      Test_Single (T);
+
+      I2C0.Disable;
+      I2C0.Set_Timing (RP.I2C.Fast_Mode_Plus);
+      I2C0.Enable;
+
+      I2C1.Disable;
+      I2C1.Set_Timing (RP.I2C.Fast_Mode_Plus);
+      I2C1.Enable;
+
+      Test_Single (T);
+
+      I2C0.Disable;
+      I2C0.Set_Timing (RP.I2C.Standard_Mode);
+      I2C0.Enable;
+
+      I2C1.Disable;
+      I2C1.Set_Timing (RP.I2C.Standard_Mode);
+      I2C1.Enable;
+   end Test_Timing;
+
+   procedure Test_10b_Address
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      Addr : constant HAL.UInt10 := 16#230#;
+   begin
+      I2C0.Disable;
+      I2C0.Set_Address (Addr);
+      I2C0.Enable;
+
+      I2C1.Disable;
+      I2C1.Set_Address (Addr);
+      I2C1.Enable;
+
+      Test_Single (T);
+   end Test_10b_Address;
+
    function Is_Jumper_Present
       (A, B : not null access RP.GPIO.GPIO_Point)
       return Boolean
@@ -265,6 +316,8 @@ package body I2C_Tests is
          Register_Routine (T, Test_Multiple'Access, "Multi byte transfer");
          Register_Routine (T, Test_Repeated_Start'Access, "Repeated start");
          Register_Routine (T, Test_Long_Transfer'Access, "Long transfer");
+         Register_Routine (T, Test_Timing'Access, "Timing");
+         Register_Routine (T, Test_10b_Address'Access, "10-bit address");
       else
          Ada.Text_IO.Put_Line ("WARNING: External I2C wiring is incorrect, not testing I2C.");
       end if;
