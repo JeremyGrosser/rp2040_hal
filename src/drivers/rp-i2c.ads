@@ -1,6 +1,6 @@
 with RP2040_SVD.I2C;
 with RP.Timer;
-with HAL.I2C;
+with HAL;
 
 package RP.I2C
    with Preelaborate
@@ -11,6 +11,11 @@ is
       (Num    : I2C_Number;
        Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is tagged private;
+
+   type I2C_Status is
+      (Ok, Timeout, Error);
+   --  If a procedure sets Status to Error, the record returned by function
+   --  State will provide more information useful for debugging.
 
    type Nanoseconds is new Natural;
    type I2C_Timing is record
@@ -102,7 +107,7 @@ is
    procedure Read
       (This     : in out I2C_Port;
        Data     : out HAL.UInt8;
-       Status   : out HAL.I2C.I2C_Status;
+       Status   : out I2C_Status;
        Deadline : RP.Timer.Time := RP.Timer.Time'Last)
    with Pre => This.Enabled;
 
@@ -125,7 +130,7 @@ is
    procedure Write
       (This     : in out I2C_Port;
        Data     : HAL.UInt8;
-       Status   : out HAL.I2C.I2C_Status;
+       Status   : out I2C_Status;
        Deadline : RP.Timer.Time := RP.Timer.Time'Last)
    with Pre => This.Enabled;
    --  If Deadline is reached before Write_Ready returns True, Abort_Write will
@@ -205,7 +210,7 @@ is
       Is_Error       : Boolean;
    end record;
 
-   function Status
+   function State
       (This : I2C_Port)
       return I2C_State;
 

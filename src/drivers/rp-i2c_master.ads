@@ -5,7 +5,7 @@
 --
 private with RP.I2C;
 private with RP.Timer;
-with HAL.I2C; use HAL.I2C;
+with HAL.I2C;
 with RP2040_SVD.I2C;
 with HAL;
 
@@ -34,37 +34,37 @@ is
    overriding
    procedure Master_Transmit
      (This    : in out I2C_Master_Port;
-      Addr    : I2C_Address;
-      Data    : I2C_Data;
-      Status  : out I2C_Status;
+      Addr    : HAL.I2C.I2C_Address;
+      Data    : HAL.I2C.I2C_Data;
+      Status  : out HAL.I2C.I2C_Status;
       Timeout : Natural := 1000);
 
    overriding
    procedure Master_Receive
      (This    : in out I2C_Master_Port;
-      Addr    : I2C_Address;
-      Data    : out I2C_Data;
-      Status  : out I2C_Status;
+      Addr    : HAL.I2C.I2C_Address;
+      Data    : out HAL.I2C.I2C_Data;
+      Status  : out HAL.I2C.I2C_Status;
       Timeout : Natural := 1000);
 
    overriding
    procedure Mem_Write
      (This          : in out I2C_Master_Port;
-      Addr          : I2C_Address;
+      Addr          : HAL.I2C.I2C_Address;
       Mem_Addr      : HAL.UInt16;
-      Mem_Addr_Size : I2C_Memory_Address_Size;
-      Data          : I2C_Data;
-      Status        : out I2C_Status;
+      Mem_Addr_Size : HAL.I2C.I2C_Memory_Address_Size;
+      Data          : HAL.I2C.I2C_Data;
+      Status        : out HAL.I2C.I2C_Status;
       Timeout       : Natural := 1000);
 
    overriding
    procedure Mem_Read
      (This          : in out I2C_Master_Port;
-      Addr          : I2C_Address;
+      Addr          : HAL.I2C.I2C_Address;
       Mem_Addr      : HAL.UInt16;
-      Mem_Addr_Size : I2C_Memory_Address_Size;
-      Data          : out I2C_Data;
-      Status        : out I2C_Status;
+      Mem_Addr_Size : HAL.I2C.I2C_Memory_Address_Size;
+      Data          : out HAL.I2C.I2C_Data;
+      Status        : out HAL.I2C.I2C_Status;
       Timeout       : Natural := 1000);
 
 private
@@ -79,8 +79,12 @@ private
 
    procedure Set_Address
       (This     : in out I2C_Master_Port;
-       Addr     : I2C_Address;
-       Status   : out I2C_Status;
+       Addr     : HAL.I2C.I2C_Address;
+       Status   : out HAL.I2C.I2C_Status;
        Deadline : RP.Timer.Time);
+
+   function To_HAL_Status
+      (S : RP.I2C.I2C_Status)
+      return HAL.I2C.I2C_Status;
 
 end RP.I2C_Master;

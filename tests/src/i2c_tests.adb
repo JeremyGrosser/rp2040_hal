@@ -51,7 +51,7 @@ package body I2C_Tests is
       use HAL.I2C;
       use HAL;
       Data   : UInt8;
-      Status : I2C_Status;
+      Status : RP.I2C.I2C_Status;
    begin
       I2C1.Start_Read (1);
       I2C0.Start_Write (1);
@@ -85,7 +85,7 @@ package body I2C_Tests is
       use HAL;
       Data   : constant I2C_Data (1 .. 4) := (1, 2, 3, 4);
       D      : UInt8;
-      Status : I2C_Status;
+      Status : RP.I2C.I2C_Status;
    begin
       I2C1.Start_Read (Data'Length);
       I2C0.Start_Write (Data'Length);
@@ -124,7 +124,7 @@ package body I2C_Tests is
       use HAL.I2C;
       use HAL;
       Data   : UInt8;
-      Status : I2C_Status;
+      Status : RP.I2C.I2C_Status;
    begin
       I2C0.Start_Read (2, Stop => False);
       I2C1.Start_Write (2);
@@ -165,7 +165,7 @@ package body I2C_Tests is
       use HAL.I2C;
       use HAL;
       Data   : UInt8;
-      Status : I2C_Status;
+      Status : RP.I2C.I2C_Status;
       Length : constant := 64;
    begin
       I2C0.Start_Write (Length, Stop => False);

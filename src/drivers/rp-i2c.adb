@@ -73,7 +73,7 @@ package body RP.I2C is
       end if;
    end Set_Timing;
 
-   function Status
+   function State
       (This : I2C_Port)
       return I2C_State
    is
@@ -92,7 +92,7 @@ package body RP.I2C is
           TX_Empty         => This.Periph.IC_STATUS.TFE = EMPTY,
           RX_Empty         => This.Periph.IC_STATUS.RFNE = EMPTY,
           Is_Error         => Code /= 0);
-   end Status;
+   end State;
 
    procedure Clear_Error
       (This : in out I2C_Port)
@@ -217,7 +217,7 @@ package body RP.I2C is
    procedure Read
       (This     : in out I2C_Port;
        Data     : out HAL.UInt8;
-       Status   : out HAL.I2C.I2C_Status;
+       Status   : out I2C_Status;
        Deadline : RP.Timer.Time := RP.Timer.Time'Last)
    is
       use RP.Timer;
@@ -226,7 +226,7 @@ package body RP.I2C is
    begin
       while not This.Read_Ready loop
          if RP.Timer.Clock >= Deadline then
-            Status := HAL.I2C.Err_Timeout;
+            Status := Timeout;
             Data := 0;
             return;
          end if;
@@ -234,8 +234,8 @@ package body RP.I2C is
 
       Data := P.IC_DATA_CMD.DAT;
 
-      if This.Status.Is_Error then
-         Status := HAL.I2C.Err_Error;
+      if This.State.Is_Error then
+         Status := Error;
          return;
       end if;
 
@@ -251,7 +251,7 @@ package body RP.I2C is
          This.Last_Command := Cmd;
       end if;
 
-      Status := HAL.I2C.Ok;
+      Status := Ok;
    end Read;
 
    procedure Start_Write
@@ -286,9 +286,9 @@ package body RP.I2C is
    is (This.Periph.IC_STATUS.TFNF = NOT_FULL);
 
    procedure Write
-      (This    : in out I2C_Port;
-       Data    : HAL.UInt8;
-       Status  : out HAL.I2C.I2C_Status;
+      (This     : in out I2C_Port;
+       Data     : HAL.UInt8;
+       Status   : out I2C_Status;
        Deadline : RP.Timer.Time := RP.Timer.Time'Last)
    is
       use RP.Timer;
@@ -298,7 +298,7 @@ package body RP.I2C is
    begin
       while not This.Write_Ready loop
          if RP.Timer.Clock >= Deadline then
-            Status := HAL.I2C.Err_Timeout;
+            Status := Timeout;
             This.Abort_Write;
             return;
          end if;
@@ -311,14 +311,14 @@ package body RP.I2C is
           DAT     => Data,
           others  => <>);
 
-      if This.Status.Is_Error then
-         Status := HAL.I2C.Err_Error;
+      if This.State.Is_Error then
+         Status := Error;
          return;
       end if;
 
       Clear := This.Periph.IC_CLR_RD_REQ.CLR_RD_REQ;
       This.TX_Remaining := This.TX_Remaining - 1;
-      Status := HAL.I2C.Ok;
+      Status := Ok;
    end Write;
 
    procedure Abort_Write
