@@ -1,36 +1,15 @@
 with "config/rp2040_hal_config.gpr";
-with "cortex_m.gpr";
-
 project Rp2040_Hal is
 
    for Runtime ("Ada") use "light-cortex-m0p";
    for Target use "arm-eabi";
 
-   for Languages use ("Ada");
-   for Object_Dir use "obj/RP2040";
-   for Create_Missing_Dirs use "True";
-
-   Boot_Stage_2 := Project'Project_Dir & "boot2/generated/boot2__" & RP2040_HAL_Config.Flash_Chip & ".S";
+   Boot_Stage_2 := Project'Project_Dir & "boot2/generated/boot2__" & Rp2040_Hal_Config.Flash_Chip & ".S";
    Linker_Script := Project'Project_Dir & "ld/memmap_default.ld";
    Linker_Switches := ("-T", Linker_Script, Boot_Stage_2);
 
-   for Library_Name use "rp2040_hal";
-   for Library_Dir use "lib";
+   for Library_Name use "Rp2040_Hal";
    for Library_Version use Project'Library_Name & ".so." & Rp2040_Hal_Config.Crate_Version;
-
-   type Library_Type_Type is ("relocatable", "static", "static-pic");
-   Library_Type : Library_Type_Type :=
-       external ("RP2040_HAL_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
-   for Library_Kind use Library_Type;
-
-   type Enabled_Kind is ("enabled", "disabled");
-   Compile_Checks : Enabled_Kind := External ("RP2040_HAL_COMPILE_CHECKS", "enabled");
-   Runtime_Checks : Enabled_Kind := External ("RP2040_HAL_RUNTIME_CHECKS", "enabled");
-   Style_Checks : Enabled_Kind := External ("RP2040_HAL_STYLE_CHECKS", "enabled");
-   Contracts_Checks : Enabled_Kind := External ("RP2040_HAL_CONTRACTS", "enabled");
-
-   type Build_Kind is ("debug", "optimize");
-   Build_Mode : Build_Kind := External ("RP2040_HAL_BUILD_MODE", "optimize");
 
    Startup_Dirs := ();
    case Rp2040_Hal_Config.Use_Startup is
@@ -41,75 +20,35 @@ project Rp2040_Hal is
    end case;
 
    for Source_Dirs use
-       Startup_Dirs &
-       ("src",
-        "src/drivers",
-        "src/svd",
-        "src/devices/RP2040");
+      Startup_Dirs &
+      ("src/",
+       "src/drivers",
+       "src/svd",
+       "src/devices/RP2040",
+       "config/");
 
-   Compile_Checks_Switches := ();
-   case Compile_Checks is
-      when "enabled" =>
-         Compile_Checks_Switches :=
-           ("-gnatwa",   -- All warnings
-            "-gnatwl",   -- Elaboration warnings
-            "-gnatVa",   -- All validity checks
-            "-gnatw.X"); -- Hide No_Exception_Propagation warnings
-      when others => null;
-   end case;
+   for Object_Dir use "obj/" & Rp2040_Hal_Config.Build_Profile;
+   for Create_Missing_Dirs use "True";
+   for Library_Dir use "lib";
 
-   Runtime_Checks_Switches := ();
-   case Runtime_Checks is
-      when "enabled" => null;
-      when others =>
-         Runtime_Checks_Switches :=
-           ("-gnatp"); -- Supress checks
-   end case;
-
-   Style_Checks_Switches := ();
-   case Style_Checks is
-      when "enabled" => null;
-         Style_Checks_Switches :=
-           ("-gnatyg",    -- GNAT Style checks
-            "-gnaty-d" ,  -- Disable no DOS line terminators
-            "-gnatyM120", -- Maximum line length
-            "-gnatyO");   -- Overriding subprograms explicitly marked as such
-      when others => null;
-   end case;
-
-   Contracts_Switches := ();
-   case Contracts_Checks is
-      when "enabled" => null;
-         Contracts_Switches :=
-           ("-gnata"); --  Enable assertions and contracts
-      when others =>
-   end case;
-
-   Build_Switches := ();
-   case Build_Mode is
-      when "optimize" =>
-         Build_Switches := ("-O3",     -- Optimization
-                            "-gnatn"); -- Enable inlining
-      when "debug" =>
-         Build_Switches := ("-g",   -- Debug info
-                            "-O0"); -- No optimization
-   end case;
+   type Library_Type_Type is ("relocatable", "static", "static-pic");
+   Library_Type : Library_Type_Type :=
+     external ("RP2040_HAL_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
+   for Library_Kind use Library_Type;
 
    package Compiler is
-      for Default_Switches ("Ada") use
-        Compile_Checks_Switches &
-        Build_Switches &
-        Runtime_Checks_Switches &
-        Style_Checks_Switches &
-        Contracts_Switches &
-        ("-gnatQ",              -- Don't quit. Generate ALI and tree files even if illegalities
-         "-fstack-usage",       -- output stack usage information
-         "-ffunction-sections", -- Separate ELF section for each function
-         "-fdata-sections",    -- Separate ELF section for each variable
-         "-fno-delete-null-pointer-checks");
-         --  -fdelete-null-pointer-checks assumes that programs cannot safely
-         --  dereference null pointers, and that no code or data element resides
-         --  at address zero, but RP.ROM.Header *does* point to zero and
-         --  definitely should not be optimized out.
+      for Default_Switches ("Ada") use Rp2040_Hal_Config.Ada_Compiler_Switches &
+         ("-gnatyM120", --  max line length 120
+          "-gnaty-B",   --  don't warn about "and then", "or else" conditionals
+          "-fno-delete-null-pointer-checks");
    end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+   end Binder;
+
+   package Install is
+      for Artifacts (".") use ("share");
+   end Install;
+
 end Rp2040_Hal;
