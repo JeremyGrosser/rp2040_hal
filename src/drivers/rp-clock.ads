@@ -20,7 +20,7 @@ is
 
    procedure Initialize
       (XOSC_Frequency     : XOSC_Hertz := 0;
-       XOSC_Startup_Delay : XOSC_Cycles := 12_032)
+       XOSC_Startup_Delay : XOSC_Cycles := 770_048) --  ~64ms with a 12 MHz crystal
        with Pre => XOSC_Startup_Delay <= (Natural (UInt14'Last) * 256)
                and XOSC_Startup_Delay mod 256 = 0;
    --  See 2.16.3 Startup Delay for XOSC_Startup_Delay calculation. The default
