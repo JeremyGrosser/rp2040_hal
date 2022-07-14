@@ -64,7 +64,7 @@ package body RP.Clock is
 
    procedure Initialize
       (XOSC_Frequency     : XOSC_Hertz := 0;
-       XOSC_Startup_Delay : XOSC_Cycles := 12_032)
+       XOSC_Startup_Delay : XOSC_Cycles := 770_048)
    is
       use RP.Reset;
       Has_XOSC  : constant Boolean := XOSC_Frequency > 0;
