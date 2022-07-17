@@ -39,6 +39,25 @@ package body RP.Timer is
       return Time (Shift_Left (UInt64 (High), 32) or UInt64 (Low));
    end Clock;
 
+   procedure Busy_Wait_Until (Deadline : Time) is
+      DL_High : constant UInt32 :=
+        UInt32 (Shift_Right (Deadline, 32) and 16#FF_FF_FF_FF#);
+      DL_Low  : constant UInt32 :=
+        UInt32 (Deadline and 16#FF_FF_FF_FF#);
+
+      High : UInt32 := TIMER_Periph.TIMERAWH;
+   begin
+      loop
+         High := TIMER_Periph.TIMERAWH;
+         exit when High >= DL_High;
+      end loop;
+
+      while High = DL_High and then TIMER_Periph.TIMERAWL < DL_Low loop
+         High := TIMER_Periph.TIMERAWH;
+      end loop;
+
+   end Busy_Wait_Until;
+
    procedure IRQ_Handler
       (Id : RP_Interrupts.Interrupt_ID)
    is

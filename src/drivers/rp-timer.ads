@@ -17,6 +17,11 @@ is
    function Clock
       return Time;
 
+   --  Waste CPU cycles until Clock reaches the given Deadline. This procedure
+   --  is useful in situations where interrupt based delays will not work,
+   --  e.g. an interrupt handler.
+   procedure Busy_Wait_Until (Deadline : Time);
+
    type Delays is new HAL.Time.Delays with null record;
 
    function Enabled
