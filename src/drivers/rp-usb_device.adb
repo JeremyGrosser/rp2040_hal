@@ -72,11 +72,12 @@ package body RP.USB_Device is
          (EP0_INT_1BUF => True,
           others       => <>);
 
-      --  Most interrupts are read directly from SIE_STATUS. BUFF_STATUS is the
-      --  only masked interrupt we care about.
+      --  Enable interrupts for the events used in the Poll procedure
       UR.INTE :=
-         (BUFF_STATUS => True,
-          others      => <>);
+        (BUFF_STATUS => True,
+         BUS_RESET   => True,
+         SETUP_REQ   => True,
+         others      => <>);
 
       --  Pullup USB_DP to indicate full speed
       UR.SIE_CTRL.PULLUP_EN := True;
@@ -104,7 +105,10 @@ package body RP.USB_Device is
       use type USB.EP_Dir;
    begin
       if UR.SIE_STATUS.BUS_RESET then
-         UR.SIE_STATUS.BUS_RESET := True;
+
+         --  Write 1 to clear
+         UR.SIE_STATUS := (BUS_RESET => True, others => <>);
+
          if UR.SIE_CTRL.PULLUP_EN then
             This.Enumeration_Fix;
          end if;
@@ -118,7 +122,7 @@ package body RP.USB_Device is
          begin
             if Bit_Index /= 0 then
                declare
-                  Num : constant USB.EP_Id :=  USB.EP_Id ((Bit_Index - 1) / 2);
+                  Num : constant USB.EP_Id := USB.EP_Id ((Bit_Index - 1) / 2);
                   Dir : constant USB.EP_Dir := (if (Bit_Index mod 2) = 1
                                                 then USB.EP_In
                                                 else USB.EP_Out);
@@ -133,8 +137,12 @@ package body RP.USB_Device is
             end if;
          end;
       end if;
+
       if UR.SIE_STATUS.SETUP_REC then
-         UR.SIE_STATUS.SETUP_REC := True;
+
+         --  Write 1 to clear
+         UR.SIE_STATUS := (SETUP_REC => True, others => <>);
+
          This.EP_Status (0, USB.EP_In).Next_PID := True;
          This.EP_Status (0, USB.EP_Out).Next_PID := True;
          return (Kind   => Setup_Request,
@@ -356,9 +364,11 @@ package body RP.USB_Device is
 
       --  J state is now forced, hold for 1ms
       declare
-         D : RP.Timer.Delays;
+         use RP.Timer;
       begin
-         D.Delay_Microseconds (1_000);
+         --  Use a busy wait in case this procedure is called in an interrupt
+         --  handler.
+         Busy_Wait_Until (RP.Timer.Clock + Milliseconds (1));
       end;
 
       --  Put everything back the way we found it
