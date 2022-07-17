@@ -24,4 +24,4 @@ atomic.Backend = "armv6m"
 cortex_m.core = "m0p"
 
 [[pins]]
-cortex_m = { url='https://github.com/JeremyGrosser/cortex-m', branch='preelaborate' }
+cortex_m = { url='https://github.com/Fabien-Chouteau/cortex-m' }
