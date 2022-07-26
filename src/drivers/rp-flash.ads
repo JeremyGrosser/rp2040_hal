@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with HAL; use HAL;
 with System;
 
 package RP.Flash
@@ -61,6 +62,10 @@ is
    --  Program Length bytes of flash starting at Offset bytes from the beginning
    --  of flash using the Source buffer. Length must be a multiple of 256.
 
+   function Unique_Id
+      return UInt64;
+   --  Read the Unique Id (4Bh) from the flash chip
+
 private
 
    pragma Inline_Always (To_Address);
@@ -70,5 +75,8 @@ private
    XIP_BASE             : constant := 16#10000000#;
    Block_Erase_Command  : constant := 16#d8#;
    Block_Size           : constant := 65536;
+
+   procedure Transfer
+      (Data : in out UInt32);
 
 end RP.Flash;

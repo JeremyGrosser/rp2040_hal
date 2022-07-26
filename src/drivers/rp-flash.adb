@@ -6,9 +6,9 @@
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Machine_Code; use System.Machine_Code;
 with Atomic.Critical_Section;
+with RP2040_SVD.XIP_SSI;
 with Interfaces.C;
 with RP.ROM;
-with HAL;
 
 package body RP.Flash is
 
@@ -145,5 +145,45 @@ package body RP.Flash is
 
       Atomic.Critical_Section.Leave (State);
    end Program;
+
+   procedure Transfer
+      (Data : in out UInt32)
+   is
+      use RP2040_SVD.XIP_SSI;
+   begin
+      XIP_SSI_Periph.DR0 := Data;
+      while XIP_SSI_Periph.TXFLR.TFTFL > 0 or XIP_SSI_Periph.RXFLR.RXTFL = 0 loop
+         null;
+      end loop;
+      Data := XIP_SSI_Periph.DR0;
+   end Transfer;
+
+   function Unique_Id
+      return UInt64
+   is
+      State : Atomic.Critical_Section.Interrupt_State;
+      Id : UInt64 := 0;
+      Data : UInt32;
+   begin
+      Atomic.Critical_Section.Enter (State);
+
+      --  __compiler_memory_barrier();
+      Asm ("", Clobber => "memory", Volatile => True);
+      RP.ROM.connect_internal_flash;
+      RP.ROM.flash_exit_xip;
+
+      Data := 16#4B00_0000#;
+      Transfer (Data);
+      for I in 0 .. 1 loop
+         Data := 0;
+         Transfer (Data);
+         Id := Id or Shift_Left (UInt64 (Data), I * 32);
+      end loop;
+
+      Flash_Enable_XIP_Via_Boot2;
+      Atomic.Critical_Section.Leave (State);
+
+      return Id;
+   end Unique_Id;
 
 end RP.Flash;
