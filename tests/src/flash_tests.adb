@@ -7,7 +7,6 @@ with AUnit.Assertions; use AUnit.Assertions;
 with HAL; use HAL;
 with RP.Flash;
 with RP.Flash.Cache;
-with System.Storage_Elements; use System.Storage_Elements;
 
 package body Flash_Tests is
    Test_Area : UInt8_Array (1 .. RP.Flash.Sector_Size)
@@ -80,6 +79,15 @@ package body Flash_Tests is
       Assert (RP.Flash.Cache.Hit_Count > 0, "cache hit counter did not increment");
    end Test_Cache;
 
+   procedure Test_Unique_Id
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      X : UInt64 with Volatile;
+   begin
+      X := RP.Flash.Unique_Id;
+      Assert (X /= 0, "unique id is 0");
+   end Test_Unique_Id;
+
    overriding
    procedure Register_Tests
       (T : in out Flash_Test)
@@ -89,6 +97,7 @@ package body Flash_Tests is
       Register_Routine (T, Test_Erase'Access, "Erase");
       Register_Routine (T, Test_Program'Access, "Program");
       Register_Routine (T, Test_Cache'Access, "Cache");
+      Register_Routine (T, Test_Unique_Id'Access, "Unique Id");
    end Register_Tests;
 
    overriding

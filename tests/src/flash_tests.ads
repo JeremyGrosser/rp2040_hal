@@ -28,4 +28,7 @@ package Flash_Tests is
    procedure Test_Cache
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Unique_Id
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
 end Flash_Tests;

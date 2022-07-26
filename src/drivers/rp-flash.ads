@@ -76,7 +76,4 @@ private
    Block_Erase_Command  : constant := 16#d8#;
    Block_Size           : constant := 65536;
 
-   procedure Transfer
-      (Data : in out UInt32);
-
 end RP.Flash;
