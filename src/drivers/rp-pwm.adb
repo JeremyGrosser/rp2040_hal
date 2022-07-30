@@ -180,8 +180,8 @@ package body RP.PWM is
 
    function Count
       (Slice : PWM_Slice)
-      return Natural
-   is (Natural (PWM_Periph.CH (Slice).CTR.CH0_CTR));
+      return UInt16
+   is (PWM_Periph.CH (Slice).CTR.CH0_CTR);
 
    procedure Set_Count
       (Slice : PWM_Slice;

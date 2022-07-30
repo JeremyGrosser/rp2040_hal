@@ -29,4 +29,11 @@ package PWM_Tests is
    procedure Test_Counter
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
+   procedure Test_Interrupt
+      (T : in out AUnit.Test_Cases.Test_Case'Class);
+
+private
+
+   procedure IRQ_Handler;
+
 end PWM_Tests;

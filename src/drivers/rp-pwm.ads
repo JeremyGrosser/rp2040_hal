@@ -137,7 +137,7 @@ is
 
    function Count
       (Slice : PWM_Slice)
-      return Natural;
+      return UInt16;
 
    procedure Set_Count
       (Slice : PWM_Slice;
