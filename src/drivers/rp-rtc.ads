@@ -37,6 +37,15 @@ is
       Sec         : Boolean := True;
    end record;
 
+   procedure Set_Alarm
+      (This : in out RTC_Device;
+       Time : HAL.Real_Time_Clock.RTC_Time;
+       Date : HAL.Real_Time_Clock.RTC_Date;
+       Mask : RTC_Alarm_Mask);
+
+   procedure Disable_Alarm
+      (This : in out RTC_Device);
+
    procedure Delay_Until
       (This : in out RTC_Device;
        Time : HAL.Real_Time_Clock.RTC_Time;

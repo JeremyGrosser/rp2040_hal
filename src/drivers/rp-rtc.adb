@@ -62,7 +62,7 @@ package body RP.RTC is
       end loop;
    end Resume;
 
-   procedure Delay_Until
+   procedure Set_Alarm
       (This : in out RTC_Device;
        Time : RTC_Time;
        Date : RTC_Date;
@@ -88,12 +88,29 @@ package body RP.RTC is
           SEC_ENA    => Mask.Sec,
           others     => <>);
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
-
       RTC_Periph.INTE.RTC := True;
+   end Set_Alarm;
+
+   procedure Disable_Alarm
+      (This : in out RTC_Device)
+   is
+   begin
+      RTC_Periph.INTE.RTC := False;
+      RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
+   end Disable_Alarm;
+
+   procedure Delay_Until
+      (This : in out RTC_Device;
+       Time : RTC_Time;
+       Date : RTC_Date;
+       Mask : RTC_Alarm_Mask)
+   is
+   begin
+      This.Set_Alarm (Time, Date, Mask);
       while not RTC_Periph.INTR.RTC loop
          System.Machine_Code.Asm ("wfi", Volatile => True);
       end loop;
-      RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
+      This.Disable_Alarm;
    end Delay_Until;
 
    overriding
