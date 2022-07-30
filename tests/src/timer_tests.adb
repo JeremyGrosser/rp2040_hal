@@ -61,6 +61,11 @@ package body Timer_Tests is
       Stop := Clock;
       Assert (Stop - Start >= Milliseconds (1), "until");
 
+      Start := Clock;
+      RP.Timer.Busy_Wait_Until (Start + 100);
+      Stop := Clock;
+      Assert (Stop - Start >= 100, "busy wait");
+
       Delays.Disable;
    end Test_Delays;
 
