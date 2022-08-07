@@ -61,10 +61,6 @@ package body GPIO_Tests is
             "Capability " & Cap'Image & " is not supported");
       end loop;
 
-      LED.Set_Mode (Input);
-      Assert (LED.Mode = Input, "Unable to set input mode");
-      Assert (LED.Get = False, "Unable to get input");
-
       LED.Set_Mode (Output);
       Assert (LED.Mode = Output, "Unable to set output mode");
       for R in GPIO_Pull_Resistor'Range loop
@@ -73,6 +69,11 @@ package body GPIO_Tests is
       end loop;
 
       LED.Set_Pull_Resistor (Pull_Up);
+      LED.Set_Mode (Input);
+      Assert (LED.Mode = Input, "Unable to set input mode");
+      Assert (LED.Get = False, "Unable to get input");
+
+      LED.Set_Mode (Output);
       LED.Clear;
       LED.Set;
       LED.Toggle;
