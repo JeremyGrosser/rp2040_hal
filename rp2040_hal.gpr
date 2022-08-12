@@ -25,6 +25,7 @@ project Rp2040_Hal is
        "src/drivers",
        "src/svd",
        "src/devices/RP2040",
+       "src/interrupts/" & Rp2040_Hal_Config.Interrupts,
        "config/");
 
    for Object_Dir use "obj/" & Rp2040_Hal_Config.Build_Profile;

@@ -18,6 +18,7 @@ gnat_arm_elf = "^12"
 
 [configuration.variables]
 Flash_Chip = {type = "Enum",  values = ["w25qxx", "generic_qspi", "generic_03"], default = "w25qxx"}
+Interrupts = {type = "Enum",  values = ["hal", "bb_runtimes"], default = "hal"}
 Use_Startup = {type = "Boolean", default = true}
 
 [configuration.values]
