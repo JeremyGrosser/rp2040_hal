@@ -5,9 +5,7 @@
 --
 
 with RP2040_SVD.SIO; use RP2040_SVD.SIO;
-with RP2040_SVD.Interrupts;
 with RP.Reset;
-with System;
 
 package body RP.GPIO is
    function Pin_Mask (Pin : GPIO_Pin)
@@ -15,7 +13,6 @@ package body RP.GPIO is
    is (GPIO_Pin_Mask (Shift_Left (UInt32 (1), GPIO_Pin'Pos (Pin))));
 
    procedure Enable is
-      use RP2040_SVD.Interrupts;
       use RP.Reset;
    begin
       Reset_Peripheral (Reset_IO_BANK0);
@@ -36,11 +33,6 @@ package body RP.GPIO is
 
       IO_BANK_Periph.PROC0_INTE := (others => 0);
       IO_BANK_Periph.PROC1_INTE := (others => 0);
-
-      RP_Interrupts.Attach_Handler
-         (Handler => IRQ_Handler'Access,
-          Id      => IO_IRQ_BANK0_Interrupt,
-          Prio    => System.Interrupt_Priority'First);
 
       GPIO_Enabled := True;
    end Enable;
@@ -110,14 +102,6 @@ package body RP.GPIO is
       return Boolean
    is ((SIO_Periph.GPIO_IN.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
 
-   procedure Set_Interrupt_Handler
-      (This    : in out GPIO_Point;
-       Handler : Interrupt_Procedure)
-   is
-   begin
-      GPIO_Interrupt_Handlers (This.Pin) := Handler;
-   end Set_Interrupt_Handler;
-
    procedure Enable_Interrupt
       (This    : in out GPIO_Point;
        Trigger : Interrupt_Triggers)
@@ -141,29 +125,6 @@ package body RP.GPIO is
       INTE := INTE and not Interrupt_Triggers'Enum_Rep (Trigger);
       IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
    end Disable_Interrupt;
-
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID)
-   is
-      pragma Unreferenced (Id);
-      Handler : Interrupt_Procedure;
-      T       : UInt4;
-   begin
-      for Pin in IO_BANK_Periph.PROC0_INTS'Range loop
-         if IO_BANK_Periph.PROC0_INTS (Pin) /= 0 then
-            for Trigger in Interrupt_Triggers'Range loop
-               T := IO_BANK_Periph.PROC0_INTS (Pin) and Interrupt_Triggers'Enum_Rep (Trigger);
-               if T /= 0 then
-                  Handler := GPIO_Interrupt_Handlers (Pin);
-                  if Handler /= null then
-                     Handler.all (Pin, Trigger);
-                  end if;
-                  IO_BANK_Periph.INTR (Pin) := T;
-               end if;
-            end loop;
-         end if;
-      end loop;
-   end IRQ_Handler;
 
    overriding
    function Support

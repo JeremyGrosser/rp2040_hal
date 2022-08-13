@@ -34,7 +34,7 @@ package body RP_Interrupts is
       Id := Interrupt_ID (IPSR - 16);
 
       if Handlers (Id) /= null then
-         Handlers (Id).all (Id);
+         Handlers (Id).all;
       else
          raise Program_Error with "Unhandled IRQ " & Id'Image;
       end if;
