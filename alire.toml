@@ -10,7 +10,7 @@ tags = ["embedded", "nostd", "rp2040", "raspberrypi", "drivers"]
 website = "https://pico-doc.synack.me/"
 
 [[depends-on]]
-cortex_m = "~0.3"
+cortex_m = "~0.5"
 atomic = "~0.4"
 hal = "~0.3"
 usb_embedded = "~0.3"
@@ -24,6 +24,3 @@ Use_Startup = {type = "Boolean", default = true}
 [configuration.values]
 atomic.Backend = "armv6m"
 cortex_m.core = "m0p"
-
-[[pins]]
-cortex_m = { url='https://github.com/Fabien-Chouteau/cortex-m' }
