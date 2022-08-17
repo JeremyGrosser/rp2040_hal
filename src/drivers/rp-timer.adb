@@ -5,7 +5,7 @@
 --
 with RP2040_SVD.Interrupts;
 with RP2040_SVD.TIMER;      use RP2040_SVD.TIMER;
-with System.Machine_Code;
+with Cortex_M.Hints;
 with System;
 
 package body RP.Timer is
@@ -107,7 +107,7 @@ package body RP.Timer is
       end if;
       TIMER_Periph.ALARM2 := UInt32 (T and 16#FFFFFFFF#);
       loop
-         System.Machine_Code.Asm ("wfi", Volatile => True);
+         Cortex_M.Hints.Wait_For_Interrupt;
          if Clock >= T then
             return;
          elsif TIMER_Periph.INTS.ALARM_2 then

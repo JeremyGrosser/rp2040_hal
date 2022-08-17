@@ -6,10 +6,10 @@
 with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
 with RP2040_SVD.RTC; use RP2040_SVD.RTC;
 with RP2040_SVD.Interrupts;
+with Cortex_M.Hints;
 with HAL; use HAL;
 with RP.Clock;
 with RP.Reset;
-with System.Machine_Code;
 with System;
 
 package body RP.RTC is
@@ -108,7 +108,7 @@ package body RP.RTC is
    begin
       This.Set_Alarm (Time, Date, Mask);
       while not RTC_Periph.INTR.RTC loop
-         System.Machine_Code.Asm ("wfi", Volatile => True);
+         Cortex_M.Hints.Wait_For_Interrupt;
       end loop;
       This.Disable_Alarm;
    end Delay_Until;

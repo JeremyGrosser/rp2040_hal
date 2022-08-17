@@ -5,8 +5,7 @@
 --
 
 with RP2040_SVD.SIO; use RP2040_SVD.SIO;
-
-with System.Machine_Code; use System.Machine_Code;
+with Cortex_M.Hints;
 
 package body RP.Multicore.FIFO is
 
@@ -39,7 +38,7 @@ package body RP.Multicore.FIFO is
       end loop;
       SIO_Periph.FIFO_WR := V;
 
-      System.Machine_Code.Asm ("sev", Volatile => True);
+      Cortex_M.Hints.Send_Event;
    end Push_Blocking;
 
    ------------------
@@ -49,9 +48,7 @@ package body RP.Multicore.FIFO is
    function Pop_Blocking return HAL.UInt32 is
    begin
       while not RX_Ready loop
-
-         System.Machine_Code.Asm ("wfe", Volatile => True);
-
+         Cortex_M.Hints.Wait_For_Event;
       end loop;
       return SIO_Periph.FIFO_RD;
    end Pop_Blocking;
@@ -65,7 +62,7 @@ package body RP.Multicore.FIFO is
       if TX_Ready then
          SIO_Periph.FIFO_WR := V;
 
-         System.Machine_Code.Asm ("sev", Volatile => True);
+         Cortex_M.Hints.Send_Event;
 
          return True;
       else

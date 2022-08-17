@@ -3,11 +3,10 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-
-with System.Machine_Code; use System.Machine_Code;
 with System.Storage_Elements;
 with RP2040_SVD.Interrupts;
 with RP2040_SVD.SIO;
+with Cortex_M.Hints;
 with Cortex_M.NVIC;
 
 with RP.Multicore.FIFO;
@@ -48,7 +47,7 @@ package body RP.Multicore is
             if Cmd = 0 then
                FIFO.Drain;
 
-               System.Machine_Code.Asm ("sev", Volatile => True);
+               Cortex_M.Hints.Send_Event;
             end if;
 
             --  Send a command an wait for echo
