@@ -4,7 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-package RP.GPIO.IRQ_Handlers
+package RP.GPIO.Interrupts
    with Preelaborate
 is
 
@@ -24,4 +24,4 @@ private
 
    GPIO_Interrupt_Handlers : array (GPIO_Pin) of Interrupt_Procedure := (others => null);
 
-end RP.GPIO.IRQ_Handlers;
+end RP.GPIO.Interrupts;

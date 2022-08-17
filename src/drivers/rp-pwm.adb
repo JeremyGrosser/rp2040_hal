@@ -205,10 +205,7 @@ package body RP.PWM is
       PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
    end Attach;
 
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID)
-   is
-      pragma Unreferenced (Id);
+   procedure IRQ_Handler is
    begin
       for Slice in PWM_Slice'Range loop
          if PWM_Periph.INTS.CH.Arr (Natural (Slice)) and Handlers (Slice) /= null then

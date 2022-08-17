@@ -58,10 +58,7 @@ package body RP.Timer is
 
    end Busy_Wait_Until;
 
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID)
-   is
-      pragma Unreferenced (Id);
+   procedure IRQ_Handler is
    begin
       TIMER_Periph.INTR.ALARM_2 := True;
    end IRQ_Handler;

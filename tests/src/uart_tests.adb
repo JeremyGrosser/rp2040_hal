@@ -7,6 +7,7 @@ with AUnit.Assertions; use AUnit.Assertions;
 with HAL.UART; use HAL.UART;
 with HAL;      use HAL;
 with RP2040_SVD.Interrupts;
+with RP_Interrupts;
 with Cortex_M.NVIC;
 with RP.UART;  use RP.UART;
 with RP.Timer;
@@ -89,10 +90,7 @@ package body UART_Tests is
       Assert (Data (1) = 16#FF# and then Status = Ok, "Failed to recover from break without start");
    end Test_Break;
 
-   procedure UART0_IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID)
-   is
-      pragma Unreferenced (Id);
+   procedure UART0_IRQ_Handler is
    begin
       if Port.Masked_IRQ_Status (Receive) then
          Port.Clear_IRQ (Receive);

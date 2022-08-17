@@ -150,8 +150,7 @@ is
    with Pre => Initialized;
 
    --  This handler should be called in response to PWM_IRQ_WRAP (IRQ 4)
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID);
+   procedure IRQ_Handler;
 
    function Compare_Reg_Address (Slice : PWM_Slice) return System.Address;
    --  For DMA transfers

@@ -194,10 +194,7 @@ package body RP.RTC is
               Day_Of_Week => RTC_Day_Of_Week'Val (R0.DOTW));
    end Get_Date;
 
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID)
-   is
-      pragma Unreferenced (Id);
+   procedure IRQ_Handler is
    begin
       RTC_Periph.INTE.RTC := False;
    end IRQ_Handler;

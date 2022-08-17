@@ -64,7 +64,6 @@ is
        with Pre => Enabled (This);
 
    --  This handler should be called in response to TIMER_IRQ_2 (IRQ 2)
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID);
+   procedure IRQ_Handler;
 
 end RP.Timer;

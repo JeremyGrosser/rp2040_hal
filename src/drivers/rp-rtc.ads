@@ -75,7 +75,6 @@ is
       (This : RTC_Device)
       return HAL.Real_Time_Clock.RTC_Date;
 
-   procedure IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID);
+   procedure IRQ_Handler;
 
 end RP.RTC;

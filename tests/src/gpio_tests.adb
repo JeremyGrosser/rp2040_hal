@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions;
+with RP.GPIO.Interrupts;
 with HAL.GPIO;
 with RP.Timer;
 
@@ -103,7 +104,7 @@ package body GPIO_Tests is
       Deadline : Time;
    begin
       LED.Configure (Input, Pull_Down);
-      LED.Set_Interrupt_Handler (Interrupt_Handler'Access);
+      RP.GPIO.Interrupts.Set_Interrupt_Handler (LED, Interrupt_Handler'Access);
       IRQ_Count := 0;
       LED.Enable_Interrupt (Low_Level);
 
@@ -113,7 +114,7 @@ package body GPIO_Tests is
       end loop;
 
       Assert (IRQ_Count = 1, "Only one interrupt expected");
-      LED.Set_Interrupt_Handler (null);
+      RP.GPIO.Interrupts.Set_Interrupt_Handler (LED, null);
    end Test_Interrupts;
 
    overriding

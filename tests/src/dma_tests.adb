@@ -6,6 +6,7 @@
 with AUnit.Assertions; use AUnit.Assertions;
 
 with RP2040_SVD.Interrupts;
+with RP_Interrupts;
 with System;
 
 with RP.Device;
@@ -193,10 +194,7 @@ package body DMA_Tests is
       return AUnit.Message_String
    is (AUnit.Format ("RP.DMA"));
 
-   procedure Interrupt_Handler
-      (Id : RP_Interrupts.Interrupt_ID)
-   is
-      pragma Unreferenced (Id);
+   procedure Interrupt_Handler is
    begin
       RP.DMA.Ack_IRQ (0, 0);
       Interrupt_Count := Interrupt_Count + 1;

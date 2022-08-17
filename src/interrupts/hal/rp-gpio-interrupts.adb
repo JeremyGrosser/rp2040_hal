@@ -10,7 +10,7 @@ with HAL;                   use HAL;
 with RP_Interrupts;
 with System;
 
-package body RP.GPIO.IRQ_Handlers is
+package body RP.GPIO.Interrupts is
 
    procedure Set_Interrupt_Handler
       (This    : GPIO_Point;
@@ -48,4 +48,4 @@ package body RP.GPIO.IRQ_Handlers is
       end loop;
    end IRQ_Handler;
 
-end RP.GPIO.IRQ_Handlers;
+end RP.GPIO.Interrupts;

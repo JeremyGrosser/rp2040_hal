@@ -5,7 +5,6 @@
 --
 with AUnit.Test_Cases;
 with AUnit;
-with RP_Interrupts;
 
 package UART_Tests is
 
@@ -33,7 +32,6 @@ package UART_Tests is
    procedure Test_Interrupt
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
-   procedure UART0_IRQ_Handler
-      (Id : RP_Interrupts.Interrupt_ID);
+   procedure UART0_IRQ_Handler;
 
 end UART_Tests;

@@ -5,7 +5,6 @@
 --
 with AUnit.Test_Cases;
 with AUnit;
-with RP_Interrupts;
 
 package DMA_Tests is
 
@@ -38,7 +37,6 @@ package DMA_Tests is
 
 private
 
-   procedure Interrupt_Handler
-      (Id : RP_Interrupts.Interrupt_ID);
+   procedure Interrupt_Handler;
 
 end DMA_Tests;
