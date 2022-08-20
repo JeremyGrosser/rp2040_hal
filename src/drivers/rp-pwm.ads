@@ -5,7 +5,6 @@
 --
 with RP2040_SVD.PWM;
 with RP2040_SVD;
-with RP_Interrupts;
 with RP.Clock;
 with RP.GPIO;
 with HAL; use HAL;
@@ -41,8 +40,6 @@ is
    type Divider is delta Divider_Fraction range 1.0 .. (2.0 ** 8);
 
    subtype Period is UInt16;
-
-   type PWM_Interrupt_Handler is access procedure;
 
    --  Initialize must be called before any other PWM configuration
    Initialized : Boolean := False;
@@ -144,14 +141,6 @@ is
        Value : Period)
    with Pre => Initialized;
 
-   procedure Attach
-      (Slice   : PWM_Slice;
-       Handler : PWM_Interrupt_Handler)
-   with Pre => Initialized;
-
-   --  This handler should be called in response to PWM_IRQ_WRAP (IRQ 4)
-   procedure IRQ_Handler;
-
    function Compare_Reg_Address (Slice : PWM_Slice) return System.Address;
    --  For DMA transfers
 
@@ -214,6 +203,4 @@ private
 
    PWM_Periph : aliased PWM_Peripheral
       with Import, Address => RP2040_SVD.PWM_Base;
-
-   Handlers : array (PWM_Slice) of PWM_Interrupt_Handler;
 end RP.PWM;
