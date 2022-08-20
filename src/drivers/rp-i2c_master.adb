@@ -204,6 +204,13 @@ package body RP.I2C_Master is
          end if;
       end loop;
 
+      while not This.Port.State.TX_Empty loop
+         if Clock >= Deadline then
+            Status := HAL.I2C.Err_Timeout;
+            return;
+         end if;
+      end loop;
+
       Status := HAL.I2C.Ok;
    end Mem_Write;
 
