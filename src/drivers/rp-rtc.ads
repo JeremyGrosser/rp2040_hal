@@ -45,13 +45,6 @@ is
    procedure Disable_Alarm
       (This : in out RTC_Device);
 
-   procedure Delay_Until
-      (This : in out RTC_Device;
-       Time : HAL.Real_Time_Clock.RTC_Time;
-       Date : HAL.Real_Time_Clock.RTC_Date;
-       Mask : RTC_Alarm_Mask);
-   --  Mask bits set to False will match any value.
-
    overriding
    procedure Set
       (This : in out RTC_Device;
@@ -77,7 +70,5 @@ is
    procedure Enable_Interrupt;
 
    procedure Disable_Interrupt;
-
-   procedure Acknowledge_Interrupt;
 
 end RP.RTC;

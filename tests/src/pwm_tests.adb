@@ -6,6 +6,7 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with HAL; use HAL;
 with RP.PWM; use RP.PWM;
+with RP.PWM.Interrupts;
 with RP.Timer;
 with RP.GPIO;
 with RP.Clock;
@@ -68,7 +69,7 @@ package body PWM_Tests is
       Delays.Enable;
 
       IRQ_Count := 0;
-      Attach (P.Slice, IRQ_Handler'Access);
+      Interrupts.Attach (P.Slice, IRQ_Handler'Access);
 
       Set_Frequency (P.Slice, 10_000_000);
       Set_Interval (P.Slice, 10_000);

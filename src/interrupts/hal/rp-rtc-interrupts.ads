@@ -11,12 +11,12 @@ is
    type RTC_Interrupt_Handler is access procedure;
 
    procedure Attach
-     (Handler : RTC_Interrupt_Handler);
+     (Handler : RTC_Interrupt_Handler := null);
 
    procedure IRQ_Handler;
 
 private
 
-   Installed_Handler : RTC_Interrupt_Handler;
+   Installed_Handler : RTC_Interrupt_Handler := null;
 
 end RP.RTC.Interrupts;

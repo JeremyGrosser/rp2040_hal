@@ -13,26 +13,21 @@ package body RP.RTC.Interrupts
 is
 
    procedure Attach
-     (Handler : RTC_Interrupt_Handler)
+     (Handler : RTC_Interrupt_Handler := null)
    is
    begin
       Installed_Handler := Handler;
 
-      if Handler /= null then
-         RP_Interrupts.Attach_Handler
-            (Handler => IRQ_Handler'Access,
-            Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
-            Prio    => System.Interrupt_Priority'First);
-         Enable_Interrupt;
-      else
-         Disable_Interrupt;
-      end if;
+      RP_Interrupts.Attach_Handler
+         (Handler => IRQ_Handler'Access,
+         Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
+         Prio    => System.Interrupt_Priority'First);
    end Attach;
 
    procedure IRQ_Handler
    is
    begin
-      Acknowledge_Interrupt;
+      Disable_Interrupt;
       if Installed_Handler /= null then
          Installed_Handler.all;
       end if;

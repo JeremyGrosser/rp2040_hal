@@ -81,29 +81,16 @@ package body RP.RTC is
           SEC_ENA    => Mask.Sec,
           others     => <>);
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
+      Enable_Interrupt;
    end Set_Alarm;
 
    procedure Disable_Alarm
       (This : in out RTC_Device)
    is
    begin
-      RTC_Periph.INTE.RTC := False;
+      Disable_Interrupt;
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
    end Disable_Alarm;
-
-   procedure Delay_Until
-      (This : in out RTC_Device;
-       Time : RTC_Time;
-       Date : RTC_Date;
-       Mask : RTC_Alarm_Mask)
-   is
-   begin
-      This.Set_Alarm (Time, Date, Mask);
-      while not RTC_Periph.INTR.RTC loop
-         Cortex_M.Hints.Wait_For_Interrupt;
-      end loop;
-      This.Disable_Alarm;
-   end Delay_Until;
 
    overriding
    procedure Set
@@ -197,11 +184,5 @@ package body RP.RTC is
    begin
       RTC_Periph.INTE.RTC := False;
    end Disable_Interrupt;
-
-   procedure Acknowledge_Interrupt
-   is
-   begin
-      RTC_Periph.INTR.RTC := True;
-   end Acknowledge_Interrupt;
 
 end RP.RTC;
