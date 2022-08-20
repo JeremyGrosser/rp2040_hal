@@ -3,7 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP_Interrupts;
 with HAL.Real_Time_Clock;
 
 package RP.RTC
@@ -75,6 +74,10 @@ is
       (This : RTC_Device)
       return HAL.Real_Time_Clock.RTC_Date;
 
-   procedure IRQ_Handler;
+   procedure Enable_Interrupt;
+
+   procedure Disable_Interrupt;
+
+   procedure Acknowledge_Interrupt;
 
 end RP.RTC;

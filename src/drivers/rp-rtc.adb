@@ -29,11 +29,6 @@ package body RP.RTC is
       RTC_Periph.CLKDIV_M1.CLKDIV_M1 := CLKDIV_M1_CLKDIV_M1_Field
          (RP.Clock.Frequency (RP.Clock.RTC) - 1);
 
-      RP_Interrupts.Attach_Handler
-         (Handler => IRQ_Handler'Access,
-          Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
-          Prio    => System.Interrupt_Priority'First);
-
       This.Resume;
    end Configure;
 
@@ -88,7 +83,6 @@ package body RP.RTC is
           SEC_ENA    => Mask.Sec,
           others     => <>);
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
-      RTC_Periph.INTE.RTC := True;
    end Set_Alarm;
 
    procedure Disable_Alarm
@@ -194,9 +188,22 @@ package body RP.RTC is
               Day_Of_Week => RTC_Day_Of_Week'Val (R0.DOTW));
    end Get_Date;
 
-   procedure IRQ_Handler is
+   procedure Enable_Interrupt
+   is
+   begin
+      RTC_Periph.INTE.RTC := True;
+   end Enable_Interrupt;
+
+   procedure Disable_Interrupt
+   is
    begin
       RTC_Periph.INTE.RTC := False;
-   end IRQ_Handler;
+   end Disable_Interrupt;
+
+   procedure Acknowledge_Interrupt
+   is
+   begin
+      RTC_Periph.INTR.RTC := True;
+   end Acknowledge_Interrupt;
 
 end RP.RTC;
