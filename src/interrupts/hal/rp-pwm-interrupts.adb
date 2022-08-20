@@ -26,7 +26,7 @@ package body RP.PWM.Interrupts is
    begin
       for Slice in PWM_Slice'Range loop
          if PWM_Periph.INTS.CH.Arr (Natural (Slice)) and Handlers (Slice) /= null then
-            PWM_Periph.INTR.CH.Arr (Natural (Slice)) := True;
+            Acknowledge_Interrupt (Slice);
             Handlers (Slice).all;
          end if;
       end loop;

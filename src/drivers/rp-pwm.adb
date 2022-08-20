@@ -195,6 +195,13 @@ package body RP.PWM is
       return PWM_Periph.CH (Slice).CC'Address;
    end Compare_Reg_Address;
 
+   procedure Acknowledge_Interrupt
+      (Slice : PWM_Slice)
+   is
+   begin
+      PWM_Periph.INTR.CH.Arr (Natural (Slice)) := True;
+   end Acknowledge_Interrupt;
+
    function Div_Integer
       (V : Divider)
       return UInt8

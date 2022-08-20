@@ -144,6 +144,9 @@ is
    function Compare_Reg_Address (Slice : PWM_Slice) return System.Address;
    --  For DMA transfers
 
+   procedure Acknowledge_Interrupt
+      (Slice : PWM_Slice);
+
 private
 
    function To_Mask
