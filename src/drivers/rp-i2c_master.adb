@@ -44,6 +44,15 @@ package body RP.I2C_Master is
        Deadline : RP.Timer.Time)
    is
       use type RP.Timer.Time;
+      --  Most drivers that use HAL.I2C expect I2C_Address to be shifted left
+      --  with the LSB set by the controller depending on whether the
+      --  transaction is a read or write.
+      --
+      --  RP.I2C uses distinct UInt7 and UInt10 types for bus addresses, so we
+      --  need to shift right first. This doesn't really need to be UInt32, any
+      --  modular type >2**10 will do, but 32 bits fits nicely in a CPU
+      --  register.
+      Bus_Addr : constant UInt32 := Shift_Right (UInt32 (Addr), 1);
    begin
       This.Port.Disable (Deadline);
       while This.Port.Enabled loop
@@ -55,9 +64,9 @@ package body RP.I2C_Master is
 
       case This.Address_Size is
          when Address_Size_7b =>
-            This.Port.Set_Address (HAL.UInt7 (Addr));
+            This.Port.Set_Address (HAL.UInt7 (Bus_Addr));
          when Address_Size_10b =>
-            This.Port.Set_Address (HAL.UInt10 (Addr));
+            This.Port.Set_Address (HAL.UInt10 (Bus_Addr));
       end case;
 
       This.Port.Enable (Deadline);
