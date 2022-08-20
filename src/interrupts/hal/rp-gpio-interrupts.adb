@@ -37,7 +37,7 @@ package body RP.GPIO.Interrupts is
             for Trigger in Interrupt_Triggers'Range loop
                T := IO_BANK_Periph.PROC0_INTS (Pin) and Interrupt_Triggers'Enum_Rep (Trigger);
                if T /= 0 then
-                  Acknowledge_Interrupt (Pin);
+                  Acknowledge_Interrupt (Pin, Trigger);
                   Handler := GPIO_Interrupt_Handlers (Pin);
                   if Handler /= null then
                      Handler.all (Pin, Trigger);

@@ -127,9 +127,12 @@ package body RP.GPIO is
    end Disable_Interrupt;
 
    procedure Acknowledge_Interrupt
-      (Pin : GPIO_Pin)
+      (Pin : GPIO_Pin;
+       Trigger : Interrupt_Triggers)
    is
+      T : UInt4;
    begin
+      T := IO_BANK_Periph.PROC0_INTS (Pin) and Interrupt_Triggers'Enum_Rep (Trigger);
       IO_BANK_Periph.INTR (Pin) := T;
    end Acknowledge_Interrupt;
 

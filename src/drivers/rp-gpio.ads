@@ -78,7 +78,8 @@ is
        Trigger : Interrupt_Triggers);
 
    procedure Acknowledge_Interrupt
-      (Pin : GPIO_Pin);
+      (Pin     : GPIO_Pin;
+       Trigger : Interrupt_Triggers);
 
    overriding
    function Support
