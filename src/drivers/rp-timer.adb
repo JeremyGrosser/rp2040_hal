@@ -7,7 +7,6 @@ with RP2040_SVD.Interrupts;
 with RP2040_SVD.TIMER;      use RP2040_SVD.TIMER;
 with Cortex_M.Hints;
 with RP_Interrupts;
-with System.Machine_Code;
 with System;
 
 package body RP.Timer is
