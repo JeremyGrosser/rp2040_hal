@@ -10,7 +10,7 @@ is
 
    type RTC_Interrupt_Handler is access procedure;
 
-   procedure Attach
+   procedure Attach_Handler
      (Handler : RTC_Interrupt_Handler := null);
 
    procedure IRQ_Handler;

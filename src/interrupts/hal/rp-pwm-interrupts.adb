@@ -8,7 +8,7 @@ with RP_Interrupts;
 
 package body RP.PWM.Interrupts is
 
-   procedure Attach
+   procedure Attach_Handler
       (Slice   : PWM_Slice;
        Handler : PWM_Interrupt_Handler)
    is
@@ -25,7 +25,7 @@ package body RP.PWM.Interrupts is
       else
          Disable_Interrupt (Slice);
       end if;
-   end Attach;
+   end Attach_Handler;
 
    procedure IRQ_Handler is
    begin

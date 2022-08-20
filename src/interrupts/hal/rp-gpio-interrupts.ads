@@ -12,7 +12,7 @@ is
       (Pin     : GPIO_Pin;
        Trigger : Interrupt_Triggers);
 
-   procedure Set_Interrupt_Handler
+   procedure Attach_Handler
       (This    : GPIO_Point;
        Handler : Interrupt_Procedure);
 

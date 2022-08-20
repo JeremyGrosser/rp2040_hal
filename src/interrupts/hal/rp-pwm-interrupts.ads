@@ -10,7 +10,7 @@ is
 
    type PWM_Interrupt_Handler is access procedure;
 
-   procedure Attach
+   procedure Attach_Handler
       (Slice   : PWM_Slice;
        Handler : PWM_Interrupt_Handler)
    with Pre => Initialized;

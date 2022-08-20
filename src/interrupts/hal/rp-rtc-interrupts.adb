@@ -12,7 +12,7 @@ package body RP.RTC.Interrupts
    with Preelaborate
 is
 
-   procedure Attach
+   procedure Attach_Handler
      (Handler : RTC_Interrupt_Handler := null)
    is
    begin
@@ -22,7 +22,7 @@ is
          (Handler => IRQ_Handler'Access,
          Id      => RP2040_SVD.Interrupts.RTC_Interrupt,
          Prio    => System.Interrupt_Priority'First);
-   end Attach;
+   end Attach_Handler;
 
    procedure IRQ_Handler
    is

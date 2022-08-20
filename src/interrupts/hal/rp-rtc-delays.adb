@@ -18,7 +18,7 @@ is
    begin
       Alarm_Triggered := False;
 
-      RP.RTC.Interrupts.Attach (IRQ_Handler'Access);
+      RP.RTC.Interrupts.Attach_Handler (IRQ_Handler'Access);
       This.Set_Alarm (Time, Date, Mask);
 
       while not Alarm_Triggered loop
@@ -26,7 +26,7 @@ is
       end loop;
 
       This.Disable_Alarm;
-      RP.RTC.Interrupts.Attach (null);
+      RP.RTC.Interrupts.Attach_Handler (null);
    end Delay_Until;
 
    procedure IRQ_Handler

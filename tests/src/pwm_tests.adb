@@ -69,7 +69,7 @@ package body PWM_Tests is
       Delays.Enable;
 
       IRQ_Count := 0;
-      Interrupts.Attach (P.Slice, IRQ_Handler'Access);
+      Interrupts.Attach_Handler (P.Slice, IRQ_Handler'Access);
 
       Set_Frequency (P.Slice, 10_000_000);
       Set_Interval (P.Slice, 10_000);

@@ -12,7 +12,7 @@ with System;
 
 package body RP.GPIO.Interrupts is
 
-   procedure Set_Interrupt_Handler
+   procedure Attach_Handler
       (This    : GPIO_Point;
        Handler : Interrupt_Procedure)
    is
@@ -25,7 +25,7 @@ package body RP.GPIO.Interrupts is
       end if;
 
       GPIO_Interrupt_Handlers (This.Pin) := Handler;
-   end Set_Interrupt_Handler;
+   end Attach_Handler;
 
    procedure IRQ_Handler
    is

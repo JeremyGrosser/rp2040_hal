@@ -104,7 +104,7 @@ package body GPIO_Tests is
       Deadline : Time;
    begin
       LED.Configure (Input, Pull_Down);
-      RP.GPIO.Interrupts.Set_Interrupt_Handler (LED, Interrupt_Handler'Access);
+      RP.GPIO.Interrupts.Attach_Handler (LED, Interrupt_Handler'Access);
       IRQ_Count := 0;
       LED.Enable_Interrupt (Low_Level);
 
@@ -114,7 +114,7 @@ package body GPIO_Tests is
       end loop;
 
       Assert (IRQ_Count = 1, "Only one interrupt expected");
-      RP.GPIO.Interrupts.Set_Interrupt_Handler (LED, null);
+      RP.GPIO.Interrupts.Attach_Handler (LED, null);
    end Test_Interrupts;
 
    overriding
