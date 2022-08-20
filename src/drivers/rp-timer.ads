@@ -3,7 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP_Interrupts;
 with HAL.Time; use HAL.Time;
 with HAL;      use HAL;
 
