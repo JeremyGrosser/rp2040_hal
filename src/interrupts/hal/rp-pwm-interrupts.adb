@@ -15,11 +15,16 @@ package body RP.PWM.Interrupts is
       use System;
    begin
       Handlers (Slice) := Handler;
-      RP_Interrupts.Attach_Handler
-         (Handler => IRQ_Handler'Access,
-          Id      => RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt,
-          Prio    => Interrupt_Priority'First);
-      PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
+
+      if Handler /= null then
+         RP_Interrupts.Attach_Handler
+           (Handler => IRQ_Handler'Access,
+            Id      => RP2040_SVD.Interrupts.PWM_IRQ_WRAP_Interrupt,
+            Prio    => Interrupt_Priority'First);
+         Enable_Interrupt (Slice);
+      else
+         Disable_Interrupt (Slice);
+      end if;
    end Attach;
 
    procedure IRQ_Handler is

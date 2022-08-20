@@ -195,6 +195,20 @@ package body RP.PWM is
       return PWM_Periph.CH (Slice).CC'Address;
    end Compare_Reg_Address;
 
+   procedure Enable_Interrupt
+      (Slice : PWM_Slice)
+   is
+   begin
+      PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
+   end Enable_Interrupt;
+
+   procedure Disable_Interrupt
+      (Slice : PWM_Slice)
+   is
+   begin
+      PWM_Periph.INTE.CH.Arr (Natural (Slice)) := False;
+   end Disable_Interrupt;
+
    procedure Acknowledge_Interrupt
       (Slice : PWM_Slice)
    is
