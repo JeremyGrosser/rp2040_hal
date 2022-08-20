@@ -77,6 +77,9 @@ is
       (This    : in out GPIO_Point;
        Trigger : Interrupt_Triggers);
 
+   procedure Acknowledge_Interrupt
+      (Pin : GPIO_Pin);
+
    overriding
    function Support
       (This : GPIO_Point;

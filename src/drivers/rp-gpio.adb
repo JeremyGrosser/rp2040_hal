@@ -126,6 +126,13 @@ package body RP.GPIO is
       IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
    end Disable_Interrupt;
 
+   procedure Acknowledge_Interrupt
+      (Pin : GPIO_Pin)
+   is
+   begin
+      IO_BANK_Periph.INTR (Pin) := T;
+   end Acknowledge_Interrupt;
+
    overriding
    function Support
       (This : GPIO_Point;
