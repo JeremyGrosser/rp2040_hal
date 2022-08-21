@@ -5,7 +5,6 @@
 --
 with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
 with RP2040_SVD.RTC; use RP2040_SVD.RTC;
-with Cortex_M.Hints;
 with HAL; use HAL;
 with RP.Clock;
 with RP.Reset;

@@ -16,7 +16,7 @@ with RP.PIO;
 with RP.RTC;
 with RP.Interpolator;
 with RP.USB_Device;
-with RP.Timer;
+with RP.Timer.Delays;
 with System;
 
 package RP.Device is
@@ -50,7 +50,7 @@ package RP.Device is
    INTERP_1 : aliased RP.Interpolator.INTERP_Peripheral
       with Import, Address => INTERP1_Base;
 
-   Timer   : aliased RP.Timer.Delays;
+   Timer   : aliased RP.Timer.Delays.Delays;
    RTC     : aliased RP.RTC.RTC_Device;
    UDC     : aliased RP.USB_Device.USB_Device_Controller;
 
