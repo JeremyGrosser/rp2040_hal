@@ -36,7 +36,7 @@ is
       Sec         : Boolean := True;
    end record;
 
-   procedure Set_Alarm
+   procedure Enable_Alarm
       (This : in out RTC_Device;
        Time : HAL.Real_Time_Clock.RTC_Time;
        Date : HAL.Real_Time_Clock.RTC_Date;
@@ -44,6 +44,10 @@ is
 
    procedure Disable_Alarm
       (This : in out RTC_Device);
+
+   function Alarm
+      (This : RTC_Device)
+      return Boolean;
 
    overriding
    procedure Set
@@ -66,9 +70,5 @@ is
    function Get_Date
       (This : RTC_Device)
       return HAL.Real_Time_Clock.RTC_Date;
-
-   procedure Enable_Interrupt;
-
-   procedure Disable_Interrupt;
 
 end RP.RTC;

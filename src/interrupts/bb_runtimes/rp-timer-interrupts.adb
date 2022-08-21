@@ -6,7 +6,7 @@
 with RP2040_SVD.TIMER;     use RP2040_SVD.TIMER;
 with Ada.Interrupts.Names; use Ada.Interrupts.Names;
 
-package body RP.Timer.Delays is
+package body RP.Timer.Interrupts is
 
    --------------------------
    -- Alarm_Handler (spec) --
@@ -145,4 +145,5 @@ package body RP.Timer.Delays is
    begin
       Delay_Until (This, Clock + (1_000_000 * Time (S)));
    end Delay_Seconds;
-end RP.Timer.Delays;
+
+end RP.Timer.Interrupts;

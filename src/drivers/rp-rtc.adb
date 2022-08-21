@@ -54,7 +54,7 @@ package body RP.RTC is
       end loop;
    end Resume;
 
-   procedure Set_Alarm
+   procedure Enable_Alarm
       (This : in out RTC_Device;
        Time : RTC_Time;
        Date : RTC_Date;
@@ -80,14 +80,19 @@ package body RP.RTC is
           SEC_ENA    => Mask.Sec,
           others     => <>);
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := True;
-      Enable_Interrupt;
-   end Set_Alarm;
+      RTC_Periph.INTE.RTC := True;
+   end Enable_Alarm;
+
+   function Alarm
+      (This : RTC_Device)
+      return Boolean
+   is (RTC_Periph.INTS.RTC);
 
    procedure Disable_Alarm
       (This : in out RTC_Device)
    is
    begin
-      Disable_Interrupt;
+      RTC_Periph.INTE.RTC := False;
       RTC_Periph.IRQ_SETUP_0.MATCH_ENA := False;
    end Disable_Alarm;
 
@@ -171,17 +176,5 @@ package body RP.RTC is
               Year        => RTC_Year (Integer (R1.YEAR) mod (Integer (RTC_Year'Last) + 1)),
               Day_Of_Week => RTC_Day_Of_Week'Val (R0.DOTW));
    end Get_Date;
-
-   procedure Enable_Interrupt
-   is
-   begin
-      RTC_Periph.INTE.RTC := True;
-   end Enable_Interrupt;
-
-   procedure Disable_Interrupt
-   is
-   begin
-      RTC_Periph.INTE.RTC := False;
-   end Disable_Interrupt;
 
 end RP.RTC;

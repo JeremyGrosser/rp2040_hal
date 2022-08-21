@@ -10,6 +10,7 @@ with RP2040_SVD.Interrupts;
 with RP_Interrupts;
 with Cortex_M.NVIC;
 with RP.UART;  use RP.UART;
+with RP.Timer.Interrupts;
 with RP.Timer;
 with RP.Device;
 with RP.Clock;
@@ -110,7 +111,7 @@ package body UART_Tests is
          (Loopback     => True,
           Enable_FIFOs => False,
           others       => <>);
-      Delays : RP.Timer.Delays;
+      Delays : RP.Timer.Interrupts.Delays;
       Status : UART_Status;
       Data   : UART_Data_8b (1 .. 1) := (others => 16#55#);
    begin

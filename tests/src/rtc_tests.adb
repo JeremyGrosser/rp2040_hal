@@ -5,9 +5,9 @@
 --
 with AUnit.Assertions;
 with HAL.Real_Time_Clock;
+with RP.Timer.Interrupts;
 with RP.Timer;
 with RP.RTC;
-with RP.RTC.Delays;
 
 package body RTC_Tests is
 
@@ -44,8 +44,9 @@ package body RTC_Tests is
       --  that we get the expected values back.
       use AUnit.Assertions;
       use HAL.Real_Time_Clock;
+      use RP.Timer.Interrupts;
       use RP.Timer;
-      Timer : RP.Timer.Delays;
+      Timer : RP.Timer.Interrupts.Delays;
       RT    : RTC_Time;
       RD    : RTC_Date;
    begin
@@ -88,28 +89,44 @@ package body RTC_Tests is
       RTC.Resume;
    end Test_Time_Date;
 
-   procedure Test_Delay
+   procedure Test_Alarm
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
       use AUnit.Assertions;
       use HAL.Real_Time_Clock;
       use RP.Timer;
-      Start, Elapsed, Target : RP.Timer.Time;
-      Date : constant RTC_Date := (Month => January, Day => 1, Year => 1, Day_Of_Week => Monday);
-      Time : RTC_Time := (Hour => 12, Min => 5, Sec => 0);
+      RT  : RTC_Time;
+      RD  : RTC_Date;
+      Now     : Time;
+      Elapsed : Time;
    begin
       if not RTC.Running then
          RTC.Configure;
       end if;
-      RTC.Set (Time, Date);
-      Time.Sec := Time.Sec + 2;
-      Start := RP.Timer.Clock;
-      RP.RTC.Delays.Delay_Until (RTC, Time, Date, Mask => (Sec => True, others => False));
-      Elapsed := RP.Timer.Clock - Start;
-      Target := Ticks_Per_Second * 1; --  RTC.Set takes 1 second to sync, so the actual delay is (2 - 1) seconds.
-      Assert (Elapsed in (Target - (Ticks_Per_Second / 10)) .. (Target + (Ticks_Per_Second / 10)),
-         "delay not within 100ms range of target");
-   end Test_Delay;
+
+      RTC.Get (Time => RT, Date => RD);
+      RT.Sec := RT.Sec + 3;
+      Now := Clock;
+
+      RTC.Enable_Alarm
+         (Time => RT,
+          Date => RD,
+          Mask => (Sec => True, others => False));
+      Assert (not RTC.Alarm, "Alarm fired immediately");
+
+      while not RTC.Alarm loop
+         null;
+      end loop;
+
+      RTC.Disable_Alarm;
+      Assert (not RTC.Alarm, "Disable_Alarm didn't");
+
+      --  Each RTC operation takes 1 second to synchronize, so the elapsed time
+      --  between Enable_Alarm and RTC.Alarm = True is only 2 seconds when
+      --  requesting RT.Sec + 3.
+      Elapsed := Clock - Now;
+      Assert (Elapsed in Ticks_Per_Second * 1 .. Ticks_Per_Second * 2, "RTC alarm did not fire at the right time");
+   end Test_Alarm;
 
    overriding
    procedure Register_Tests
@@ -120,7 +137,7 @@ package body RTC_Tests is
       Register_Routine (T, Test_Configure'Access, "Configure");
       Register_Routine (T, Test_Pause_Resume'Access, "Pause_Resume");
       Register_Routine (T, Test_Time_Date'Access, "Time_Date");
-      Register_Routine (T, Test_Delay'Access, "Delay");
+      Register_Routine (T, Test_Alarm'Access, "Alarm");
    end Register_Tests;
 
    overriding

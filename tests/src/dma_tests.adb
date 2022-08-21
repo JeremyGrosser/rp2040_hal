@@ -11,7 +11,6 @@ with System;
 
 with RP.Device;
 with RP.Clock;
-with RP.Timer;
 with RP.DMA;
 with HAL;
 

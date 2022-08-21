@@ -7,6 +7,7 @@ with AUnit.Assertions; use AUnit.Assertions;
 with HAL; use HAL;
 with RP.PWM; use RP.PWM;
 with RP.PWM.Interrupts;
+with RP.Timer.Interrupts;
 with RP.Timer;
 with RP.GPIO;
 with RP.Clock;
@@ -64,7 +65,7 @@ package body PWM_Tests is
    procedure Test_Interrupt
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      Delays : RP.Timer.Delays;
+      Delays : RP.Timer.Interrupts.Delays;
    begin
       Delays.Enable;
 

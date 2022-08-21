@@ -9,7 +9,7 @@ with Cortex_M.Hints;
 with RP_Interrupts;
 with System;
 
-package body RP.Timer.Delays is
+package body RP.Timer.Interrupts is
 
    procedure IRQ_Handler is
    begin
@@ -94,4 +94,4 @@ package body RP.Timer.Delays is
    begin
       Delay_Until (This, Clock + (1_000_000 * Time (S)));
    end Delay_Seconds;
-end RP.Timer.Delays;
+end RP.Timer.Interrupts;

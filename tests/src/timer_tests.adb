@@ -4,11 +4,12 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions; use AUnit.Assertions;
+with RP.Timer.Interrupts;
 with RP.Timer;
 
 package body Timer_Tests is
 
-   Delays : RP.Timer.Delays;
+   Delays : RP.Timer.Interrupts.Delays;
 
    procedure Test_Enable
       (T : in out AUnit.Test_Cases.Test_Case'Class)

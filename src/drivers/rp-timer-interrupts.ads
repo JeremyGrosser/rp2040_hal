@@ -3,9 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with HAL.Time;             use HAL.Time;
+with HAL.Time; use HAL.Time;
 
-package RP.Timer.Delays is
+package RP.Timer.Interrupts is
 
    type Delays is new HAL.Time.Delays with null record;
 
@@ -44,4 +44,4 @@ package RP.Timer.Delays is
        S    : Integer)
        with Pre => Enabled (This);
 
-end RP.Timer.Delays;
+end RP.Timer.Interrupts;
