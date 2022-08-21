@@ -122,10 +122,9 @@ package body RTC_Tests is
       Assert (not RTC.Alarm, "Disable_Alarm didn't");
 
       --  Each RTC operation takes 1 second to synchronize, so the elapsed time
-      --  between Enable_Alarm and RTC.Alarm = True is only 2 seconds when
-      --  requesting RT.Sec + 3.
+      --  between Enable_Alarm and RTC.Alarm = True is not entirely accurate.
       Elapsed := Clock - Now;
-      Assert (Elapsed in Ticks_Per_Second * 1 .. Ticks_Per_Second * 2, "RTC alarm did not fire at the right time");
+      Assert (Elapsed in Ticks_Per_Second * 1 .. Ticks_Per_Second * 4, "RTC alarm did not fire at the right time");
    end Test_Alarm;
 
    overriding
