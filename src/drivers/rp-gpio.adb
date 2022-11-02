@@ -31,8 +31,9 @@ package body RP.GPIO is
          PADS_BANK_Periph.GPIO (Pin).OD := True;
       end loop;
 
-      IO_BANK_Periph.PROC0_INTE := (others => 0);
-      IO_BANK_Periph.PROC1_INTE := (others => 0);
+      --  Mask all pin interrupts
+      IO_BANK_Periph.PROC0_INTE := (others => (others => 0));
+      IO_BANK_Periph.PROC1_INTE := (others => (others => 0));
 
       GPIO_Enabled := True;
    end Enable;
@@ -106,35 +107,48 @@ package body RP.GPIO is
       (This    : in out GPIO_Point;
        Trigger : Interrupt_Triggers)
    is
-      INTE : UInt4 := IO_BANK_Periph.PROC0_INTE (This.Pin);
+      Group  : constant Natural := Natural (This.Pin) / 8;
+      Offset : constant Natural := Natural (This.Pin) mod 8;
+      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
    begin
-      INTE := INTE or Interrupt_Triggers'Enum_Rep (Trigger);
-
-      --  Clear pending event before enabling the interrupt
-      IO_BANK_Periph.INTR (This.Pin) := INTE;
-
-      IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
+      IO_BANK_Periph.INTR (Group) (Offset) := Mask;
+      IO_BANK_Periph.PROC0_INTE (Group) (Offset) := IO_BANK_Periph.PROC0_INTE (Group) (Offset) or Mask;
    end Enable_Interrupt;
 
    procedure Disable_Interrupt
       (This    : in out GPIO_Point;
        Trigger : Interrupt_Triggers)
    is
-      INTE : UInt4 := IO_BANK_Periph.PROC0_INTE (This.Pin);
+      Group  : constant Natural := Natural (This.Pin) / 8;
+      Offset : constant Natural := Natural (This.Pin) mod 8;
+      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
    begin
-      INTE := INTE and not Interrupt_Triggers'Enum_Rep (Trigger);
-      IO_BANK_Periph.PROC0_INTE (This.Pin) := INTE;
+      IO_BANK_Periph.INTR (Group) (Offset) := Mask;
+      IO_BANK_Periph.PROC0_INTE (Group) (Offset) := IO_BANK_Periph.PROC0_INTE (Group) (Offset) and not Mask;
    end Disable_Interrupt;
 
    procedure Acknowledge_Interrupt
-      (Pin : GPIO_Pin;
+      (Pin     : GPIO_Pin;
        Trigger : Interrupt_Triggers)
    is
-      T : UInt4;
+      Group  : constant Natural := Natural (Pin) / 8;
+      Offset : constant Natural := Natural (Pin) mod 8;
+      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
    begin
-      T := IO_BANK_Periph.PROC0_INTS (Pin) and Interrupt_Triggers'Enum_Rep (Trigger);
-      IO_BANK_Periph.INTR (Pin) := T;
+      IO_BANK_Periph.INTR (Group) (Offset) := Mask;
    end Acknowledge_Interrupt;
+
+   function Interrupt_Status
+      (Pin     : GPIO_Pin;
+       Trigger : Interrupt_Triggers)
+       return Boolean
+   is
+      Group  : constant Natural := Natural (Pin) / 8;
+      Offset : constant Natural := Natural (Pin) mod 8;
+      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
+   begin
+      return (IO_BANK_Periph.PROC0_INTS (Group) (Offset) and Mask) /= 0;
+   end Interrupt_Status;
 
    overriding
    function Support

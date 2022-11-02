@@ -45,10 +45,10 @@ is
    type Interrupt_Triggers is (Low_Level, High_Level, Falling_Edge, Rising_Edge)
       with Size => 4;
    for Interrupt_Triggers use
-      (Low_Level    => 2#0001#,
-       High_Level   => 2#0010#,
-       Falling_Edge => 2#0100#,
-       Rising_Edge  => 2#1000#);
+      (Low_Level     => 2#0001#,
+       High_Level    => 2#0010#,
+       Falling_Edge  => 2#0100#,
+       Rising_Edge   => 2#1000#);
 
    procedure Enable;
 
@@ -80,6 +80,11 @@ is
    procedure Acknowledge_Interrupt
       (Pin     : GPIO_Pin;
        Trigger : Interrupt_Triggers);
+
+   function Interrupt_Status
+      (Pin     : GPIO_Pin;
+       Trigger : Interrupt_Triggers)
+      return Boolean;
 
    overriding
    function Support
@@ -164,36 +169,25 @@ private
    end record;
 
    type GPIO_Registers is array (GPIO_Pin) of GPIO_Register;
-   type INT_Register is array (GPIO_Pin) of UInt4
-      with Size           => 120,
-           Component_Size => 4;
+
+   type INT_Group is array (0 .. 7) of UInt4
+      with Volatile_Full_Access, Size => 32, Component_Size => 4;
+
+   type INT_Register is array (0 .. 3) of INT_Group;
 
    type IO_BANK is record
-      GPIO              : aliased GPIO_Registers;
-      INTR              : aliased INT_Register;
-      PROC0_INTE        : aliased INT_Register;
-      PROC0_INTF        : aliased INT_Register;
-      PROC0_INTS        : aliased INT_Register;
-      PROC1_INTE        : aliased INT_Register;
-      PROC1_INTF        : aliased INT_Register;
-      PROC1_INTS        : aliased INT_Register;
-      DORMANT_WAKE_INTE : aliased INT_Register;
-      DORMANT_WAKE_INTF : aliased INT_Register;
-      DORMANT_WAKE_INTS : aliased INT_Register;
+      GPIO        : aliased GPIO_Registers;
+      INTR        : INT_Register;
+      PROC0_INTE  : INT_Register;
+      PROC0_INTF  : INT_Register;
+      PROC0_INTS  : INT_Register;
+      PROC1_INTE  : INT_Register;
+      PROC1_INTF  : INT_Register;
+      PROC1_INTS  : INT_Register;
    end record
       with Volatile;
    for IO_BANK use record
       GPIO              at 16#0000# range 0 .. 1919;
-      INTR              at 16#00f0# range 0 .. 119;
-      PROC0_INTE        at 16#0100# range 0 .. 119;
-      PROC0_INTF        at 16#0110# range 0 .. 119;
-      PROC0_INTS        at 16#0120# range 0 .. 119;
-      PROC1_INTE        at 16#0130# range 0 .. 119;
-      PROC1_INTF        at 16#0140# range 0 .. 119;
-      PROC1_INTS        at 16#0150# range 0 .. 119;
-      DORMANT_WAKE_INTE at 16#0160# range 0 .. 119;
-      DORMANT_WAKE_INTF at 16#0170# range 0 .. 119;
-      DORMANT_WAKE_INTS at 16#0180# range 0 .. 119;
    end record;
 
    type PADS_BANK_GPIO_Registers is array (GPIO_Pin) of RP2040_SVD.PADS_BANK0.GPIO_Register;
