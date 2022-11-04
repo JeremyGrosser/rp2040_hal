@@ -6,7 +6,19 @@ project Rp2040_Hal is
 
    Boot_Stage_2 := Project'Project_Dir & "boot2/generated/boot2__" & Rp2040_Hal_Config.Flash_Chip & ".S";
    Linker_Script := Project'Project_Dir & "ld/memmap_default.ld";
-   Linker_Switches := ("-T", Linker_Script, Boot_Stage_2);
+   Linker_Switches := (
+      "-T", Linker_Script,
+      Boot_Stage_2,
+
+      "-Wl,--no-warn-rwx-segments",
+      "-Wl,--no-warn-execstack"
+      --  These warnings were added in binutils 2.39
+      --
+      --  The boot ROM isn't loading ELF sections, it's just jumping into the
+      --  code, so the linker section permission bits don't matter in this
+      --  context. Therefore, these linker warnings are irrelevant.
+      --  https://lore.kernel.org/all/CACPK8Xe4hEB3wkRc4W2dNQ+ChonsKtWGCVPpoOFdjdfpbK88Mg@mail.gmail.com/T/
+   );
 
    for Library_Name use "Rp2040_Hal";
    for Library_Version use Project'Library_Name & ".so." & Rp2040_Hal_Config.Crate_Version;
