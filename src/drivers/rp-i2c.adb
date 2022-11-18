@@ -248,7 +248,7 @@ package body RP.I2C is
 
       if This.Role = Controller and This.RX_Remaining > 0 then
          Cmd :=
-            (RESTART => (if This.Repeated_Start and P.IC_DATA_CMD.FIRST_DATA_BYTE = ACTIVE then ENABLE else DISABLE),
+            (RESTART => DISABLE, --  (if This.Repeated_Start and P.IC_DATA_CMD.FIRST_DATA_BYTE = ACTIVE then ENABLE else DISABLE),
              STOP    => (if not This.Repeated_Start and This.RX_Remaining = 1 then ENABLE else DISABLE),
              CMD     => READ,
              others  => <>);
@@ -310,7 +310,7 @@ package body RP.I2C is
       end loop;
 
       P.IC_DATA_CMD :=
-         (RESTART => (if This.Repeated_Start and P.IC_DATA_CMD.FIRST_DATA_BYTE = ACTIVE then ENABLE else DISABLE),
+         (RESTART => DISABLE, --  (if This.Repeated_Start and P.IC_DATA_CMD.FIRST_DATA_BYTE = ACTIVE then ENABLE else DISABLE),
           STOP    => (if not This.Repeated_Start and This.TX_Remaining = 1 then ENABLE else DISABLE),
           CMD     => WRITE,
           DAT     => Data,
