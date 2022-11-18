@@ -232,7 +232,12 @@ private
       Last_Command   : RP2040_SVD.I2C.IC_DATA_CMD_Register := (others => <>);
       RX_Remaining   : Natural := 0;
       TX_Remaining   : Natural := 0;
+
       Repeated_Start : Boolean := False;
+      --  The bus will not be allowed to go to the idle state until TX_Remaining or RX_Remaining = 0
+
+      Restart        : Boolean := False;
+      --  The next call to Read or Write will cause the Address to be sent to the bus.
    end record;
 
    for I2C_Abort_Source use record

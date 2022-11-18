@@ -211,6 +211,7 @@ package body RP.I2C is
          P.IC_DATA_CMD := Cmd;
          This.Last_Command := Cmd;
          This.Repeated_Start := not Stop;
+         This.Restart := True;
       end if;
    end Start_Read;
 
@@ -245,10 +246,11 @@ package body RP.I2C is
       end if;
 
       This.RX_Remaining := This.RX_Remaining - 1;
+      This.Restart := False;
 
       if This.Role = Controller and This.RX_Remaining > 0 then
          Cmd :=
-            (RESTART => DISABLE, --  (if This.Repeated_Start and P.IC_DATA_CMD.FIRST_DATA_BYTE = ACTIVE then ENABLE else DISABLE),
+            (RESTART => (if This.Restart then ENABLE else DISABLE),
              STOP    => (if not This.Repeated_Start and This.RX_Remaining = 1 then ENABLE else DISABLE),
              CMD     => READ,
              others  => <>);
@@ -282,6 +284,7 @@ package body RP.I2C is
          end loop;
       else
          This.Repeated_Start := not Stop;
+         This.Restart := True;
       end if;
    end Start_Write;
 
@@ -310,7 +313,7 @@ package body RP.I2C is
       end loop;
 
       P.IC_DATA_CMD :=
-         (RESTART => DISABLE, --  (if This.Repeated_Start and P.IC_DATA_CMD.FIRST_DATA_BYTE = ACTIVE then ENABLE else DISABLE),
+         (RESTART => (if This.Restart then ENABLE else DISABLE),
           STOP    => (if not This.Repeated_Start and This.TX_Remaining = 1 then ENABLE else DISABLE),
           CMD     => WRITE,
           DAT     => Data,
@@ -323,6 +326,7 @@ package body RP.I2C is
 
       Clear := This.Periph.IC_CLR_RD_REQ.CLR_RD_REQ;
       This.TX_Remaining := This.TX_Remaining - 1;
+      This.Restart := False;
       Status := Ok;
    end Write;
 
