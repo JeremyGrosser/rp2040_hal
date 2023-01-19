@@ -11,7 +11,7 @@ website = "https://pico-doc.synack.me/"
 
 [[depends-on]]
 cortex_m = "~0.5"
-atomic = "~0.4"
+atomic = "~0.5"
 hal = "~0.3"
 usb_embedded = "~0.3"
 gnat_arm_elf = "^12.2"
