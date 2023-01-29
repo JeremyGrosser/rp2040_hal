@@ -209,19 +209,21 @@ package body RP.UART is
       end if;
 
       for I in Data'Range loop
-         loop
-            FIFO := Receive_Status (This);
-            exit when FIFO = Not_Full or FIFO = Full;
-            if FIFO = Invalid then
-               Status := Err_Error;
-               return;
-            end if;
+         if This.Config.Enable_FIFOs then
+            loop
+               FIFO := Receive_Status (This);
+               exit when FIFO = Not_Full or FIFO = Full;
+               if FIFO = Invalid then
+                  Status := Err_Error;
+                  return;
+               end if;
 
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
-               Status := Err_Timeout;
-               return;
-            end if;
-         end loop;
+               if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+                  Status := Err_Timeout;
+                  return;
+               end if;
+            end loop;
+         end if;
 
          --  Read the whole UARTDR at once so that we get the flags
          --  synchronized with the DATA read.

@@ -24,3 +24,4 @@ Use_Startup = {type = "Boolean", default = true}
 [configuration.values]
 atomic.Backend = "armv6m"
 cortex_m.core = "m0p"
+
