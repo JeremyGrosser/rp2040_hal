@@ -40,24 +40,6 @@ project Rp2040_Hal is
        "src/interrupts/" & Rp2040_Hal_Config.Interrupts,
        "config/");
 
-   --  When running on the ravenscar_full_rp2040 RTS, System.Bootrom exports
-   --  the __gnat_initialize_bootrom symbol and sets up __aeabi links to the
-   --  bootrom functions. This conflicts with the definitions of these
-   --  symbols in RP.ROM.Floating_Point, so we exclude compilation of those
-   --  sources. TODO: maybe make this interoperate somehow.
-   Excluded_Sources := ();
-   case Rp2040_Hal_Config.Interrupts is
-      when "bb_runtimes" =>
-         Excluded_Sources := (
-            "rp-rom-floating_point.ads",
-            "rp-rom-floating_point.adb"
-         );
-      when others =>
-         null;
-   end case;
-
-   for Excluded_Source_Files use Excluded_Sources;
-
    for Object_Dir use "obj/" & Rp2040_Hal_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Library_Dir use "lib";
