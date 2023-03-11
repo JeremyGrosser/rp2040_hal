@@ -208,6 +208,41 @@ is
        SM   : PIO_SM)
       return System.Address;
 
+   type SM_FIFO_Status is record
+      TXSTALL  : Boolean;
+      --  State machine has stalled on empty TX FIFO during a blocking PULL, or
+      --  an OUT with autopull enabled.
+
+      TXOVER   : Boolean;
+      --  TX FIFO overflow (i.e. write-on-full by the system) has occurred.
+      --  Write-on-full does not alter the state or contents of the FIFO in any
+      --  way, but the data that the system attempted to write is dropped, so
+      --  if this flag is set, your software has quite likely dropped some data
+      --  on the floor.
+
+      RXUNDER  : Boolean;
+      --  RX FIFO underflow (i.e. read-on-empty by the system) has occurred.
+      --  Read-on-empty does not perturb the state of the FIFO in any way, but
+      --  the data returned by reading from an empty FIFO is undefined, so this
+      --  flag generally only becomes set due to some kind of software error.
+
+      RXSTALL  : Boolean;
+      --  State machine has stalled on full RX FIFO during a blocking PUSH, or
+      --  an IN with autopush enabled. This flag is also set when a nonblocking
+      --  PUSH to a full FIFO took place, in which case the state machine has
+      --  dropped data.
+   end record;
+
+   function FIFO_Status
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return SM_FIFO_Status;
+
+   procedure Clear_FIFO_Status
+      (This  : in out PIO_Device;
+       SM    : PIO_SM;
+       Flags : SM_FIFO_Status := (others => True));
+
    type PIO_IRQ_ID is range 0 .. 1;
 
    type PIO_IRQ_Flag is

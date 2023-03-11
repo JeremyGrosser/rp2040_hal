@@ -445,6 +445,32 @@ package body RP.PIO is
       return System.Address
    is (This.Periph.RXF (SM)'Address);
 
+   function FIFO_Status
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return SM_FIFO_Status
+   is (SM_FIFO_Status'
+      (TXSTALL  => This.Periph.FDEBUG.TXSTALL (SM),
+       TXOVER   => This.Periph.FDEBUG.TXOVER (SM),
+       RXUNDER  => This.Periph.FDEBUG.RXUNDER (SM),
+       RXSTALL  => This.Periph.FDEBUG.RXSTALL (SM)));
+
+   procedure Clear_FIFO_Status
+      (This  : in out PIO_Device;
+       SM    : PIO_SM;
+       Flags : SM_FIFO_Status := (others => True))
+   is
+      Mask : PIO_SM_Mask := (others => False);
+      None : constant PIO_SM_Mask := (others => False);
+   begin
+      Mask (SM) := True;
+      This.Periph.FDEBUG :=
+         (TXSTALL => (if Flags.TXSTALL then Mask else None),
+          TXOVER  => (if Flags.TXOVER  then Mask else None),
+          RXUNDER => (if Flags.RXUNDER then Mask else None),
+          RXSTALL => (if Flags.RXSTALL then Mask else None));
+   end Clear_FIFO_Status;
+
    function NVIC_IRQ_Line
       (This : PIO_Device;
        IRQ  : PIO_IRQ_ID)
