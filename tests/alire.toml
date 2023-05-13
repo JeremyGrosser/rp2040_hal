@@ -15,12 +15,7 @@ gnat_arm_elf = "^12"
 
 [[pins]]
 rp2040_hal = { path='../../rp2040_hal' }
+aunit = { url='https://github.com/JeremyGrosser/aunit.git' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "zfp-cross"
-#RP2040_HAL_BUILD_MODE = "debug"
-#RP2040_HAL_COMPILE_CHECKS = "enabled"
-#RP2040_HAL_RUNTIME_CHECKS = "enabled"
-#RP2040_HAL_CONTRACTS = "enabled"
-[[pins]]
-aunit = { url='https://github.com/JeremyGrosser/aunit.git' }

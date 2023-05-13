@@ -8,20 +8,13 @@ check_error() {
     fi
 }
 
-GPR_EXTERNAL=" \
-    -XTEST_RP2040_HAL_BUILD_MODE=debug \
-    -XTEST_RP2040_HAL_COMPILE_CHECKS=disabled \
-    -XRP2040_HAL_BUILD_MODE=debug \
-    -XRP2040_HAL_COMPILE_CHECKS=disabled \
-    "
 alr clean
 rm -rf ../obj obj
-alr build --validation --  ${GPR_EXTERNAL}
+alr build --validation --
 check_error "Build failed"
 
 eval $(alr printenv)
 gnatcov instrument -P test_rp2040_hal.gpr \
-    ${GPR_EXTERNAL} \
     --projects=RP2040_HAL \
     --level=stmt+decision \
     --dump-trigger=main-end \
@@ -31,7 +24,6 @@ check_error "Instrumentation failed"
 alr clean
 export GPR_PROJECT_PATH="${GPR_PROJECT_PATH}:${PWD}/gnatcov_rts"
 gprbuild -P test_rp2040_hal.gpr \
-    ${GPR_EXTERNAL} \
     --src-subdirs=gnatcov-instr \
     --implicit-with=gnatcov_rts.gpr \
     -j0 \
@@ -49,7 +41,6 @@ head -n $(($last-1)) coverage.log | tail -n $(($last-$first)) 1>&2
 gnatcov extract-base64-trace coverage.log coverage.trace
 COVERAGE_FLAGS=" \
     -P test_rp2040_hal.gpr \
-    ${GPR_EXTERNAL} \
     --projects=RP2040_HAL \
     --no-subprojects \
     --level=stmt+decision \
