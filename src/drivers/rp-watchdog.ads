@@ -6,9 +6,10 @@
 package RP.Watchdog
    with Preelaborate
 is
+   subtype Milliseconds is Positive range 1 .. 8_388;
+
    procedure Configure
-      (Cycles : Hertz);
-   --  Watchdog is clocked by clk_ref (1 MHz), so cycles are microseconds.
+      (Timeout : Milliseconds);
    --  Only Proc0 and Proc1 are reset when the watchdog is triggered.
    --  TODO: Make PSM_WDSEL and PAUSE_DBG configurable.
 

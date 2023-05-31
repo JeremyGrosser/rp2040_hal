@@ -84,7 +84,9 @@ package body RP.Clock is
          Set_SYS_Source (ROSC);
       end if;
 
-      RP.Watchdog.Configure (Reference);
+      RP.Watchdog.Configure (Timeout => 10);
+      --  If PLLs aren't stable in 10ms, reset
+
       CLOCKS_Periph.FC0_REF_KHZ.FC0_REF_KHZ := FC0_REF_KHZ_FC0_REF_KHZ_Field (Reference / 1_000);
 
       --  Reset PLLs
@@ -129,6 +131,8 @@ package body RP.Clock is
       while CLOCKS_Periph.CLK (PERI).SELECTED /= CLK_SELECTED_Mask (PERI_SRC_SYS) loop
          null;
       end loop;
+
+      RP.Watchdog.Disable;
    end Initialize;
 
    procedure Enable

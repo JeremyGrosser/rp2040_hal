@@ -7,16 +7,20 @@ with RP2040_SVD.WATCHDOG; use RP2040_SVD.WATCHDOG;
 with RP2040_SVD.PSM;      use RP2040_SVD.PSM;
 
 package body RP.Watchdog is
+
+   Reload_Value : LOAD_LOAD_Field := LOAD_LOAD_Field'Last;
+
    procedure Configure
-      (Cycles : Hertz)
+      (Timeout : Milliseconds)
    is
    begin
+      Disable;
+
       PSM_Periph.WDSEL.proc := (As_Array => True, Arr => (others => True));
       --  Reset both processors when the watchdog is triggered
 
-      Disable;
-      WATCHDOG_Periph.CTRL.TIME := CTRL_TIME_Field (Cycles / 2);
-      --  Errata RP2040-E1
+      Reload_Value := LOAD_LOAD_Field (Timeout * 1_000 * 2);
+      --  Errata RP2040-E2
 
       Enable;
    end Configure;
@@ -34,7 +38,7 @@ package body RP.Watchdog is
 
    procedure Reload is
    begin
-      WATCHDOG_Periph.LOAD.LOAD := LOAD_LOAD_Field'Last;
+      WATCHDOG_Periph.LOAD.LOAD := Reload_Value;
    end Reload;
 
    procedure Trigger is
