@@ -4,15 +4,21 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.WATCHDOG; use RP2040_SVD.WATCHDOG;
+with RP2040_SVD.PSM;      use RP2040_SVD.PSM;
 
 package body RP.Watchdog is
-   procedure Configure (Cycles : Hertz) is
+   procedure Configure
+      (Cycles : Hertz)
+   is
    begin
-      --  clk_tick runs at clk_ref / 1_000_000
-      WATCHDOG_Periph.TICK :=
-         (CYCLES => TICK_CYCLES_Field (Cycles / 1_000_000),
-          ENABLE => True,
-          others => <>);
+      PSM_Periph.WDSEL.proc := (As_Array => True, Arr => (others => True));
+      --  Reset both processors when the watchdog is triggered
+
+      Disable;
+      WATCHDOG_Periph.CTRL.TIME := CTRL_TIME_Field (Cycles / 2);
+      --  Errata RP2040-E1
+
+      Enable;
    end Configure;
 
    procedure Enable is
@@ -30,4 +36,9 @@ package body RP.Watchdog is
    begin
       WATCHDOG_Periph.LOAD.LOAD := LOAD_LOAD_Field'Last;
    end Reload;
+
+   procedure Trigger is
+   begin
+      WATCHDOG_Periph.CTRL.TRIGGER := True;
+   end Trigger;
 end RP.Watchdog;
