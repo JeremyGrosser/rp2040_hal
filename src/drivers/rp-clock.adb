@@ -84,8 +84,8 @@ package body RP.Clock is
          Set_SYS_Source (ROSC);
       end if;
 
-      RP.Watchdog.Configure (Timeout => 10);
-      --  If PLLs aren't stable in 10ms, reset
+      RP.Watchdog.Configure (Timeout => 100);
+      --  If PLLs aren't stable in 100ms, reset
 
       CLOCKS_Periph.FC0_REF_KHZ.FC0_REF_KHZ := FC0_REF_KHZ_FC0_REF_KHZ_Field (Reference / 1_000);
 
