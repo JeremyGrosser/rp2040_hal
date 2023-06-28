@@ -55,6 +55,7 @@ package body RP.Timer.Interrupts is
    is
    begin
       TIMER_Periph.INTE.ALARM_2 := True;
+      RP.Timer.Set_Debug_Pause (False, False);
    end Enable;
 
    -------------

@@ -28,6 +28,8 @@ package body RP.Timer.Interrupts is
          (Handler => IRQ_Handler'Access,
           Id      => TIMER_IRQ_2_Interrupt,
           Prio    => Interrupt_Priority'First);
+
+      RP.Timer.Set_Debug_Pause (False, False);
    end Enable;
 
    procedure Disable
