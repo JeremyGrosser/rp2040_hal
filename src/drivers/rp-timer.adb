@@ -60,4 +60,11 @@ package body RP.Timer is
       return Time
    is ((Ticks_Per_Second / 1_000) * Time (T));
 
+   procedure Set_Debug_Pause
+      (Core_0, Core_1 : Boolean)
+   is
+   begin
+      TIMER_Periph.DBGPAUSE.DBG := (As_Array => True, Arr => (0 => Core_0, 1 => Core_1));
+   end Set_Debug_Pause;
+
 end RP.Timer;

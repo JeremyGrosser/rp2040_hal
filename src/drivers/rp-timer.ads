@@ -24,4 +24,9 @@ is
       (T : Natural)
       return Time;
 
+   --  By default, the timer pauses when a debugger is attached to both CPU
+   --  cores. Set to False to disable this behavior.
+   procedure Set_Debug_Pause
+      (Core_0, Core_1 : Boolean);
+
 end RP.Timer;
