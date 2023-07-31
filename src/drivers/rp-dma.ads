@@ -304,14 +304,13 @@ private
 
    type DMA_Channels_Debug is array (DMA_Channel_Id) of DMA_Channel_Debug;
 
-   type DMA_IRQs is array (0 .. 1) of aliased DMA_IRQ;
-
    type DMA_Timers is array (DMA_Timer_Id) of RP2040_SVD.DMA.TIMER_Register;
 
    type DMA_Peripheral is record
       CH                 : DMA_Channels;
       INTR               : aliased RP2040_SVD.DMA.INTR_Register;
-      IRQ                : DMA_IRQs;
+      IRQ0               : DMA_IRQ;
+      IRQ1               : DMA_IRQ;
       TIMER              : DMA_Timers;
       MULTI_CHAN_TRIGGER : aliased RP2040_SVD.DMA.MULTI_CHAN_TRIGGER_Register;
       SNIFF_CTRL         : aliased RP2040_SVD.DMA.SNIFF_CTRL_Register;
@@ -325,7 +324,8 @@ private
    for DMA_Peripheral use record
       CH                 at 16#000# range 0 .. 6143;
       INTR               at 16#400# range 0 .. 31;
-      IRQ                at 16#404# range 0 .. 191;
+      IRQ0               at 16#404# range 0 .. 95;
+      IRQ1               at 16#414# range 0 .. 95;
       TIMER              at 16#420# range 0 .. 127;
       MULTI_CHAN_TRIGGER at 16#430# range 0 .. 31;
       SNIFF_CTRL         at 16#434# range 0 .. 31;
