@@ -141,8 +141,14 @@ package body RP.DMA is
             when 1 => RP2040_SVD.Interrupts.DMA_IRQ_1_Interrupt);
 
    begin
-      DMA_Periph.IRQ (IRQ).INTE.INTE0 :=
-        DMA_Periph.IRQ (IRQ).INTE.INTE0 or Mask;
+      case IRQ is
+         when 0 =>
+            DMA_Periph.IRQ0.INTE.INTE0 :=
+              DMA_Periph.IRQ0.INTE.INTE0 or Mask;
+         when 1 =>
+            DMA_Periph.IRQ1.INTE.INTE0 :=
+              DMA_Periph.IRQ1.INTE.INTE0 or Mask;
+      end case;
 
       Cortex_M.NVIC.Clear_Pending (Line);
       Cortex_M.NVIC.Enable_Interrupt (Line);
@@ -157,8 +163,14 @@ package body RP.DMA is
    is
       Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
    begin
-      DMA_Periph.IRQ (IRQ).INTE.INTE0 :=
-        DMA_Periph.IRQ (IRQ).INTE.INTE0 and (not Mask);
+      case IRQ is
+         when 0 =>
+            DMA_Periph.IRQ0.INTE.INTE0 :=
+              DMA_Periph.IRQ0.INTE.INTE0 and (not Mask);
+         when 1 =>
+            DMA_Periph.IRQ1.INTE.INTE0 :=
+              DMA_Periph.IRQ1.INTE.INTE0 and (not Mask);
+      end case;
    end Disable_IRQ;
 
    -------------
@@ -170,7 +182,12 @@ package body RP.DMA is
    is
       Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
    begin
-      DMA_Periph.IRQ (IRQ).INTS.INTS0 := Mask;
+      case IRQ is
+         when 0 =>
+            DMA_Periph.IRQ0.INTS.INTS0 := Mask;
+         when 1 =>
+            DMA_Periph.IRQ1.INTS.INTS0 := Mask;
+      end case;
    end Ack_IRQ;
 
    ----------------
@@ -183,7 +200,12 @@ package body RP.DMA is
    is
       Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
    begin
-      return (DMA_Periph.IRQ (IRQ).INTS.INTS0 and Mask) /= 0;
+      case IRQ is
+         when 0 =>
+            return (DMA_Periph.IRQ0.INTS.INTS0 and Mask) /= 0;
+         when 1 =>
+            return (DMA_Periph.IRQ1.INTS.INTS0 and Mask) /= 0;
+      end case;
    end IRQ_Status;
 
    procedure Set_Pacing_Timer
