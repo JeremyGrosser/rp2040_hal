@@ -1,6 +1,6 @@
 name = "test_rp2040_hal"
 description = "Unit tests for rp2040_hal"
-version = "2.0.0"
+version = "2.1.0"
 
 authors = ["Jeremy Grosser"]
 maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
