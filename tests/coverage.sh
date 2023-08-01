@@ -30,7 +30,7 @@ gprbuild -P test_rp2040_hal.gpr \
     -f
 check_error "Coverage build failed"
 
-sudo openocd -f interface/picoprobe.cfg -f target/rp2040.cfg &>coverage.log &
+sudo openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2040.cfg &>coverage.log &
 timeout --verbose --signal=INT --kill-after=1s 120s arm-eabi-gdb --batch --command=coverage.gdb
 check_error "Test failed"
 
