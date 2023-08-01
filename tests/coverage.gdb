@@ -3,7 +3,7 @@ monitor reset halt
 monitor arm semihosting enable
 file bin/test_rp2040_hal
 load
-break Dump_Buffers
+break main
 run
 finish
 delete break

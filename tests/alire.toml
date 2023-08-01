@@ -12,6 +12,7 @@ executables = ["test_rp2040_hal"]
 rp2040_hal = "^2"
 aunit = "^23.0.0"
 gnat_arm_elf = "^12"
+gnatcov = "^22.0.1"
 
 [[pins]]
 rp2040_hal = { path='../../rp2040_hal' }
@@ -19,3 +20,8 @@ aunit = { url='https://github.com/JeremyGrosser/aunit.git' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "zfp-cross"
+
+[build-profiles]
+"*" = "validation"
+usb_embedded = "release"
+atomic = "release"
