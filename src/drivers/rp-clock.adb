@@ -5,6 +5,7 @@
 --
 with RP2040_SVD.XOSC;
 with RP2040_SVD.ROSC;
+with RP2040_SVD.WATCHDOG;
 with RP.Watchdog;
 with RP.Reset;
 
@@ -26,8 +27,6 @@ package body RP.Clock is
    procedure Enable_ROSC is
       use RP2040_SVD.ROSC;
    begin
-      --  Just ensure that ROSC is enabled, don't reset it or change the
-      --  frequency
       ROSC_Periph.CTRL.ENABLE := ENABLE;
       while not ROSC_Periph.STATUS.STABLE loop
          null;
@@ -62,44 +61,18 @@ package body RP.Clock is
       Periph.PWR.POSTDIVPD := False;
    end Configure_PLL;
 
-   procedure Initialize
-      (XOSC_Frequency     : XOSC_Hertz := 0;
-       XOSC_Startup_Delay : XOSC_Cycles := 770_048)
+   procedure Init_PLLs
+      (XOSC_Frequency : Hertz)
    is
       use RP.Reset;
-      Has_XOSC  : constant Boolean := XOSC_Frequency > 0;
-      Reference : Hertz;
    begin
-      --  Enable RESUS in case things go badly
-      CLOCKS_Periph.CLK_SYS_RESUS_CTRL.ENABLE := True;
-
-      --  Enable watchdog and maybe XOSC
-      if Has_XOSC then
-         Reference := XOSC_Frequency;
-         RP2040_SVD.XOSC.XOSC_Periph.STARTUP.DELAY_k := RP2040_SVD.XOSC.STARTUP_DELAY_Field (XOSC_Startup_Delay / 256);
-         Set_SYS_Source (XOSC);
-         Disable (ROSC);
-      else
-         Reference := ROSC_Frequency;
-         Set_SYS_Source (ROSC);
-      end if;
-
-      RP.Watchdog.Configure (Timeout => 100);
-      --  If PLLs aren't stable in 100ms, reset
-
-      CLOCKS_Periph.FC0_REF_KHZ.FC0_REF_KHZ := FC0_REF_KHZ_FC0_REF_KHZ_Field (Reference / 1_000);
-
       --  Reset PLLs
       Reset_Peripheral (Reset_PLL_SYS);
       Reset_Peripheral (Reset_PLL_USB);
 
-      if Reference = 12_000_000 then
-         Configure_PLL (PLL_SYS, PLL_125_MHz);
-         Configure_PLL (PLL_USB, PLL_48_MHz);
-      else
-         --  TODO: calculate PLL dividers for other clk_ref frequencies
-         raise Invalid_PLL_Config with "unsupported clk_ref frequency";
-      end if;
+      --  Assumes clk_ref = 12 MHz
+      Configure_PLL (PLL_SYS, PLL_125_MHz);
+      Configure_PLL (PLL_USB, PLL_48_MHz);
 
       --  Switch clk_sys to pll_sys
       Set_SYS_Source (PLL_SYS);
@@ -131,6 +104,42 @@ package body RP.Clock is
       while CLOCKS_Periph.CLK (PERI).SELECTED /= CLK_SELECTED_Mask (PERI_SRC_SYS) loop
          null;
       end loop;
+   end Init_PLLs;
+
+   procedure Initialize
+      (XOSC_Frequency     : XOSC_Hertz := 0;
+       XOSC_Startup_Delay : XOSC_Cycles := 770_048)
+   is
+      use RP2040_SVD.WATCHDOG;
+      Reference : Hertz;
+   begin
+      --  Enable RESUS in case things go badly
+      CLOCKS_Periph.CLK_SYS_RESUS_CTRL.ENABLE := True;
+
+      --  If clocks aren't stable in 100ms, reset
+      RP.Watchdog.Configure (Timeout => 100);
+
+      --  Enable watchdog and maybe XOSC
+      if XOSC_Frequency > 0 then
+         Reference := XOSC_Frequency;
+         RP2040_SVD.XOSC.XOSC_Periph.STARTUP.DELAY_k := RP2040_SVD.XOSC.STARTUP_DELAY_Field (XOSC_Startup_Delay / 256);
+         Set_SYS_Source (XOSC);
+         Disable (ROSC);
+         Init_PLLs (XOSC_Frequency);
+      else
+         Reference := ROSC_Frequency;
+         Set_SYS_Source (ROSC);
+         Disable (PLL_SYS);
+         Disable (PLL_USB);
+         Disable (XOSC);
+      end if;
+
+      WATCHDOG_Periph.TICK :=
+         (ENABLE => True,
+          CYCLES => TICK_CYCLES_Field (Reference / 1_000_000),
+          others => <>);
+
+      CLOCKS_Periph.FC0_REF_KHZ.FC0_REF_KHZ := FC0_REF_KHZ_FC0_REF_KHZ_Field (Reference / 1_000);
 
       RP.Watchdog.Disable;
    end Initialize;
@@ -263,7 +272,7 @@ package body RP.Clock is
 
    function ROSC_Frequency
       return Hertz
-   is (12_000_000);
+   is (6_500_000);
 
    procedure Set_SYS_Source
       (Source : SYS_Clock_Id)
