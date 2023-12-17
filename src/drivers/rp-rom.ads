@@ -127,7 +127,7 @@ is
         Address    => ROM_Func_Lookup (ROM_Table_Code ('R', 'E'));
 
    procedure flash_range_program
-      (Addr       : System.Address;
+      (Addr       : Unsigned_32;
        Data       : System.Address;
        Count      : Interfaces.C.size_t)
    with Import,

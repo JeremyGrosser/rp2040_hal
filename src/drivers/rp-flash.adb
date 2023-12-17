@@ -146,7 +146,7 @@ package body RP.Flash is
 
       RP.ROM.flash_exit_xip;
 
-      RP.ROM.flash_range_program (Addr  => To_Address (Offset),
+      RP.ROM.flash_range_program (Addr  => Interfaces.Unsigned_32 (Offset),
                                   Data  => Source,
                                   Count => Interfaces.C.size_t (Length));
       RP.ROM.flash_flush_cache;
