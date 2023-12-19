@@ -49,4 +49,12 @@ COVERAGE_FLAGS=" \
 
 gnatcov coverage --annotate=xcov+ ${COVERAGE_FLAGS}
 gnatcov coverage --annotate=html+ ${COVERAGE_FLAGS}
-echo "PASS" 1>&2
+
+let ok=$(grep --text '^FAIL ' coverage.log | wc -l)
+let failed=$(grep --text '^FAIL ' coverage.log | wc -l)
+let errors=$(grep --text '^ERROR ' coverage.log | wc -l)
+if [ $ok -gt 0 -a $failed -eq 0 -a $errors -eq 0 ]; then
+    echo "PASS" 1>&2
+else
+    echo "FAIL" 1>&2
+fi
