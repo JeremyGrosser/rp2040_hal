@@ -34,8 +34,8 @@ sudo openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2040
 timeout --verbose --signal=INT --kill-after=1s 120s arm-eabi-gdb --batch --command=coverage.gdb
 check_error "Test failed"
 
-let first=$(grep --line-number 'Testing...' coverage.log | head -n1 | cut -d':' -f1)
-let last=$(grep --line-number '== GNATcoverage source trace file ==' coverage.log | head -n1 | cut -d':' -f1)
+let first=$(grep --text --line-number 'Testing...' coverage.log | head -n1 | cut -d':' -f1)
+let last=$(grep --text --line-number '== GNATcoverage source trace file ==' coverage.log | head -n1 | cut -d':' -f1)
 head -n $(($last-1)) coverage.log | tail -n $(($last-$first)) 1>&2
 
 gnatcov extract-base64-trace coverage.log coverage.trace
