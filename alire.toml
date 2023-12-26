@@ -14,7 +14,7 @@ cortex_m = "~0.5"
 atomic = "~0.5"
 hal = "~0.3"
 usb_embedded = "~0.3"
-gnat_arm_elf = "^12.2"
+gnat_arm_elf = "^13"
 
 [configuration.variables]
 Flash_Chip = {type = "Enum",  values = ["w25qxx", "generic_qspi", "generic_03"], default = "w25qxx"}
@@ -24,4 +24,3 @@ Use_Startup = {type = "Boolean", default = true}
 [configuration.values]
 atomic.Backend = "armv6m"
 cortex_m.core = "m0p"
-
