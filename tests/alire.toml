@@ -10,12 +10,11 @@ executables = ["test_rp2040_hal"]
 
 [[depends-on]]  # Added by alr
 rp2040_hal = "^2"
-aunit = "^24.0.0"
-gnatcov = "^22.0.1"
+aunit = "^24"
+gnatcov = "^22"
 
 [[pins]]
 rp2040_hal = { path='../../rp2040_hal' }
-aunit = { url='https://github.com/JeremyGrosser/aunit.git' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "zfp-cross"
