@@ -32,7 +32,6 @@ check_error "Coverage build failed"
 
 sudo openocd -f interface/cmsis-dap.cfg -c "adapter speed 5000" -f target/rp2040.cfg &>coverage.log &
 timeout --verbose --signal=INT --kill-after=1s 120s arm-eabi-gdb --batch --command=coverage.gdb
-check_error "Test failed"
 
 let first=$(grep --text --line-number 'Testing...' coverage.log | head -n1 | cut -d':' -f1)
 let last=$(grep --text --line-number '== GNATcoverage source trace file ==' coverage.log | head -n1 | cut -d':' -f1)
@@ -50,7 +49,7 @@ COVERAGE_FLAGS=" \
 gnatcov coverage --annotate=xcov+ ${COVERAGE_FLAGS}
 gnatcov coverage --annotate=html+ ${COVERAGE_FLAGS}
 
-let ok=$(grep --text '^FAIL ' coverage.log | wc -l)
+let ok=$(grep --text '^OK ' coverage.log | wc -l)
 let failed=$(grep --text '^FAIL ' coverage.log | wc -l)
 let errors=$(grep --text '^ERROR ' coverage.log | wc -l)
 if [ $ok -gt 0 -a $failed -eq 0 -a $errors -eq 0 ]; then
