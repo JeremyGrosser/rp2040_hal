@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: alire-project/setup-alire@v1
+      - uses: alire-project/setup-alire@v2
         with:
-          version: 1.2.1
+          version: nightly
       - run: cd tests; alr build
