@@ -10,7 +10,7 @@ executables = ["test_rp2040_hal"]
 
 [[depends-on]]  # Added by alr
 rp2040_hal = "^2"
-aunit = "^23.0.0"
+aunit = "^24.0.0"
 gnatcov = "^22.0.1"
 
 [[pins]]

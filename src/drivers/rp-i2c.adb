@@ -3,7 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Ada.Unchecked_Conversion;
 with RP.Reset;
 with RP.Clock;
 

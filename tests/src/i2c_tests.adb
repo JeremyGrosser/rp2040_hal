@@ -50,7 +50,6 @@ package body I2C_Tests is
    procedure Test_Single
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      use HAL.I2C;
       use HAL;
       Data   : UInt8;
       Status : RP.I2C.I2C_Status;
@@ -123,7 +122,6 @@ package body I2C_Tests is
    procedure Test_Repeated_Start
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      use HAL.I2C;
       use HAL;
       Data   : UInt8;
       Status : RP.I2C.I2C_Status;
@@ -164,7 +162,6 @@ package body I2C_Tests is
    procedure Test_Long_Transfer
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      use HAL.I2C;
       use HAL;
       Data   : UInt8;
       Status : RP.I2C.I2C_Status;

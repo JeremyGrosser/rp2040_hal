@@ -239,7 +239,6 @@ package body RP.Clock is
        Accuracy : UInt4 := 15)
       return Hertz
    is
-      use type RP2040_SVD.CLOCKS.FC0_SRC_FC0_SRC_Field;
       F : Hertz;
    begin
       CLOCKS_Periph.FC0_INTERVAL.FC0_INTERVAL := Accuracy;
