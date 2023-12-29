@@ -11,7 +11,8 @@ package body RP.Watchdog is
    Reload_Value : LOAD_LOAD_Field := LOAD_LOAD_Field'Last;
 
    procedure Configure
-      (Timeout : Milliseconds)
+      (Timeout       : Milliseconds;
+       Debug_Pause   : Boolean := True)
    is
    begin
       Disable;
@@ -20,7 +21,9 @@ package body RP.Watchdog is
       --  Reset both processors when the watchdog is triggered
 
       Reload_Value := LOAD_LOAD_Field (Timeout * 1_000 * 2);
-      --  Errata RP2040-E2
+      --  RP2040-E1
+
+      WATCHDOG_Periph.CTRL.PAUSE_DBG.Val := (if Debug_Pause then 2#11# else 0);
 
       Enable;
    end Configure;
