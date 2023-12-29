@@ -218,17 +218,14 @@ package body RP.Flash is
       Data_Length    : constant := 8;
       Length         : constant := 1 + Dummy_Length + Data_Length;
       Tx, Rx         : UInt8_Array (1 .. Length);
+      Id             : UInt64 := 0;
    begin
       Tx (1) := FLASH_RUID_CMD;
       Flash_Do_Cmd (Tx, Rx);
-      declare
-         Data : constant UInt8_Array (1 .. Data_Length) := Rx (Rx'Last - (Data_Length - 1) .. Rx'Last)
-            with Alignment => 8;
-         Id   : UInt64
-            with Address => Data'Address;
-      begin
-         return Id;
-      end;
+      for I in Rx'Last - 7 .. Rx'Last loop
+         Id := Shift_Left (Id, 8) or UInt64 (Rx (I));
+      end loop;
+      return Id;
    end Unique_Id;
 
 end RP.Flash;
