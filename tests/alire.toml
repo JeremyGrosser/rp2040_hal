@@ -15,7 +15,7 @@ gnatcov = "^22"
 gnat_arm_elf = "^13"
 
 [[pins]]
-rp2040_hal = { path='../../rp2040_hal' }
+rp2040_hal = { path='..' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "zfp-cross"
