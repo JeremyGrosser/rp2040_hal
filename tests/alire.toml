@@ -12,6 +12,7 @@ executables = ["test_rp2040_hal"]
 rp2040_hal = "^2"
 aunit = "^24"
 gnatcov = "^22"
+gnat_arm_elf = "^13"
 
 [[pins]]
 rp2040_hal = { path='../../rp2040_hal' }
