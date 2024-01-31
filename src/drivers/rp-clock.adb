@@ -124,7 +124,6 @@ package body RP.Clock is
          Reference := XOSC_Frequency;
          RP2040_SVD.XOSC.XOSC_Periph.STARTUP.DELAY_k := RP2040_SVD.XOSC.STARTUP_DELAY_Field (XOSC_Startup_Delay / 256);
          Set_SYS_Source (XOSC);
-         Disable (ROSC);
          Init_PLLs (XOSC_Frequency);
       else
          Reference := ROSC_Frequency;
