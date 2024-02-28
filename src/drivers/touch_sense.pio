@@ -1,0 +1,30 @@
+; SPDX-FileCopyrightText: 2017 Scott Shawcroft, written for Adafruit Industries
+; SPDX-FileCopyrightText: Copyright (c) 2023 Tod Kurt
+;
+; SPDX-License-Identifier: MIT
+
+
+; See rp-pio-touch_sense.ads for more high level explanation of the touch
+; sensing process.
+
+.program touch_sense
+
+.wrap_target
+    pull block           ; trigger a reading, get maxcount value from fifo, OSR contains maxcount
+    set pindirs, 1       ; set GPIO as output
+    set pins, 1          ; drive pin HIGH to charge capacitance
+;    set x,24             ; wait time for pin charge
+    set x,30             ; wait time for pin charge
+charge:                  ; wait (24+1)*31 = 1085 cycles = 8.6us
+    jmp x--, charge [31]
+    mov x, osr           ; load maxcount value (10_000 usually)
+    set pindirs, 0       ; set GPIO as input
+timing:
+    jmp x--, test        ; decrement x until timeout
+    jmp done             ; we've timed out, so leave
+test:
+    jmp pin, timing      ; loop while pin is still high
+done:
+    mov isr, x           ; load ISR with count value in x
+    push                 ; push ISR into RX fifo
+.wrap
