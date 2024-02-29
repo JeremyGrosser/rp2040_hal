@@ -407,6 +407,19 @@ package body RP.PIO is
       end loop;
    end Put;
 
+   procedure Try_Put
+     (This    : in out PIO_Device;
+      SM      : PIO_SM;
+      Data    : UInt32;
+      Success : out Boolean)
+   is
+   begin
+      Success := not This.TX_FIFO_Full (SM);
+      if Success then
+         This.Periph.TXF (SM) := Data;
+      end if;
+   end Try_Put;
+
    procedure Get
       (This : in out PIO_Device;
        SM   : PIO_SM;
@@ -432,6 +445,31 @@ package body RP.PIO is
          Data (I) := This.Periph.RXF (SM);
       end loop;
    end Get;
+
+   procedure Try_Get
+      (This    : in out PIO_Device;
+       SM      : PIO_SM;
+       Data    : out UInt32;
+       Success : out Boolean)
+   is
+   begin
+      Success := not This.RX_FIFO_Empty (SM);
+      if Success then
+         Data := This.Periph.RXF (SM);
+      end if;
+   end Try_Get;
+
+   function RX_FIFO_Full (This : PIO_Device; SM : PIO_SM) return Boolean
+   is (This.Periph.FSTAT.RXFULL (SM));
+
+   function RX_FIFO_Empty (This : PIO_Device; SM : PIO_SM) return Boolean
+   is (This.Periph.FSTAT.RXEMPTY (SM));
+
+   function TX_FIFO_Full (This : PIO_Device; SM : PIO_SM) return Boolean
+   is (This.Periph.FSTAT.TXFULL (SM));
+
+   function TX_FIFO_Empty (This : PIO_Device; SM : PIO_SM) return Boolean
+   is (This.Periph.FSTAT.TXEMPTY (SM));
 
    function TX_FIFO_Address
       (This : PIO_Device;

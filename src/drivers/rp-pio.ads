@@ -182,21 +182,51 @@ is
       (This : in out PIO_Device;
        SM   : PIO_SM;
        Data : UInt32);
+   --  Put one word in the TX FIFO of the given state machine. If the FIFO is
+   --  full, this call will run a buzy loop until there's room for the data.
 
    procedure Put
       (This : in out PIO_Device;
        SM   : PIO_SM;
        Data : UInt32_Array);
+   --  Put data in the TX FIFO of the given state machine. If the FIFO is
+   --  full, this call will run a buzy loop until there's room for the data.
+
+   procedure Try_Put
+      (This    : in out PIO_Device;
+       SM      : PIO_SM;
+       Data    : UInt32;
+       Success : out Boolean);
+   --  Try to put one word in the TX FIFO of the given state machine. If the
+   --  FIFO is full, Success is set to False and the data not transmitted.
 
    procedure Get
       (This : in out PIO_Device;
        SM   : PIO_SM;
        Data : out UInt32);
+   --  Get one word from the RX FIFO of the given state machine. If the FIFO
+   --  is empty, this call will run a buzy loop until there's data available.
 
    procedure Get
       (This : in out PIO_Device;
        SM   : PIO_SM;
        Data : out UInt32_Array);
+   --  Get data from the RX FIFO of the given state machine. If the FIFO is
+   --  empty, this call will run a buzy loop until there's data available.
+
+   procedure Try_Get
+      (This    : in out PIO_Device;
+       SM      : PIO_SM;
+       Data    : out UInt32;
+       Success : out Boolean);
+   --  Try to get one word from the RX FIFO of the given state machine. If the
+   --  FIFO is empty, Success is set to False and Data is not set.
+
+   function RX_FIFO_Full (This : PIO_Device; SM : PIO_SM) return Boolean;
+   function RX_FIFO_Empty (This : PIO_Device; SM : PIO_SM) return Boolean;
+
+   function TX_FIFO_Full (This : PIO_Device; SM : PIO_SM) return Boolean;
+   function TX_FIFO_Empty (This : PIO_Device; SM : PIO_SM) return Boolean;
 
    function TX_FIFO_Address
       (This : PIO_Device;
