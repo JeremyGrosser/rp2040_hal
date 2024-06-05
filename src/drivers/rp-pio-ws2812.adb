@@ -156,7 +156,7 @@ package body RP.PIO.WS2812 is
                      (255 - Shift_Right (UInt32 (S) *
                         (255 - Remainder), 8)), 8));
 
-         case (Region) is
+         case Region is
             when      0 => R := V; G := T; B := P;
             when      1 => R := Q; G := V; B := P;
             when      2 => R := P; G := V; B := T;
