@@ -1,11 +1,17 @@
 with "config/rp2040_hal_config.gpr";
 project Rp2040_Hal is
 
-   for Runtime ("Ada") use "light-cortex-m0p";
    for Target use "arm-eabi";
 
-   Boot_Stage_2 := Project'Project_Dir & "boot2/generated/boot2__" & Rp2040_Hal_Config.Flash_Chip & ".S";
-   Linker_Script := Project'Project_Dir & "ld/memmap_default.ld";
+   case Rp2040_Hal_Config.Device is
+      when "rp2040" =>
+         for Runtime ("Ada") use "light-cortex-m0p";
+      when "rp2350" =>
+         for Runtime ("Ada") use "light-cortex-m33f";
+   end case;
+
+   Boot_Stage_2 := Project'Project_Dir & "boot2/generated/boot2__" & Rp2040_Hal_Config.Device & "_" & Rp2040_Hal_Config.Flash_Chip & ".S";
+   Linker_Script := Project'Project_Dir & "ld/" & Rp2040_Hal_Config.Device & ".ld";
    Linker_Switches := (
       "-T", Linker_Script,
       Boot_Stage_2,
@@ -36,7 +42,7 @@ project Rp2040_Hal is
       ("src/",
        "src/drivers",
        "src/svd",
-       "src/devices/RP2040",
+       "src/devices/" & Rp2040_Hal_Config.Device,
        "src/interrupts/" & Rp2040_Hal_Config.Interrupts,
        "config/");
 

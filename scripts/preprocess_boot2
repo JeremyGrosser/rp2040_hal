@@ -1,0 +1,26 @@
+#!/bin/sh
+
+WORKDIR=$PWD
+PICO_SDK_PATH=pico-sdk
+if [ ! -e ${PICO_SDK_PATH} ]; then
+    git clone --branch=develop --depth=1 https://github.com/raspberrypi/pico-sdk ${PICO_SDK_PATH}
+fi
+cd ${PICO_SDK_PATH}/src
+
+prep() {
+    arm-none-eabi-gcc -E \
+        -I${WORKDIR}/include \
+        -Icommon/pico_base_headers/include \
+        -Irp2350/pico_platform/include \
+        -Irp2_common/pico_platform_compiler/include \
+        -Irp2_common/pico_platform_panic/include \
+        -Irp2_common/pico_platform_sections/include \
+        -Irp2350/hardware_regs/include \
+        -Irp2350/hardware_structs/include \
+        -Irp2350/boot_stage2/asminclude \
+        rp2350/boot_stage2/boot2_$1.S >${WORKDIR}/../boot2/generated/boot2__rp2350_$1.S
+    echo "$1"
+}
+
+prep generic_03h
+prep w25q080
