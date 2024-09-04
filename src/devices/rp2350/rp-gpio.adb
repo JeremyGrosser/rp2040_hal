@@ -26,9 +26,9 @@ package body RP.GPIO is
       --  on these pads. This is unlikely to cause a problem as the digital
       --  inputs have hysteresis enabled by default.
 
-      for Pin in ADC_Pin'Range loop
-         PADS_BANK_Periph.GPIO (Pin).IE := False;
-         PADS_BANK_Periph.GPIO (Pin).OD := True;
+      for Pin in 26 .. 29 loop
+         PADS_BANK_Periph.GPIO (GPIO_Pin (Pin)).IE := False;
+         PADS_BANK_Periph.GPIO (GPIO_Pin (Pin)).OD := True;
       end loop;
 
       --  Mask all pin interrupts

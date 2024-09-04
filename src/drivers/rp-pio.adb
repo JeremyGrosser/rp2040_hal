@@ -6,7 +6,6 @@
 with Ada.Unchecked_Conversion;
 with RP.Clock;
 with RP.Reset;
-with RP2040_SVD.Interrupts;
 
 package body RP.PIO is
    procedure Enable
@@ -17,6 +16,7 @@ package body RP.PIO is
       case This.Num is
          when 0 => Reset_Peripheral (Reset_PIO0);
          when 1 => Reset_Peripheral (Reset_PIO1);
+         when 2 => Reset_Peripheral (Reset_PIO2);
       end case;
    end Enable;
 
@@ -254,6 +254,7 @@ package body RP.PIO is
       case PIO.Num is
          when 0 => return RP.GPIO.PIO0;
          when 1 => return RP.GPIO.PIO1;
+         when 2 => return RP.GPIO.PIO2;
       end case;
    end GPIO_Function;
 
@@ -513,22 +514,7 @@ package body RP.PIO is
       (This : PIO_Device;
        IRQ  : PIO_IRQ_ID)
       return Cortex_M.NVIC.Interrupt_ID
-   is
-      use RP2040_SVD.Interrupts;
-   begin
-      case This.Num is
-         when 0 =>
-            case IRQ is
-               when 0 => return PIO0_IRQ_0_Interrupt;
-               when 1 => return PIO0_IRQ_1_Interrupt;
-            end case;
-         when 1 =>
-            case IRQ is
-               when 0 => return PIO1_IRQ_0_Interrupt;
-               when 1 => return PIO1_IRQ_1_Interrupt;
-            end case;
-      end case;
-   end NVIC_IRQ_Line;
+   is (Cortex_M.NVIC.Interrupt_ID (This.Interrupt_Base + (Natural (This.Num) * 2) + Natural (IRQ)));
 
    procedure Enable_IRQ (This : in out PIO_Device;
                          IRQ  :        PIO_IRQ_ID)
@@ -666,12 +652,12 @@ package body RP.PIO is
       (This : PIO_Device;
        SM   : PIO_SM)
        return RP.DMA.DMA_Request_Trigger
-   is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM)));
+   is (RP.DMA.DMA_Request_Trigger'Val (Natural (This.Num) * 8 + Natural (SM)));
 
    function DMA_RX_Trigger
       (This : PIO_Device;
        SM   : PIO_SM)
        return RP.DMA.DMA_Request_Trigger
-   is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM) + 4));
+   is (RP.DMA.DMA_Request_Trigger'Val (Natural (This.Num) * 8 + Natural (SM) + 4));
 
 end RP.PIO;

@@ -15,11 +15,13 @@ package RP.PIO
    with Preelaborate
 is
    type PIO_Peripheral is private;
-   subtype PIO_Number is Natural range 0 .. 1;
+   type PIO_Number is range 0 .. 2;
    type PIO_Device
       (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)
-   is tagged null record;
+   is tagged record
+       Interrupt_Base : Natural := 7;
+   end record;
 
    type PIO_SM is range 0 .. 3;
    type PIO_SM_Mask is array (PIO_SM) of Boolean
