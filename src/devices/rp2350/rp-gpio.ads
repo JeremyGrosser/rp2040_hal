@@ -4,17 +4,18 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with RP2040_SVD.IO_BANK0;   use RP2040_SVD.IO_BANK0;
-with RP2040_SVD.PADS_BANK0; use RP2040_SVD.PADS_BANK0;
-with RP2040_SVD;            use RP2040_SVD;
+with RP2350_SVD.IO_BANK0;   use RP2350_SVD.IO_BANK0;
+with RP2350_SVD.PADS_BANK0; use RP2350_SVD.PADS_BANK0;
+with RP2350_SVD;            use RP2350_SVD;
 with HAL;                   use HAL;
 with HAL.GPIO;              use HAL.GPIO;
 
 package RP.GPIO
    with Preelaborate
 is
-   type GPIO_Pin is range 0 .. 29;
-   subtype ADC_Pin is GPIO_Pin range 26 .. 29;
+   type GPIO_Pin is range 0 .. 47;
+   subtype ADC_Pin is GPIO_Pin
+      with Static_Predicate => ADC_Pin in 26 .. 29 | 40 .. 47;
 
    type GPIO_Point is new HAL.GPIO.GPIO_Point with
       record
@@ -23,24 +24,39 @@ is
 
    type GPIO_Config_Mode is (Input, Output, Analog);
 
-   type GPIO_Function is
-      (SPI, UART, I2C, PWM, SIO, PIO0, PIO1, CLOCK, USB, HI_Z);
-
    type GPIO_Pull_Mode is (Floating, Pull_Up, Pull_Down, Pull_Both);
 
    type GPIO_Drive is (Drive_2mA, Drive_4mA, Drive_8mA, Drive_12mA);
 
+   type GPIO_Function is
+      (HSTX,
+       SPI,
+       UART,
+       I2C,
+       PWM,
+       SIO,
+       PIO0,
+       PIO1,
+       PIO2,
+       CLOCK,
+       USB,
+       UART_ALT,
+       HI_Z);
+
    for GPIO_Function use
-      (SPI   => 1,
-       UART  => 2,
-       I2C   => 3,
-       PWM   => 4,
-       SIO   => 5,
-       PIO0  => 6,
-       PIO1  => 7,
-       CLOCK => 8,
-       USB   => 9,
-       HI_Z  => 31);
+      (HSTX       => 0,
+       SPI        => 1,
+       UART       => 2,
+       I2C        => 3,
+       PWM        => 4,
+       SIO        => 5,
+       PIO0       => 6,
+       PIO1       => 7,
+       PIO2       => 8,
+       CLOCK      => 9,
+       USB        => 10,
+       UART_ALT   => 11,
+       HI_Z       => 31);
 
    type Interrupt_Triggers is (Low_Level, High_Level, Falling_Edge, Rising_Edge)
       with Size => 4;
@@ -187,10 +203,10 @@ private
    end record
       with Volatile;
    for IO_BANK use record
-      GPIO              at 16#0000# range 0 .. 1919;
+      GPIO              at 16#0000# range 0 .. 3071;
    end record;
 
-   type PADS_BANK_GPIO_Registers is array (GPIO_Pin) of RP2040_SVD.PADS_BANK0.GPIO_Register;
+   type PADS_BANK_GPIO_Registers is array (GPIO_Pin) of RP2350_SVD.PADS_BANK0.GPIO_Register;
 
    type PADS_BANK is record
       VOLTAGE_SELECT : VOLTAGE_SELECT_Register;

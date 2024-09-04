@@ -78,7 +78,7 @@ package body RP.PIO.Audio_I2S is
       Set_Enabled (This.PIO.all, This.SM, True);
 
       DMA_Config.Trigger := DMA_Request_Trigger'Val
-         (DMA_Request_Trigger'Pos (PIO0_TX0) + (This.PIO.Num * 8) + Natural (This.SM));
+         (DMA_Request_Trigger'Pos (PIO0_TX0) + (Natural (This.PIO.Num) * 8) + Natural (This.SM));
       if Channels = 1 then
          DMA_Config.Data_Size := Transfer_16;
       else
