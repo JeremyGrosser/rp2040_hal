@@ -25,3 +25,6 @@ AUNIT_RUNTIME = "zfp-cross"
 usb_embedded = "release"
 atomic = "release"
 aunit = "release"
+
+[configuration.values]
+rp2040_hal.Device = "rp2350"

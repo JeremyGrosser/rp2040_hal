@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Example usage: genboot2asm.sh generic_03 generated/boot2__generic_03.S
+# Example usage: genboot2asm.sh generic_03 generated/boot2__rp2040_generic_03.S
 
 # Build the bootloader executable
 gprbuild -p -P boot2.gpr -XFLASH_DEVICE=$1

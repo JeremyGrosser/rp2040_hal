@@ -17,7 +17,8 @@ usb_embedded = "^1"
 gnat_arm_elf = "^14"
 
 [configuration.variables]
-Flash_Chip = {type = "Enum",  values = ["w25qxx", "generic_qspi", "generic_03"], default = "w25qxx"}
+Device = {type = "Enum", values = ["rp2040", "rp2350"], default = "rp2040"}
+Flash_Chip = {type = "Enum",  values = ["w25q080", "generic_qspi", "generic_03"], default = "w25q080"}
 Interrupts = {type = "Enum",  values = ["hal", "bb_runtimes"], default = "hal"}
 Use_Startup = {type = "Boolean", default = true}
 
