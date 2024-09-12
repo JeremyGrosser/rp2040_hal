@@ -33,7 +33,7 @@ project Rp2040_Hal is
    case Rp2040_Hal_Config.Use_Startup is
       when "True" =>
          for Languages use ("Ada", "Asm_Cpp");
-         Startup_Dirs := ("src/startup");
+         Startup_Dirs := ("src/startup/" & Rp2040_Hal_Config.Device);
       when others => null;
    end case;
 

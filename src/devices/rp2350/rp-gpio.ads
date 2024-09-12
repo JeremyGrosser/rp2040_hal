@@ -149,11 +149,6 @@ private
 
    GPIO_Enabled : Boolean := False;
 
-   subtype GPIO_Pin_Mask is UInt30;
-
-   function Pin_Mask (Pin : GPIO_Pin)
-      return GPIO_Pin_Mask;
-
    type GPIO_CTRL_Register is record
       FUNCSEL : GPIO_Function := HI_Z;
       OUTOVER : GPIO0_CTRL_OUTOVER_Field := NORMAL;

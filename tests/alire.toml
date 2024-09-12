@@ -19,12 +19,16 @@ rp2040_hal = { path='..' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "zfp-cross"
+AUNIT_BUILD_MODE = "Devel"
 
 [build-profiles]
-"*" = "validation"
-usb_embedded = "release"
-atomic = "release"
-aunit = "release"
+"*" = "development"
+#usb_embedded = "release"
+#atomic = "release"
+#aunit = "release"
 
 [configuration.values]
 rp2040_hal.Device = "rp2350"
+
+[[pins]]
+aunit = { path='../../../tmp/aunit_24.0.0_67fdc2b6' }
