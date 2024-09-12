@@ -1,6 +1,8 @@
 #!/bin/sh
 
-WORKDIR=$PWD
+TRIPLE=riscv64-unknown-elf
+CC=${TRIPLE}-gcc
+WORKDIR=${PWD}
 STARTUP_DIR=${WORKDIR}/../src/startup/rp2350
 PICO_SDK_PATH=pico-sdk
 if [ ! -e ${PICO_SDK_PATH} ]; then
@@ -9,12 +11,13 @@ fi
 cd ${PICO_SDK_PATH}/src
 
 prep_boot2() {
-    arm-none-eabi-gcc -E \
+    ${CC} -E \
         -I${WORKDIR}/include \
         -Icommon/pico_base_headers/include \
         -Irp2_common/pico_platform_compiler/include \
         -Irp2_common/pico_platform_panic/include \
         -Irp2_common/pico_platform_sections/include \
+        -Irp2_common/hardware_hazard3/include \
         -Irp2350/pico_platform/include \
         -Irp2350/hardware_regs/include \
         -Irp2350/hardware_structs/include \
@@ -28,7 +31,7 @@ prep_crt0() {
         mkdir -p ${STARTUP_DIR}
     fi
 
-    arm-none-eabi-gcc -E \
+    ${CC} -E \
         -I${WORKDIR}/include \
         -Icommon/pico_base_headers/include \
         -Icommon/pico_binary_info/include \
@@ -38,11 +41,12 @@ prep_crt0() {
         -Irp2_common/pico_platform_sections/include \
         -Irp2_common/boot_bootrom_headers/include \
         -Irp2_common/pico_bootrom/include \
+        -Irp2_common/hardware_hazard3/include \
         -Irp2350/pico_platform/include \
         -Irp2350/hardware_regs/include \
         -Irp2350/hardware_structs/include \
-        rp2_common/pico_crt0/crt0.S >${STARTUP_DIR}/crt0.S
-    echo "crt0"
+        rp2_common/pico_crt0/crt0_riscv.S >${STARTUP_DIR}/crt0_riscv.S
+    echo "crt0_riscv"
 }
 
 prep_boot2 generic_03h

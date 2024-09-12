@@ -3,19 +3,23 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD;
+with RP2350_SVD;
 with RP.Timer;
 
 package body RP.Reset is
 
    type RESET_Register is array (Reset_Id) of Boolean
-      with Component_Size => 1,
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Async_Writers,
+           Component_Size => 1,
            Size           => 32;
 
    type RESETS_Peripheral is record
-      RESET      : aliased RESET_Register;
-      WDSEL      : aliased RESET_Register;
-      RESET_DONE : aliased RESET_Register;
+      RESET      : RESET_Register;
+      WDSEL      : RESET_Register;
+      RESET_DONE : RESET_Register;
    end record
       with Volatile;
 
@@ -26,7 +30,7 @@ package body RP.Reset is
    end record;
 
    RESETS_Periph : aliased RESETS_Peripheral
-      with Import, Address => RP2040_SVD.RESETS_Base;
+      with Import, Address => RP2350_SVD.RESETS_Base;
 
    procedure Reset_Peripheral
       (Peripheral : Reset_Id)

@@ -4,13 +4,13 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 
-with RP2040_SVD.SIO; use RP2040_SVD.SIO;
+with RP2350_SVD.SIO; use RP2350_SVD.SIO;
 with RP.Reset;
 
 package body RP.GPIO is
    function Pin_Mask (Pin : GPIO_Pin)
-      return GPIO_Pin_Mask
-   is (GPIO_Pin_Mask (Shift_Left (UInt32 (1), GPIO_Pin'Pos (Pin))));
+      return UInt32
+   is (Shift_Left (UInt32 (1), GPIO_Pin'Pos (Pin)));
 
    procedure Enable is
       use RP.Reset;
@@ -18,7 +18,7 @@ package body RP.GPIO is
       Reset_Peripheral (Reset_IO_BANK0);
       Reset_Peripheral (Reset_PADS_BANK0);
 
-      --  Errata RP2040-E6
+      --  Errata RP2350-E6
       --
       --  GPIO26-29 are shared with ADC inputs AIN0-3. The GPIO digital input
       --  is enabled after RUN is released. If the pins are connected to an
@@ -51,7 +51,7 @@ package body RP.GPIO is
        Slew_Fast : Boolean := False;
        Drive     : GPIO_Drive := Drive_4mA)
    is
-      Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
+      Mask : constant UInt32 := Pin_Mask (This.Pin);
    begin
       if not Enabled then
          Enable;
@@ -82,8 +82,8 @@ package body RP.GPIO is
                 SLEWFAST => Slew_Fast,
                 DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
                 others   => <>);
-            SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
-            SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
+            SIO_Periph.GPIO_OUT_CLR := Mask;
+            SIO_Periph.GPIO_OE_SET := Mask;
          when Analog =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
                (PUE      => False,
@@ -101,7 +101,7 @@ package body RP.GPIO is
    function Get
       (This : GPIO_Point)
       return Boolean
-   is ((SIO_Periph.GPIO_IN.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
+   is ((SIO_Periph.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
 
    procedure Enable_Interrupt
       (This    : in out GPIO_Point;
@@ -224,14 +224,14 @@ package body RP.GPIO is
    function Set
       (This : GPIO_Point)
       return Boolean
-   is ((SIO_Periph.GPIO_IN.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
+   is ((SIO_Periph.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
 
    overriding
    procedure Set
       (This : in out GPIO_Point)
    is
    begin
-      SIO_Periph.GPIO_OUT_SET.GPIO_OUT_SET := Pin_Mask (This.Pin);
+      SIO_Periph.GPIO_OUT_SET := Pin_Mask (This.Pin);
    end Set;
 
    overriding
@@ -239,7 +239,7 @@ package body RP.GPIO is
       (This : in out GPIO_Point)
    is
    begin
-      SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Pin_Mask (This.Pin);
+      SIO_Periph.GPIO_OUT_CLR := Pin_Mask (This.Pin);
    end Clear;
 
    overriding
@@ -247,7 +247,7 @@ package body RP.GPIO is
       (This : in out GPIO_Point)
    is
    begin
-      SIO_Periph.GPIO_OUT_XOR.GPIO_OUT_XOR := Pin_Mask (This.Pin);
+      SIO_Periph.GPIO_OUT_XOR := Pin_Mask (This.Pin);
    end Toggle;
 
 end RP.GPIO;

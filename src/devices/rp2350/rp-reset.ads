@@ -15,7 +15,7 @@ is
        Reset_I2C0,
        Reset_I2C1,
        Reset_IO_BANK0,
-       Reset_QSPI,
+       Reset_IO_QSPI,
        Reset_JTAG,
        Reset_PADS_BANK0,
        Reset_PADS_QSPI,
