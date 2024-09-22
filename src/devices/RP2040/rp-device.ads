@@ -1,5 +1,5 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2024 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
@@ -23,15 +23,14 @@ package RP.Device is
    SPI_0 : aliased RP.SPI.SPI_Port (0, RP2040_SVD.SPI.SPI0_Periph'Access);
    SPI_1 : aliased RP.SPI.SPI_Port (1, RP2040_SVD.SPI.SPI1_Periph'Access);
 
-   --  RP.I2C implements the low level interface and is recommended if you need
-   --  precise control over timing or repeated start conditions.
+   --  RP.I2C is a lower level implementation of the I2C driver that exposes
+   --  more diagnostic information. It is not recommended to be used in
+   --  production code. Use RP.I2C_Master instead.
    I2C_0 : aliased RP.I2C.I2C_Port (0, RP2040_SVD.I2C.I2C0_Periph'Access);
    I2C_1 : aliased RP.I2C.I2C_Port (1, RP2040_SVD.I2C.I2C1_Periph'Access);
 
-   --  RP.I2C_Master implements the HAL.I2C interface and is recommended if
-   --  your application needs to be portable to other microcontrollers.
-   I2CM_0 : aliased RP.I2C_Master.I2C_Master_Port (0, RP2040_SVD.I2C.I2C0_Periph'Access);
-   I2CM_1 : aliased RP.I2C_Master.I2C_Master_Port (1, RP2040_SVD.I2C.I2C1_Periph'Access);
+   I2CM_0 : aliased RP.I2C_Master.I2C_Master_Port (0);
+   I2CM_1 : aliased RP.I2C_Master.I2C_Master_Port (1);
 
    UART_0 : aliased RP.UART.UART_Port (0, RP2040_SVD.UART.UART0_Periph'Access);
    UART_1 : aliased RP.UART.UART_Port (1, RP2040_SVD.UART.UART1_Periph'Access);
