@@ -12,16 +12,29 @@ is
    --  introduced by the contact or proximity of the user finger(s) with a
    --  pin.
    --
-   --  Using PIO, any RP2040 pin connected to ground through a large resistor
-   --  (e.g. 1Mohm) can be a capacitive touch sensor.
+   --  Using PIO, any RP2040 pin connected to ground (or 3.3v) through a large
+   --  resistor (e.g. 1Mohm) can be a capacitive touch sensor.
    --
-   --  The PIO program will charge the internal pin capacitor by configuring
-   --  the pin as an output and set it high for a few microseconds. And then
+   --  Two measure modes are available: Charge or Discharge
+   --
+   --  In Discharge mode (Default): Connect the pin to ground through a
+   --  large resistor. The PIO program will charge the internal pin capacitor
+   --  by configuring the pin as an output and set it high for a few
+   --  microseconds. And then set the pin as an input and count how many
+   --  cycles it takes for the capacitor to discharge through the resistor.
+   --
+   --  In Charge mode: Connect the pin to 3.3v through a large resistor. The
+   --  PIO program will discharge the internal pin capacitor by configuring
+   --  the pin as an output and set it low for a few microseconds. And then
    --  set the pin as an input and count how many cycles it takes for the
-   --  capacitor to discharge through the resistor.
+   --  capacitor to charge through the resistor.
    --
    --  If users touch the pin, the capacitance will increase and therefore the
-   --  number of cycles it takes to discharge will increase as well.
+   --  number of cycles it takes to discharge/charge will increase as well.
+
+   type Touch_Mode is (Discharge, Charge);
+   --  Measure either capacitive discharge time (Pin pulled down) or
+   --  capacitive charge time (pin pulled up).
 
    type Touch_Sensor
      (Pin : not null access RP.GPIO.GPIO_Point;
@@ -41,12 +54,15 @@ is
    --  Max_Count is the maximum number of loops in the PIO program for a
    --  single measure. Lowering this number will shorten the measure time
    --  in worst case (high capacitance).
+   --
+   --  Mode select either a discharge or charge count (see above).
    procedure Initialize (This       : in out Touch_Sensor;
                          ASM_Offset :        PIO_Address := 0;
-                         Max_Count  :        HAL.UInt32  := 10_000);
+                         Max_Count  :        HAL.UInt32  := 10_000;
+                         Mode       :        Touch_Mode  := Discharge);
 
    --  Trigger a measurement and return the number of cycles it took for the
-   --  capacitor to discharge.
+   --  capacitor to discharge/charge.
    --
    --  User touching the pin will increase capacitance, higher capacitance
    --  means higher Raw_Value.
