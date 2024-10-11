@@ -7,7 +7,7 @@
 ; See rp-pio-touch_sense.ads for more high level explanation of the touch
 ; sensing process.
 
-.program touch_sense
+.program touch_sense_discharge
 
 .wrap_target
     pull block           ; trigger a reading, get maxcount value from fifo, OSR contains maxcount
