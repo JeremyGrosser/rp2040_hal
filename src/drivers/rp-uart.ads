@@ -1,5 +1,5 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2024 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
@@ -170,23 +170,6 @@ is
    --  enabled.
 
 private
-
-   UART_Fraction : constant := 1.0 / 2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size;
-   type UART_Divider is delta UART_Fraction
-      range UART_Fraction .. (2.0 ** UARTIBRD_BAUD_DIVINT_Field'Size) - UART_Fraction;
-
-   function Div_Integer
-      (D : UART_Divider)
-      return UARTIBRD_BAUD_DIVINT_Field;
-
-   function Div_Fraction
-      (D : UART_Divider)
-      return UARTFBRD_BAUD_DIVFRAC_Field;
-
-   function Div_Value
-      (Int  : UARTIBRD_BAUD_DIVINT_Field;
-       Frac : UARTFBRD_BAUD_DIVFRAC_Field)
-       return UART_Divider;
 
    for FIFO_IRQ_Level use
      (Lvl_Eighth        => 2#000#,
