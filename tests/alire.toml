@@ -10,7 +10,7 @@ executables = ["test_rp2040_hal"]
 
 [[depends-on]]  # Added by alr
 rp2040_hal = "^2"
-aunit = "^24"
+aunit = "^25"
 gnatcov = "^22"
 gnat_arm_elf = "^14"
 
@@ -21,14 +21,14 @@ rp2040_hal = { path='..' }
 AUNIT_RUNTIME = "zfp-cross"
 AUNIT_BUILD_MODE = "Devel"
 
-[build-profiles]
-"*" = "development"
+#[build-profiles]
+#aunit = "release"
+#"*" = "development"
 #usb_embedded = "release"
 #atomic = "release"
-#aunit = "release"
 
 [configuration.values]
 rp2040_hal.Device = "rp2350"
 
 [[pins]]
-aunit = { path='../../../tmp/aunit_24.0.0_67fdc2b6' }
+aunit = { url='https://github.com/JeremyGrosser/aunit.git' }
