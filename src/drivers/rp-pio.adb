@@ -8,16 +8,14 @@ with RP.Clock;
 with RP.Reset;
 
 package body RP.PIO is
+
    procedure Enable
       (This : in out PIO_Device)
    is
       use RP.Reset;
+      R : constant Reset_Id := Reset_Id'Val (Reset_Id'Pos (Reset_PIO0) + This.Num);
    begin
-      case This.Num is
-         when 0 => Reset_Peripheral (Reset_PIO0);
-         when 1 => Reset_Peripheral (Reset_PIO1);
-         when 2 => Reset_Peripheral (Reset_PIO2);
-      end case;
+      Reset_Peripheral (R);
    end Enable;
 
    procedure Disable
@@ -249,14 +247,7 @@ package body RP.PIO is
    function GPIO_Function
       (PIO : PIO_Device)
       return RP.GPIO.GPIO_Function
-   is
-   begin
-      case PIO.Num is
-         when 0 => return RP.GPIO.PIO0;
-         when 1 => return RP.GPIO.PIO1;
-         when 2 => return RP.GPIO.PIO2;
-      end case;
-   end GPIO_Function;
+   is (RP.GPIO.GPIO_Function'Val (RP.GPIO.GPIO_Function'Pos (RP.GPIO.PIO0) + PIO.Num));
 
    procedure Set_Enabled
       (This    : in out PIO_Device;
