@@ -518,14 +518,12 @@ platform_entry:
     movs r0, #0
     msr msplim, r0
 
-    ldr r1, =runtime_init
+    ldr r1, =adainit
     blx r1
     ldr r1, =main
     blx r1
-    ldr r1, =exit
-    blx r1
 
-1:
+exit:
     bkpt #0
     b 1b
 
@@ -564,11 +562,6 @@ data_cpy_table:
 
 
 
-.weak runtime_init
-.type runtime_init,%function
-.thumb_func
-runtime_init:
-    bx lr
 # 525 "rp2_common/pico_crt0/crt0.S"
 .macro spacer_section name
 
