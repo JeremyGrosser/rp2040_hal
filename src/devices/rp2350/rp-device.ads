@@ -31,8 +31,8 @@ package RP.Device is
    I2C_0 : aliased RP.I2C.I2C_Port (0, I2C0_Periph'Access);
    I2C_1 : aliased RP.I2C.I2C_Port (1, I2C1_Periph'Access);
 
-   I2CM_0 : aliased RP.I2C_Master.I2C_Master_Port (0, I2C0_Periph'Access);
-   I2CM_1 : aliased RP.I2C_Master.I2C_Master_Port (1, I2C1_Periph'Access);
+   I2CM_0 : aliased RP.I2C_Master.I2C_Master_Port (0);
+   I2CM_1 : aliased RP.I2C_Master.I2C_Master_Port (1);
 
    UART0_Periph : aliased RP2040_SVD.UART.UART_Peripheral
       with Import, Address => RP2350_SVD.UART0_Base;
