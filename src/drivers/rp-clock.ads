@@ -1,19 +1,19 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2024 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
-with RP2040_SVD.PLL; use RP2040_SVD.PLL;
-with RP2040_SVD;
 with HAL; use HAL;
 
 package RP.Clock
    with Preelaborate
 is
-   subtype XOSC_Hertz is Hertz range 0 .. 15_000_000
-      with Static_Predicate => XOSC_Hertz in 0 | 1_000_000 .. 15_000_000;
+   Clock_Error : exception;
+
+   subtype XOSC_Hertz is Hertz range 0 .. 50_000_000
+      with Static_Predicate => XOSC_Hertz in 0 | 1_000_000 .. 50_000_000;
    --  The special value 0 indicates that the XOSC is not available.
+   --  RP2040 devices only support up to 15 MHz XOSC
 
    subtype XOSC_Cycles is Natural;
 
@@ -25,13 +25,8 @@ is
    --  See 2.16.3 Startup Delay for XOSC_Startup_Delay calculation. The default
    --  value is approximately 1ms with a 12 MHz crystal.
 
-   --  Currently we have hardcoded PLL divider values for 12 MHz ROSC or XOSC
-   --  operation. This exception is thrown if any other reference frequency is
-   --  given or Enable_PLL is called with invalid arguments.
-   Invalid_PLL_Config : exception;
-
    type Clock_Id is
-      (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC,
+      (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC, HSTX,
        PLL_SYS, GPIN0, GPIN1, PLL_USB, ROSC, XOSC);
 
    procedure Enable
@@ -121,7 +116,7 @@ is
                   in 400_000_000 .. 1_600_000_000;
    --  Remember to switch clk_sys to another source before modifying PLL_SYS
 
-   subtype Countable_Clock_Id is Clock_Id range REF .. RTC;
+   subtype Countable_Clock_Id is Clock_Id range REF .. HSTX;
    function Frequency
       (CID      : Countable_Clock_Id;
        Rounded  : Boolean := True;

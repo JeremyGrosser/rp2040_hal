@@ -1,9 +1,11 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2024 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with Ada.Unchecked_Conversion;
+with RP2040_SVD.CLOCKS; use RP2040_SVD.CLOCKS;
+with RP2040_SVD.PLL; use RP2040_SVD.PLL;
 with RP2040_SVD.XOSC;
 with RP2040_SVD.ROSC;
 with RP2040_SVD.WATCHDOG;
@@ -279,6 +281,10 @@ package body RP.Clock is
       use RP2040_SVD.WATCHDOG;
       Reference : Hertz;
    begin
+      if XOSC_Frequency > 15_000_000 then
+         raise Clock_Error with "Maximum XOSC_Frequency for RP2040 is 15_000_000";
+      end if;
+
       --  Enable RESUS in case things go badly
       CLOCKS_Periph.CLK_SYS_RESUS_CTRL.ENABLE := True;
 
@@ -319,6 +325,8 @@ package body RP.Clock is
             Enable_ROSC;
          when XOSC =>
             Enable_XOSC;
+         when HSTX =>
+            raise Clock_Error with "HSTX not supported on RP2040";
          when others =>
             null;
       end case;
@@ -341,6 +349,8 @@ package body RP.Clock is
             RP2040_SVD.ROSC.ROSC_Periph.CTRL.ENABLE := RP2040_SVD.ROSC.DISABLE;
          when XOSC =>
             RP2040_SVD.XOSC.XOSC_Periph.CTRL.ENABLE := RP2040_SVD.XOSC.DISABLE;
+         when HSTX =>
+            raise Clock_Error with "HSTX not supported on RP2040";
          when others =>
             null;
       end case;
@@ -364,6 +374,8 @@ package body RP.Clock is
             AUXSRC := ADC;
          when RTC =>
             AUXSRC := RTC;
+         when HSTX =>
+            raise Clock_Error with "HSTX not supported on RP2040";
          when PLL_SYS =>
             AUXSRC := PLL_SYS;
          when GPIN0 =>
@@ -415,6 +427,7 @@ package body RP.Clock is
          when USB  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_usb;
          when ADC  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_adc;
          when RTC  => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_rtc;
+         when HSTX => raise Clock_Error with "HSTX not supported on RP2040";
       end case;
 
       while not CLOCKS_Periph.FC0_STATUS.DONE loop
