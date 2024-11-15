@@ -511,9 +511,27 @@ bss_fill_test:
 
 platform_entry:
 
+    // Enable coprocessors
+    ldr r0, =0xE000ED88 // CPACR
+    movs r1, #0x00F0    // CP10 | CP11 (FPU)
+    lsls r1, r1, #8
+    orrs r1, #0xCC      // CP5 | CP7 (DCP, RCP)
+    lsls r1, r1, #8
+    orrs r1, #0x03      // CP0 (GPIOC)
+    str r1, [r0]
 
-
-
+    // only initialize canary seeds if they haven't been (as to do so twice is a fault)
+    mrc p7, #1, apsr_nzcv, c0, c0, #0
+    bmi 1f
+    // i dont think it much matters what we initialized to, as to have gotten here we must have not
+    // gone thru the bootrom (which a secure boot would have)
+    mcrr p7, #8, r0, r0, c0
+    mcrr p7, #8, r0, r0, c1
+    sev
+1:
+    ldr r0, =__vectors
+    // Vector through our own table (SP, VTOR will not have been set up at
+    // this point). Same path for debugger entry and bootloader entry.
 
     movs r0, #0
     msr msplim, r0

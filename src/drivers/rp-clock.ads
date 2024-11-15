@@ -57,9 +57,9 @@ is
       (CID : Clock_Id)
       return Boolean;
 
-   subtype SYS_Clock_Id is Clock_Id range PLL_SYS .. XOSC;
-   procedure Set_SYS_Source
-      (Source : SYS_Clock_Id);
+   --  subtype SYS_Clock_Id is Clock_Id range PLL_SYS .. XOSC;
+   --  procedure Set_SYS_Source
+   --     (Source : SYS_Clock_Id);
 
    subtype PLL_Clock_Id is Clock_Id
       with Static_Predicate => PLL_Clock_Id in PLL_SYS | PLL_USB;

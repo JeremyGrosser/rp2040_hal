@@ -245,7 +245,8 @@ package body RP.I2C_Master is
        Stop  : Boolean := True)
    is
       P : constant Any_I2C_Peripheral := Periph (This);
-      TX_EMPTY, STOP_DET : Boolean;
+
+      STAT : INTR_Register;
       TX_ABRT_SOURCE : UInt32;
       Timeout, TX_Abort : Boolean := False;
       Read_Clear : CLR_Register with Volatile;
@@ -261,8 +262,8 @@ package body RP.I2C_Master is
              DAT     => Data (I),
              others  => <>);
          loop
-            TX_EMPTY := P.RAW_INTR_STAT.TX_EMPTY;
-            exit when TX_EMPTY;
+            STAT := P.RAW_INTR_STAT;
+            exit when STAT.TX_EMPTY;
             Timeout := Time_Exceeded (This);
             TX_Abort := Timeout;
             exit when Timeout;
@@ -279,8 +280,8 @@ package body RP.I2C_Master is
                loop
                   Timeout := Time_Exceeded (This);
                   TX_Abort := TX_Abort or else Timeout;
-                  STOP_DET := P.RAW_INTR_STAT.STOP_DET;
-                  exit when Timeout or else STOP_DET;
+                  STAT := P.RAW_INTR_STAT;
+                  exit when Timeout or else STAT.STOP_DET;
                end loop;
 
                if not Timeout then

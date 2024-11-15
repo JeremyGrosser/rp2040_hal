@@ -21,11 +21,11 @@ rp2040_hal = { path='..' }
 AUNIT_RUNTIME = "zfp-cross"
 AUNIT_BUILD_MODE = "Devel"
 
-#[build-profiles]
+[build-profiles]
+"*" = "validation"
 #aunit = "release"
-#"*" = "development"
 #usb_embedded = "release"
-#atomic = "release"
+atomic = "release"
 
 [configuration.values]
 rp2040_hal.Device = "rp2350"
