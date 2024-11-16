@@ -4,6 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP.Clock;
+with RP.Reset;
 with System;
 
 package body RP.I2C_Master is
@@ -213,6 +214,14 @@ package body RP.I2C_Master is
       SDA_TX_HOLD : constant Natural :=
          ((CLK_SYS * 3) / (if Baudrate < 1e6 then 10e6 else 25e6)) + 1;
    begin
+      RP.Clock.Enable (RP.Clock.PERI);
+      case This.Num is
+         when 0 =>
+            RP.Reset.Reset_Peripheral (RP.Reset.Reset_I2C0);
+         when 1 =>
+            RP.Reset.Reset_Peripheral (RP.Reset.Reset_I2C1);
+      end case;
+
       P.ENABLE := (others => False);
       P.CON :=
          (TX_EMPTY_CTRL => True,
