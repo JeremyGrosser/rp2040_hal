@@ -5,7 +5,7 @@
 --
 with RP2350_SVD.CLOCKS; use RP2350_SVD.CLOCKS;
 with RP2350_SVD.PLL; use RP2350_SVD.PLL;
-with RP2350_SVD.TICKS;
+with RP2350_SVD.TICKS; use RP2350_SVD.TICKS;
 with RP2350_SVD.XOSC;
 with RP2350_SVD.ROSC;
 with RP.Reset;
@@ -147,7 +147,9 @@ package body RP.Clock is
       end if;
 
       CLOCKS_Periph.FC0_REF_KHZ.FC0_REF_KHZ := FC0_REF_KHZ_FC0_REF_KHZ_Field (Reference / 1_000);
-      RP2350_SVD.TICKS.TICKS_Periph.TIMER0_CTRL.ENABLE := True;
+      TICKS_Periph.TIMER0_CTRL.ENABLE := False;
+      TICKS_Periph.TIMER0_CYCLES.TIMER0_CYCLES := UInt9 (Reference / 1_000_000);
+      TICKS_Periph.TIMER0_CTRL.ENABLE := True;
    end Initialize;
 
    procedure Enable

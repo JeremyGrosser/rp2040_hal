@@ -2,12 +2,10 @@ pragma Style_Checks (Off);
 
 --  Copyright (c) 2024 Raspberry Pi Ltd.        SPDX-License-Identifier: BSD-3-Clause
 
---  This spec has been automatically generated from rp2350.svd
+--  This spec has been automatically generated from RP2350.svd
 
 --  Definition of the device's interrupts
-package RP2350_SVD.Interrupts
-   with Preelaborate
-is
+package RP2350_SVD.Interrupts is
 
    ----------------
    -- Interrupts --
