@@ -4,7 +4,8 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2350_SVD.CLOCKS; use RP2350_SVD.CLOCKS;
-with RP2040_SVD.PLL; use RP2040_SVD.PLL;
+with RP2350_SVD.PLL; use RP2350_SVD.PLL;
+with RP2350_SVD.TICKS;
 with RP2350_SVD.XOSC;
 with RP2350_SVD.ROSC;
 with RP.Reset;
@@ -13,20 +14,24 @@ package body RP.Clock is
 
    procedure Enable_XOSC is
       use RP2350_SVD.XOSC;
+      STATUS : STATUS_Register;
    begin
       XOSC_Periph.CTRL.FREQ_RANGE := Val_1_15MHZ;
       XOSC_Periph.CTRL.ENABLE := ENABLE;
-      while not XOSC_Periph.STATUS.STABLE loop
-         null;
+      loop
+         STATUS := XOSC_Periph.STATUS;
+         exit when STATUS.STABLE;
       end loop;
    end Enable_XOSC;
 
    procedure Enable_ROSC is
       use RP2350_SVD.ROSC;
+      STATUS : STATUS_Register;
    begin
       ROSC_Periph.CTRL.ENABLE := ENABLE;
-      while not ROSC_Periph.STATUS.STABLE loop
-         null;
+      loop
+         STATUS := ROSC_Periph.STATUS;
+         exit when STATUS.STABLE;
       end loop;
    end Enable_ROSC;
 
@@ -38,29 +43,58 @@ package body RP.Clock is
          (if PLL = PLL_SYS then PLL_SYS_Periph'Access else PLL_USB_Periph'Access);
    begin
       --  Ensure PLL is stopped before configuring
-      Periph.PWR := (others => <>);
+      Periph.PWR :=
+         (PD            => True,
+          DSMPD         => True,
+          POSTDIVPD     => True,
+          VCOPD         => True,
+          Reserved_1_1  => 0,
+          Reserved_4_4  => 0,
+          Reserved_6_31 => 0);
 
-      Periph.CS.REFDIV := Config.REFDIV;
-      Periph.FBDIV_INT.FBDIV_INT := Config.FBDIV;
+      Periph.CS :=
+         (REFDIV        => Config.REFDIV,
+          BYPASS        => False,
+          LOCK_N        => False,
+          LOCK          => False,
+          Reserved_6_7  => 0,
+          Reserved_9_29 => 0);
+
+      Periph.FBDIV_INT :=
+         (FBDIV_INT      => Config.FBDIV,
+          Reserved_12_31 => 0);
 
       --  Turn on PLL
-      Periph.PWR.PD := False;
-      Periph.PWR.VCOPD := False;
+      Periph.PWR :=
+         (PD            => False,
+          DSMPD         => True,
+          POSTDIVPD     => True,
+          VCOPD         => False,
+          Reserved_1_1  => 0,
+          Reserved_4_4  => 0,
+          Reserved_6_31 => 0);
 
       --  Wait for lock
-      while not Periph.CS.LOCK loop
-         null;
-      end loop;
+      declare
+         CS : CS_Register;
+      begin
+         loop
+            CS := Periph.CS;
+            exit when CS.LOCK;
+         end loop;
+      end;
 
       --  Setup post dividers
-      Periph.PRIM.POSTDIV1 := Config.POSTDIV1;
-      Periph.PRIM.POSTDIV2 := Config.POSTDIV2;
+      Periph.PRIM :=
+         (POSTDIV1         => Config.POSTDIV1,
+          POSTDIV2         => Config.POSTDIV2,
+          Reserved_0_11    => 0,
+          Reserved_15_15   => 0,
+          Reserved_19_31   => 0);
       Periph.PWR.POSTDIVPD := False;
    end Configure_PLL;
 
-   procedure Init_PLLs
-      (XOSC_Frequency : Hertz)
-   is
+   procedure Init_PLLs is
       use RP.Reset;
    begin
       --  Reset PLLs
@@ -71,30 +105,16 @@ package body RP.Clock is
       Configure_PLL (PLL_SYS, PLL_125_MHz);
       Configure_PLL (PLL_USB, PLL_48_MHz);
 
-      --  Switch clk_sys to pll_sys
+      --  Switch clk_sys to pll_sys (glitchless)
       CLOCKS_Periph.CLK_SYS_CTRL.AUXSRC := clksrc_pll_sys;
       CLOCKS_Periph.CLK_SYS_DIV := (INT => 1, FRAC => 0);
       CLOCKS_Periph.CLK_SYS_CTRL.SRC := clksrc_clk_sys_aux;
 
-      --  Switch clk_usb to pll_usb
-      --  CLOCKS_Periph.CLK (USB).DIV.INT := 1;
-      --  CLOCKS_Periph.CLK (USB).CTRL.AUXSRC := PLL_SYS; -- the AUXSRC enum has the wrong name for some registers
-      --  while CLOCKS_Periph.CLK (USB).SELECTED /= CLK_SELECTED_Mask (USB_SRC_USB) loop
-      --     null;
-      --  end loop;
+      --  clk_usb and clk_adc use pll_usb by default after reset, no need to
+      --  configure them.
 
-      --  Switch clk_adc to pll_usb
-      --  CLOCKS_Periph.CLK (ADC).DIV.INT := 1;
-      --  CLOCKS_Periph.CLK (ADC).CTRL.AUXSRC := PLL_SYS;
-      --  while CLOCKS_Periph.CLK (ADC).SELECTED /= CLK_SELECTED_Mask (ADC_SRC_USB) loop
-      --     null;
-      --  end loop;
-
-      --  Switch clk_peri to pll_sys
-      --  CLOCKS_Periph.CLK (PERI).CTRL.AUXSRC := PLL_SYS;
-      --  while CLOCKS_Periph.CLK (PERI).SELECTED /= CLK_SELECTED_Mask (PERI_SRC_SYS) loop
-      --     null;
-      --  end loop;
+      --  Switch clk_peri to pll_sys (might glitch)
+      CLOCKS_Periph.CLK_PERI_CTRL.AUXSRC := clksrc_pll_sys;
    end Init_PLLs;
 
    procedure Initialize
@@ -110,34 +130,34 @@ package body RP.Clock is
       --  Enable RESUS in case things go badly
       CLOCKS_Periph.CLK_SYS_RESUS_CTRL.ENABLE := True;
 
-      --  Enable watchdog and maybe XOSC
       if XOSC_Frequency > 0 then
-         Reference := XOSC_Frequency;
+         --  Enable XOSC, set it as clk_ref source
          RP2350_SVD.XOSC.XOSC_Periph.STARTUP.DELAY_k := RP2350_SVD.XOSC.STARTUP_DELAY_Field (XOSC_Startup_Delay / 256);
-         CLOCKS_Periph.CLK_SYS_CTRL.AUXSRC := xosc_clksrc;
-         CLOCKS_Periph.CLK_SYS_DIV := (INT => 1, FRAC => 0);
-         CLOCKS_Periph.CLK_SYS_CTRL.SRC := clksrc_clk_sys_aux;
-         --  Init_PLLs (XOSC_Frequency);
+         Enable_XOSC;
+         CLOCKS_Periph.CLK_REF_CTRL.SRC := xosc_clksrc;
+         Reference := XOSC_Frequency;
+
+         --  Run clk_sys directly from clk_ref while configuring PLLs
+         CLOCKS_Periph.CLK_SYS_CTRL.SRC := clk_ref;
+
+         --  Configure PLLs and select them as the source for all clocks
+         Init_PLLs;
       else
-         Reference := ROSC_Frequency;
-         CLOCKS_Periph.CLK_SYS_CTRL.AUXSRC := rosc_clksrc;
-         CLOCKS_Periph.CLK_SYS_DIV := (INT => 1, FRAC => 0);
-         CLOCKS_Periph.CLK_SYS_CTRL.SRC := clksrc_clk_sys_aux;
-         Disable (PLL_SYS);
-         Disable (PLL_USB);
-         Disable (XOSC);
+         Reference := 11_000_000; --  nominal ROSC frequency, much variance
       end if;
 
       CLOCKS_Periph.FC0_REF_KHZ.FC0_REF_KHZ := FC0_REF_KHZ_FC0_REF_KHZ_Field (Reference / 1_000);
+      RP2350_SVD.TICKS.TICKS_Periph.TIMER0_CTRL.ENABLE := True;
    end Initialize;
 
    procedure Enable
       (CID : Clock_Id)
    is
+      P : CLOCKS_Peripheral renames CLOCKS_Periph;
    begin
       case CID is
          when GPOUT0 =>
-            CLOCKS_Periph.CLK_GPOUT0_CTRL.ENABLE := True;
+            P.CLK_GPOUT0_CTRL.ENABLE := True;
          when GPOUT1 =>
             CLOCKS_Periph.CLK_GPOUT1_CTRL.ENABLE := True;
          when GPOUT2 =>
@@ -265,7 +285,43 @@ package body RP.Clock is
        Source : GP_Source)
    is
    begin
-      raise Clock_Error with "Not implemented";
+      case GP is
+         when GPOUT0 =>
+            case Source is
+               when PLL_SYS =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clksrc_pll_sys;
+               when GPIN0 =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clksrc_gpin0;
+               when GPIN1 =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clksrc_gpin1;
+               when PLL_USB =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clksrc_pll_usb;
+               when ROSC =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := rosc_clksrc;
+               when XOSC =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := xosc_clksrc;
+               when SYS =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clk_sys;
+               when USB =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clk_usb;
+               when ADC =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clk_adc;
+               when RTC =>
+                  raise Clock_Error with "RTC not supported on RP2350";
+               when REF =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clk_ref;
+               when PERI =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clk_peri;
+               when HSTX =>
+                  CLOCKS_Periph.CLK_GPOUT0_CTRL.AUXSRC := clk_hstx;
+               --  Not mapped in RP.Clock:
+               --  lposc_clksrc
+               --  clksrc_pll_usb_primary_ref_opcg
+               --  otp_clk2fc
+            end case;
+         when others =>
+            raise Clock_Error with "Not implemented";
+      end case;
    end Set_Source;
 
    procedure Set_Divider

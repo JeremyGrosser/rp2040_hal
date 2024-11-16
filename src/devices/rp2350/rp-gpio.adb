@@ -71,6 +71,7 @@ package body RP.GPIO is
                 SCHMITT  => Schmitt,
                 SLEWFAST => Slew_Fast,
                 DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
+                ISO      => False,
                 others   => <>);
          when Output =>
             PADS_BANK_Periph.GPIO (This.Pin) :=
@@ -81,6 +82,7 @@ package body RP.GPIO is
                 SCHMITT  => Schmitt,
                 SLEWFAST => Slew_Fast,
                 DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
+                ISO      => False,
                 others   => <>);
             SIO_Periph.GPIO_OUT_CLR := Mask;
             SIO_Periph.GPIO_OE_SET := Mask;
@@ -93,6 +95,7 @@ package body RP.GPIO is
                 SCHMITT  => Schmitt,
                 SLEWFAST => Slew_Fast,
                 DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
+                ISO      => False,
                 others   => <>);
             IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL := HI_Z;
       end case;
