@@ -17,6 +17,10 @@ package body RP.Clock is
 
    procedure Enable_XOSC;
 
+   subtype SYS_Clock_Id is Clock_Id range PLL_SYS .. XOSC;
+   procedure Set_SYS_Source
+      (Source : SYS_Clock_Id);
+
    type CLK_CTRL_AUXSRC_Field is
       (PLL_SYS, GPIN0, GPIN1, PLL_USB, ROSC, XOSC, SYS, USB, ADC, RTC, REF)
       with Size => 4;

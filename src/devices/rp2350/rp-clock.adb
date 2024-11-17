@@ -341,6 +341,8 @@ package body RP.Clock is
       return Hertz
    is
       F : Hertz;
+      STATUS : FC0_STATUS_Register;
+      RESULT : FC0_RESULT_Register;
    begin
       CLOCKS_Periph.FC0_INTERVAL.FC0_INTERVAL := Accuracy;
 
@@ -354,19 +356,21 @@ package body RP.Clock is
          when HSTX => CLOCKS_Periph.FC0_SRC.FC0_SRC := clk_hstx;
       end case;
 
-      while not CLOCKS_Periph.FC0_STATUS.DONE loop
-         null;
+      loop
+         STATUS := CLOCKS_Periph.FC0_STATUS;
+         exit when STATUS.DONE;
       end loop;
 
-      if CLOCKS_Periph.FC0_STATUS.DIED then
+      if STATUS.DIED then
          return 0;
       else
-         F := Hertz (CLOCKS_Periph.FC0_RESULT.KHZ) * 1_000;
+         RESULT := CLOCKS_Periph.FC0_RESULT;
+         F := Hertz (RESULT.KHZ) * 1_000;
          if Rounded then
             return F;
          else
             --  FRAC is 5 bits, 1.0/2**5 = 0.03125
-            return F + ((Hertz (CLOCKS_Periph.FC0_RESULT.FRAC) * 3125) / 100);
+            return F + ((Hertz (RESULT.FRAC) * 3125) / 100);
          end if;
       end if;
    end Frequency;

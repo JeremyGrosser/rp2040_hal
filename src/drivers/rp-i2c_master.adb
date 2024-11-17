@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with Rp2040_Hal_Config;
 with RP.Clock;
 with RP.Reset;
 with System;
@@ -180,10 +181,23 @@ package body RP.I2C_Master is
 
    type Any_I2C_Peripheral is not null access all I2C_Peripheral;
 
+   function Base_Address
+      (Num : I2C_Number)
+      return System.Address
+   is
+   begin
+      case Rp2040_Hal_Config.Device is
+         when Rp2040_Hal_Config.rp2040 =>
+            return System'To_Address (16#4004_4000# + (16#4000# * Natural (Num)));
+         when Rp2040_Hal_Config.rp2350 =>
+            return System'To_Address (16#4009_0000# + (16#8000# * Natural (Num)));
+      end case;
+   end Base_Address;
+
    I2C_0 : aliased I2C_Peripheral
-      with Import, Address => System'To_Address (16#4009_0000#);
+      with Import, Address => Base_Address (0);
    I2C_1 : aliased I2C_Peripheral
-      with Import, Address => System'To_Address (16#4009_8000#);
+      with Import, Address => Base_Address (1);
 
    function Periph
       (This : I2C_Master_Port)
@@ -266,10 +280,11 @@ package body RP.I2C_Master is
 
       for I in Data'Range loop
          P.DATA_CMD :=
-            (RESTART => (I = Data'First) and then This.Restart_On_Next,
-             STOP    => (I = Data'Last) and then Stop,
-             DAT     => Data (I),
-             others  => <>);
+            (RESTART          => (I = Data'First) and then This.Restart_On_Next,
+             STOP             => (I = Data'Last) and then Stop,
+             DAT              => Data (I),
+             FIRST_DATA_BYTE  => False,
+             CMD              => False);
          loop
             STAT := P.RAW_INTR_STAT;
             exit when STAT.TX_EMPTY;
@@ -334,10 +349,11 @@ package body RP.I2C_Master is
          end loop;
 
          P.DATA_CMD :=
-            (RESTART => (I = Data'First) and then This.Restart_On_Next,
-             STOP    => (I = Data'Last) and then Stop,
-             CMD     => True,
-             others  => <>);
+            (RESTART          => (I = Data'First) and then This.Restart_On_Next,
+             STOP             => (I = Data'Last) and then Stop,
+             CMD              => True,
+             DAT              => 0,
+             FIRST_DATA_BYTE  => False);
 
          loop
             TX_ABRT_SOURCE := P.TX_ABRT_SOURCE;
