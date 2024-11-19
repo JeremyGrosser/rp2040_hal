@@ -1,19 +1,26 @@
 --
---  Copyright 2021-2024 (C) Jeremy Grosser
+--  Copyright 2021 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP.Timer;
-with HAL; use HAL;
+private with RP.I2C;
+private with RP.Timer;
 with HAL.I2C;
+with RP2040_SVD.I2C;
+with HAL;
 
+--  This package implements the HAL.I2C interface by using RP.I2C.
+--  Applications that do not require the portability of the HAL.I2C interface
+--  are encouraged to use RP.I2C directly, as it provides more control and
+--  flexibility.
 package RP.I2C_Master
    with Preelaborate
 is
    subtype I2C_Number is Natural range 0 .. 1;
 
    type I2C_Master_Port
-      (Num : I2C_Number)
+      (Num    : I2C_Number;
+       Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with private;
 
    type I2C_Address_Size is (Address_Size_7b, Address_Size_10b);
@@ -44,7 +51,7 @@ is
    procedure Mem_Write
      (This          : in out I2C_Master_Port;
       Addr          : HAL.I2C.I2C_Address;
-      Mem_Addr      : UInt16;
+      Mem_Addr      : HAL.UInt16;
       Mem_Addr_Size : HAL.I2C.I2C_Memory_Address_Size;
       Data          : HAL.I2C.I2C_Data;
       Status        : out HAL.I2C.I2C_Status;
@@ -54,37 +61,30 @@ is
    procedure Mem_Read
      (This          : in out I2C_Master_Port;
       Addr          : HAL.I2C.I2C_Address;
-      Mem_Addr      : UInt16;
+      Mem_Addr      : HAL.UInt16;
       Mem_Addr_Size : HAL.I2C.I2C_Memory_Address_Size;
       Data          : out HAL.I2C.I2C_Data;
       Status        : out HAL.I2C.I2C_Status;
       Timeout       : Natural := 1000);
 
-   procedure Set_Deadline
-      (This     : in out I2C_Master_Port;
-       Deadline : RP.Timer.Time);
-
-   procedure Write
-      (This  : in out I2C_Master_Port;
-       Addr  : UInt10;
-       Data  : UInt8_Array;
-       Error : out Boolean;
-       Stop  : Boolean := True);
-
-   procedure Read
-      (This  : in out I2C_Master_Port;
-       Addr  : UInt10;
-       Data  : out UInt8_Array;
-       Error : out Boolean;
-       Stop  : Boolean := True);
 private
 
    type I2C_Master_Port
-      (Num : I2C_Number)
+      (Num    : I2C_Number;
+       Periph : not null access RP2040_SVD.I2C.I2C_Peripheral)
    is new HAL.I2C.I2C_Port with record
-      Address_Size    : I2C_Address_Size;
-      Restart_On_Next : Boolean := False;
-      Deadline        : RP.Timer.Time;
+      Port         : RP.I2C.I2C_Port (Num, Periph);
+      Address_Size : I2C_Address_Size;
    end record;
+
+   procedure Set_Address
+      (This     : in out I2C_Master_Port;
+       Addr     : HAL.I2C.I2C_Address;
+       Status   : out HAL.I2C.I2C_Status;
+       Deadline : RP.Timer.Time);
+
+   function To_HAL_Status
+      (S : RP.I2C.I2C_Status)
+      return HAL.I2C.I2C_Status;
 
 end RP.I2C_Master;
