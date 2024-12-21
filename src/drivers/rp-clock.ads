@@ -18,57 +18,6 @@ is
 
    subtype XOSC_Cycles is Natural;
 
-   procedure Initialize
-      (XOSC_Frequency     : XOSC_Hertz := 0;
-       XOSC_Startup_Delay : XOSC_Cycles := 770_048) --  ~64ms with a 12 MHz crystal
-       with Pre => XOSC_Startup_Delay <= (Natural (UInt14'Last) * 256)
-               and XOSC_Startup_Delay mod 256 = 0;
-   --  See 2.16.3 Startup Delay for XOSC_Startup_Delay calculation. The default
-   --  value is approximately 1ms with a 12 MHz crystal.
-
-   --  Currently we have hardcoded PLL divider values for 12 MHz ROSC or XOSC
-   --  operation. This exception is thrown if any other reference frequency is
-   --  given or Enable_PLL is called with invalid arguments.
-   Invalid_PLL_Config : exception;
-
-   type Clock_Id is
-      (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC,
-       PLL_SYS, GPIN0, GPIN1, PLL_USB, ROSC, XOSC);
-
-   procedure Enable
-      (CID : Clock_Id);
-
-   procedure Disable
-      (CID : Clock_Id);
-
-   subtype GP_Output is Clock_Id range GPOUT0 .. GPOUT3;
-   subtype GP_Source is Clock_Id range REF .. XOSC;
-
-   procedure Set_Source
-      (GP     : GP_Output;
-       Source : GP_Source);
-   --  GP will glitch if enabled while changing sources
-
-   GP_Divider_Fraction : constant := 1.0 / (2 ** 8);
-   type GP_Divider is delta GP_Divider_Fraction range 0.0 .. (2.0 ** 24) - GP_Divider_Fraction
-      with Small => GP_Divider_Fraction,
-           Size  => 32;
-   --  If GP_Divider is 0.0, then it represents (2.0 ** 16)
-
-   procedure Set_Divider
-      (GP  : GP_Output;
-       Div : GP_Divider);
-
-   function Enabled
-      (CID : Clock_Id)
-      return Boolean;
-
-   subtype SYS_Clock_Id is Clock_Id range PLL_SYS .. XOSC;
-   procedure Set_SYS_Source
-      (Source : SYS_Clock_Id);
-
-   subtype PLL_Clock_Id is Clock_Id
-      with Static_Predicate => PLL_Clock_Id in PLL_SYS | PLL_USB;
    subtype PLL_FREF_Field is Hertz range 5_000_000 .. 800_000_000;
    subtype PLL_REFDIV_Field is UInt6 range 1 .. 63;
    subtype PLL_FBDIV_Field is UInt12 range 16 .. 320;
@@ -112,6 +61,62 @@ is
        FBDIV    => 125,
        POSTDIV1 => 6,
        POSTDIV2 => 1);
+
+   procedure Initialize
+      (XOSC_Frequency     : XOSC_Hertz := 0;
+       XOSC_Startup_Delay : XOSC_Cycles := 770_048; --  ~64ms with a 12 MHz crystal
+       SYS_PLL_Config     : PLL_Config := PLL_125_MHz)
+       with Pre => XOSC_Startup_Delay <= (Natural (UInt14'Last) * 256)
+               and XOSC_Startup_Delay mod 256 = 0;
+   --  See 2.16.3 Startup Delay for XOSC_Startup_Delay calculation. The default
+   --  value is approximately 64ms with a 12 MHz crystal.
+   --
+   --  The SYS_PLL_Config parameter allows for a custom configuration of the
+   --  system PLL that drives the CPU cores and peripherals.
+
+   --  Currently we have hardcoded PLL divider values for 12 MHz ROSC or XOSC
+   --  operation. This exception is thrown if any other reference frequency is
+   --  given or Enable_PLL is called with invalid arguments.
+   Invalid_PLL_Config : exception;
+
+   type Clock_Id is
+      (GPOUT0, GPOUT1, GPOUT2, GPOUT3, REF, SYS, PERI, USB, ADC, RTC,
+       PLL_SYS, GPIN0, GPIN1, PLL_USB, ROSC, XOSC);
+
+   subtype SYS_Clock_Id is Clock_Id range PLL_SYS .. XOSC;
+   procedure Set_SYS_Source
+      (Source : SYS_Clock_Id);
+
+   subtype PLL_Clock_Id is Clock_Id
+      with Static_Predicate => PLL_Clock_Id in PLL_SYS | PLL_USB;
+
+   procedure Enable
+      (CID : Clock_Id);
+
+   procedure Disable
+      (CID : Clock_Id);
+
+   subtype GP_Output is Clock_Id range GPOUT0 .. GPOUT3;
+   subtype GP_Source is Clock_Id range REF .. XOSC;
+
+   procedure Set_Source
+      (GP     : GP_Output;
+       Source : GP_Source);
+   --  GP will glitch if enabled while changing sources
+
+   GP_Divider_Fraction : constant := 1.0 / (2 ** 8);
+   type GP_Divider is delta GP_Divider_Fraction range 0.0 .. (2.0 ** 24) - GP_Divider_Fraction
+      with Small => GP_Divider_Fraction,
+           Size  => 32;
+   --  If GP_Divider is 0.0, then it represents (2.0 ** 16)
+
+   procedure Set_Divider
+      (GP  : GP_Output;
+       Div : GP_Divider);
+
+   function Enabled
+      (CID : Clock_Id)
+      return Boolean;
 
    procedure Configure_PLL
       (PLL    : PLL_Clock_Id;

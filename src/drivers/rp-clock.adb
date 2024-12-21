@@ -62,7 +62,8 @@ package body RP.Clock is
    end Configure_PLL;
 
    procedure Init_PLLs
-      (XOSC_Frequency : Hertz)
+     (XOSC_Frequency : Hertz;
+      SYS_PLL_Config : PLL_Config)
    is
       use RP.Reset;
    begin
@@ -71,7 +72,7 @@ package body RP.Clock is
       Reset_Peripheral (Reset_PLL_USB);
 
       --  Assumes clk_ref = 12 MHz
-      Configure_PLL (PLL_SYS, PLL_125_MHz);
+      Configure_PLL (PLL_SYS, SYS_PLL_Config);
       Configure_PLL (PLL_USB, PLL_48_MHz);
 
       --  Switch clk_sys to pll_sys
@@ -108,7 +109,8 @@ package body RP.Clock is
 
    procedure Initialize
       (XOSC_Frequency     : XOSC_Hertz := 0;
-       XOSC_Startup_Delay : XOSC_Cycles := 770_048)
+       XOSC_Startup_Delay : XOSC_Cycles := 770_048;
+       SYS_PLL_Config     : PLL_Config := PLL_125_MHz)
    is
       use RP2040_SVD.WATCHDOG;
       Reference : Hertz;
@@ -124,7 +126,7 @@ package body RP.Clock is
          Reference := XOSC_Frequency;
          RP2040_SVD.XOSC.XOSC_Periph.STARTUP.DELAY_k := RP2040_SVD.XOSC.STARTUP_DELAY_Field (XOSC_Startup_Delay / 256);
          Set_SYS_Source (XOSC);
-         Init_PLLs (XOSC_Frequency);
+         Init_PLLs (XOSC_Frequency, SYS_PLL_Config);
       else
          Reference := ROSC_Frequency;
          Set_SYS_Source (ROSC);
