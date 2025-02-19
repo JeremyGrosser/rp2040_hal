@@ -28,6 +28,7 @@ is
       FBDIV    : PLL_FBDIV_Field;
       POSTDIV1 : PLL_POSTDIV_Field;
       POSTDIV2 : PLL_POSTDIV_Field;
+      VSEL     : UInt4;
    end record;
    --  2.18.2. Calculating PLL parameters
    --  PLL = (FREF / REFDIV) * FBDIV / (POSTDIV1 / POSTDIV2)
@@ -39,35 +40,40 @@ is
        REFDIV   => 1,
        FBDIV    => 64,
        POSTDIV1 => 4,
-       POSTDIV2 => 4);
+       POSTDIV2 => 4,
+       VSEL     => 2#1101#);  --  1.10V (default)
 
    PLL_125_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
        REFDIV   => 1,
        FBDIV    => 125,
        POSTDIV1 => 6,
-       POSTDIV2 => 2);
+       POSTDIV2 => 2,
+       VSEL     => 2#1101#);
 
    PLL_133_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
        REFDIV   => 1,
        FBDIV    => 133,
        POSTDIV1 => 6,
-       POSTDIV2 => 2);
+       POSTDIV2 => 2,
+       VSEL     => 2#1101#);
 
    PLL_200_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
        REFDIV   => 1,
        FBDIV    => 100,
        POSTDIV1 => 6,
-       POSTDIV2 => 1);
+       POSTDIV2 => 1,
+       VSEL     => 2#1100#);  --  1.15V
 
    PLL_250_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
        REFDIV   => 1,
        FBDIV    => 125,
        POSTDIV1 => 6,
-       POSTDIV2 => 1);
+       POSTDIV2 => 1,
+       VSEL     => 2#1100#);
 
    procedure Initialize
       (XOSC_Frequency     : XOSC_Hertz := 0;

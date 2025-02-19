@@ -6,6 +6,7 @@
 with RP2040_SVD.XOSC;
 with RP2040_SVD.ROSC;
 with RP2040_SVD.WATCHDOG;
+with RP2040_SVD.VREG_AND_CHIP_RESET;
 with RP.Watchdog;
 with RP.Reset;
 
@@ -37,9 +38,12 @@ package body RP.Clock is
       (PLL    : PLL_Clock_Id;
        Config : PLL_Config)
    is
+      use RP2040_SVD.VREG_AND_CHIP_RESET;
       Periph : constant access PLL_Peripheral :=
          (if PLL = PLL_SYS then PLL_SYS_Periph'Access else PLL_USB_Periph'Access);
    begin
+      VREG_AND_CHIP_RESET_Periph.VREG.VSEL := Config.VSEL;
+
       --  Ensure PLL is stopped before configuring
       Periph.PWR := (others => <>);
 
