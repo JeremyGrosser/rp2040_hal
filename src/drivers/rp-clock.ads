@@ -55,6 +55,13 @@ is
        POSTDIV1 => 6,
        POSTDIV2 => 2);
 
+   PLL_200_MHz : constant PLL_Config :=
+      (FREF     => 12_000_000,
+       REFDIV   => 1,
+       FBDIV    => 100,
+       POSTDIV1 => 6,
+       POSTDIV2 => 1);
+
    PLL_250_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
        REFDIV   => 1,

@@ -90,6 +90,13 @@ package body Clock_Tests is
    begin
       Set_SYS_Source (XOSC);
       Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
+      Configure_PLL (PLL_SYS, PLL_200_MHz);
+      Set_SYS_Source (PLL_SYS);
+
+      Assert (Frequency (SYS) in 195_000_000 .. 205_000_000, "Incorrect overclock frequency");
+
+      Set_SYS_Source (XOSC);
+      Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
       Configure_PLL (PLL_SYS, PLL_250_MHz);
       Set_SYS_Source (PLL_SYS);
 
