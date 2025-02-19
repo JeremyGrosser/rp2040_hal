@@ -1,5 +1,5 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2025 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
@@ -11,6 +11,21 @@ with RP.Watchdog;
 with RP.Reset;
 
 package body RP.Clock is
+
+   Minimum_VSEL : VSEL_Volts := VSEL_1_10;
+
+   function VSEL_Bits
+      (V : VSEL_Volts)
+      return UInt4
+   is
+      function To_UInt4 is new Ada.Unchecked_Conversion (VSEL_Volts, UInt4);
+      X : UInt4;
+   begin
+      X := To_UInt4 (V);
+      X := X + 5;
+      return X;
+   end VSEL_Bits;
+
    function CLK_SELECTED_Mask (SRC : CLK_CTRL_SRC_Field)
       return CLK_SELECTED_Field
    is (Shift_Left (1, Natural (SRC)));
@@ -41,8 +56,18 @@ package body RP.Clock is
       use RP2040_SVD.VREG_AND_CHIP_RESET;
       Periph : constant access PLL_Peripheral :=
          (if PLL = PLL_SYS then PLL_SYS_Periph'Access else PLL_USB_Periph'Access);
+      VREG : constant access VREG_Register := VREG_AND_CHIP_RESET_Periph.VREG'Access;
    begin
-      VREG_AND_CHIP_RESET_Periph.VREG.VSEL := Config.VSEL;
+      --  Increase VREG voltage if necessary
+      if Config.VSEL > Minimum_VSEL then
+         VREG.VSEL := VSEL_Bits (Config.VSEL);
+         Minimum_VSEL := Config.VSEL;
+      end if;
+
+      --  Wait for VREG stable
+      loop
+         exit when VREG.ROK;
+      end loop;
 
       --  Ensure PLL is stopped before configuring
       Periph.PWR := (others => <>);

@@ -18,6 +18,20 @@ is
 
    subtype XOSC_Cycles is Natural;
 
+   type VSEL_Volts is
+      (VSEL_0_80,
+       VSEL_0_85,
+       VSEL_0_90,
+       VSEL_0_95,
+       VSEL_1_00,
+       VSEL_1_05,
+       VSEL_1_10, --  default
+       VSEL_1_15,
+       VSEL_1_20,
+       VSEL_1_25,
+       VSEL_1_30)
+   with Size => 4;
+
    subtype PLL_FREF_Field is Hertz range 5_000_000 .. 800_000_000;
    subtype PLL_REFDIV_Field is UInt6 range 1 .. 63;
    subtype PLL_FBDIV_Field is UInt12 range 16 .. 320;
@@ -28,7 +42,9 @@ is
       FBDIV    : PLL_FBDIV_Field;
       POSTDIV1 : PLL_POSTDIV_Field;
       POSTDIV2 : PLL_POSTDIV_Field;
-      VSEL     : UInt4;
+      VSEL     : VSEL_Volts;
+      --  Sets the minimum VREG voltage. If the PLL is reconfigured with a
+      --  lower VSEL, the regulator voltage will not decrease
    end record;
    --  2.18.2. Calculating PLL parameters
    --  PLL = (FREF / REFDIV) * FBDIV / (POSTDIV1 / POSTDIV2)
@@ -41,7 +57,7 @@ is
        FBDIV    => 64,
        POSTDIV1 => 4,
        POSTDIV2 => 4,
-       VSEL     => 2#1101#);  --  1.10V (default)
+       VSEL     => VSEL_1_10);
 
    PLL_125_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
@@ -49,7 +65,7 @@ is
        FBDIV    => 125,
        POSTDIV1 => 6,
        POSTDIV2 => 2,
-       VSEL     => 2#1101#);
+       VSEL     => VSEL_1_10);
 
    PLL_133_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
@@ -57,7 +73,7 @@ is
        FBDIV    => 133,
        POSTDIV1 => 6,
        POSTDIV2 => 2,
-       VSEL     => 2#1101#);
+       VSEL     => VSEL_1_10);
 
    PLL_200_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
@@ -65,7 +81,7 @@ is
        FBDIV    => 100,
        POSTDIV1 => 6,
        POSTDIV2 => 1,
-       VSEL     => 2#1100#);  --  1.15V
+       VSEL     => VSEL_1_15);
 
    PLL_250_MHz : constant PLL_Config :=
       (FREF     => 12_000_000,
@@ -73,7 +89,7 @@ is
        FBDIV    => 125,
        POSTDIV1 => 6,
        POSTDIV2 => 1,
-       VSEL     => 2#1100#);
+       VSEL     => VSEL_1_15);
 
    procedure Initialize
       (XOSC_Frequency     : XOSC_Hertz := 0;
