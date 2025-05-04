@@ -51,6 +51,9 @@ is
        Rising_Edge   => 2#1000#);
 
    procedure Enable;
+   --  Enable is called implicitly the first time you Configure. You do not
+   --  need to call Enable directly. This is here for compatibility reasons
+   --  only.
 
    function Enabled return Boolean;
 

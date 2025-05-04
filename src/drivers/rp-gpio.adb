@@ -15,6 +15,11 @@ package body RP.GPIO is
    procedure Enable is
       use RP.Reset;
    begin
+      --  This procedure is idempotent
+      if GPIO_Enabled then
+         return;
+      end if;
+
       Reset_Peripheral (Reset_IO_BANK0);
       Reset_Peripheral (Reset_PADS_BANK0);
 
@@ -53,9 +58,7 @@ package body RP.GPIO is
    is
       Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
-      if not Enabled then
-         Enable;
-      end if;
+      Enable;
 
       IO_BANK_Periph.GPIO (This.Pin).CTRL :=
          (FUNCSEL => Func,
