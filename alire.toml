@@ -14,7 +14,7 @@ cortex_m = "^1"
 atomic = "^1"
 hal = "^1"
 usb_embedded = "^1"
-gnat_arm_elf = "^14"
+gnat_arm_elf = ">=14"
 
 [configuration.variables]
 Flash_Chip = {type = "Enum",  values = ["w25qxx", "generic_qspi", "generic_03"], default = "w25qxx"}
