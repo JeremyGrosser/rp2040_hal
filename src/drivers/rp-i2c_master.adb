@@ -235,7 +235,7 @@ package body RP.I2C_Master is
 
       case Mem_Addr_Size is
          when HAL.I2C.Memory_Size_8b =>
-            This.Port.Start_Write (1, Stop => False);
+            This.Port.Start_Write (1);
             This.Port.Write (UInt8 (Mem_Addr), S, Deadline);
             if S /= RP.I2C.Ok then
                This.Port.Abort_Write;
@@ -244,7 +244,7 @@ package body RP.I2C_Master is
                return;
             end if;
          when HAL.I2C.Memory_Size_16b =>
-            This.Port.Start_Write (2, Stop => False);
+            This.Port.Start_Write (2);
             This.Port.Write (UInt8 (Shift_Right (Mem_Addr, 8)), S, Deadline);
             if S /= RP.I2C.Ok then
                This.Port.Abort_Write;
