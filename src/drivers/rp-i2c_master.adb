@@ -9,6 +9,8 @@ package body RP.I2C_Master is
    use type RP.I2C.I2C_Status;
    use type HAL.I2C.I2C_Status;
 
+   Use_Stop_For_Mem_Read : Boolean := False;
+
    function To_HAL_Status
       (S : RP.I2C.I2C_Status)
       return HAL.I2C.I2C_Status
@@ -235,7 +237,7 @@ package body RP.I2C_Master is
 
       case Mem_Addr_Size is
          when HAL.I2C.Memory_Size_8b =>
-            This.Port.Start_Write (1);
+            This.Port.Start_Write (1, Stop => Use_Stop_For_Mem_Read);
             This.Port.Write (UInt8 (Mem_Addr), S, Deadline);
             if S /= RP.I2C.Ok then
                This.Port.Abort_Write;
@@ -244,7 +246,7 @@ package body RP.I2C_Master is
                return;
             end if;
          when HAL.I2C.Memory_Size_16b =>
-            This.Port.Start_Write (2);
+            This.Port.Start_Write (2, Stop => Use_Stop_For_Mem_Read);
             This.Port.Write (UInt8 (Shift_Right (Mem_Addr, 8)), S, Deadline);
             if S /= RP.I2C.Ok then
                This.Port.Abort_Write;
@@ -274,5 +276,17 @@ package body RP.I2C_Master is
 
       Status := HAL.I2C.Ok;
    end Mem_Read;
+
+   procedure Enable_Stop_For_Mem_Read is
+   begin
+      Use_Stop_For_Mem_Read := True;
+   end Enable_Stop_For_Mem_Read;
+
+
+   procedure Disable_Stop_For_Mem_Read is
+   begin
+      Use_Stop_For_Mem_Read := False;
+   end Disable_Stop_For_Mem_Read;
+
 
 end RP.I2C_Master;

@@ -67,6 +67,12 @@ is
       Status        : out HAL.I2C.I2C_Status;
       Timeout       : Natural := 1000);
 
+   --  Procedures to enable/disable the Stop when
+   --  sending the memory address for a Mem_Read
+   --  Default is: Disabled.
+   procedure Enable_Stop_For_Mem_Read;
+   procedure Disable_Stop_For_Mem_Read;
+
 private
 
    type I2C_Master_Port
