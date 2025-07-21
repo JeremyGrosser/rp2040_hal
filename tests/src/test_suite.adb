@@ -14,6 +14,7 @@ with ROM_Tests;
 with RTC_Tests;
 with SPI_Tests;
 with I2C_Tests;
+with I2CM_Tests;
 --  with Flash_Tests;
 with PIO_Tests;
 with Reset_Tests;
@@ -32,6 +33,7 @@ package body Test_Suite is
    RTC_Case       : aliased RTC_Tests.RTC_Test;
    SPI_Case       : aliased SPI_Tests.SPI_Test;
    I2C_Case       : aliased I2C_Tests.I2C_Test;
+   I2CM_Case      : aliased I2CM_Tests.I2CM_Test;
    --  Flash_Case     : aliased Flash_Tests.Flash_Test;
    PIO_Case       : aliased PIO_Tests.PIO_Test;
    Reset_Case     : aliased Reset_Tests.Reset_Test;
@@ -52,6 +54,7 @@ package body Test_Suite is
       Add_Test (Result'Access, RTC_Case'Access);
       Add_Test (Result'Access, SPI_Case'Access);
       Add_Test (Result'Access, I2C_Case'Access);
+      Add_Test (Result'Access, I2CM_Case'Access);
       Add_Test (Result'Access, PIO_Case'Access);
       Add_Test (Result'Access, Reset_Case'Access);
       --  Add_Test (Result'Access, Flash_Case'Access);
