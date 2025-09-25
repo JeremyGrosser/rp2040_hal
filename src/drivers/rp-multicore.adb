@@ -6,12 +6,35 @@
 with System.Storage_Elements;
 with RP2040_SVD.Interrupts;
 with RP2040_SVD.SIO;
+with RP2040_SVD.PSM;
 with Cortex_M.Hints;
 with Cortex_M.NVIC;
 
 with RP.Multicore.FIFO;
 
 package body RP.Multicore is
+
+   ------------------
+   -- Reset_Core1 --
+   ------------------
+
+   procedure Reset_Core1 is
+      use RP2040_SVD.PSM;
+   begin
+      --  Hard reset core 1.
+      PSM_Periph.FRCE_OFF := (proc   => (As_Array => True,
+                                         Arr      => (0 => False,
+                                                      1 => True)),
+                              others => <>);
+
+      --  Wait until core1 has been powered off.
+      loop
+         exit when PSM_Periph.FRCE_OFF.proc.Arr (1) = True;
+      end loop;
+
+      --  Release core1 from reset.
+      PSM_Periph.FRCE_OFF := (others => <>);
+   end Reset_Core1;
 
    ------------------
    -- Launch_Core1 --
