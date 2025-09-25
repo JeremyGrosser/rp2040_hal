@@ -10,6 +10,9 @@ package RP.Multicore
    with Preelaborate
 is
 
+   procedure Reset_Core1;
+   --  hard reset core1
+
    procedure Launch_Core1
       (Trap_Vector   : HAL.UInt32;
        Stack_Pointer : HAL.UInt32;
