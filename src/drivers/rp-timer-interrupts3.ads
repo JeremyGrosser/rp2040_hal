@@ -3,7 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with HAL.Time; use HAL.Time;
 with RP.Timer.Interrupts;
 
 package RP.Timer.Interrupts3 is
