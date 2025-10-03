@@ -70,6 +70,10 @@ package body Multicore_Tests is
       RP.Multicore.FIFO.Push_Blocking (60);
       Val := RP.Multicore.FIFO.Pop_Blocking;
       Assert (Val = 60, "Core1 FIFO sent incorrect echo value after reset, expected 60:" & Val'Image);
+
+      --  Put core1 back into reset before concluding tests, openocd gets
+      --  confused when semihosting is called while core1 is running.
+      RP.Multicore.Reset_Core1;
    end Test_Reset_Core1;
 
    overriding
