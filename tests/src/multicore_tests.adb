@@ -58,15 +58,14 @@ package body Multicore_Tests is
    is
       Val : UInt32;
    begin
+      RP.Multicore.FIFO.Drain;
       RP.Multicore.Reset_Core1;
-      --  According to rp2_common/pico_multicore/multicore.c, Core1 will write
-      --  0 to the FIFO after reset. Sometimes multiple resets happen here?
-      --  Might be some interaction with openocd attaching to core1 when it
-      --  wakes up?
-      loop
-         Val := RP.Multicore.FIFO.Pop_Blocking;
-         exit when Val = 1;
-      end loop;
+      Val := RP.Multicore.FIFO.Pop_Blocking;
+      Assert (Val = 0, "Expected zero value from FIFO after Core1 reset, got" & Val'Image);
+      RP.Multicore.Launch_Core1 (VTOR, Stack_One_Top'Address, Run_Core1'Address);
+
+      Val := RP.Multicore.FIFO.Pop_Blocking;
+      Assert (Val = 1, "Core1 FIFO sent incorrect start value after reset, expected 1:" & Val'Image);
 
       RP.Multicore.FIFO.Push_Blocking (60);
       Val := RP.Multicore.FIFO.Pop_Blocking;
