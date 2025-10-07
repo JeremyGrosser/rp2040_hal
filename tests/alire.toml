@@ -12,7 +12,7 @@ executables = ["test_rp2040_hal"]
 rp2040_hal = "^2"
 aunit = "^24"
 gnatcov = "^22"
-gnat_arm_elf = "^14"
+gnat_arm_elf = ">=14"
 
 [[pins]]
 rp2040_hal = { path='..' }
@@ -22,6 +22,7 @@ AUNIT_RUNTIME = "zfp-cross"
 
 [build-profiles]
 "*" = "validation"
+cortex_m = "release"
 usb_embedded = "release"
 atomic = "release"
 aunit = "release"
