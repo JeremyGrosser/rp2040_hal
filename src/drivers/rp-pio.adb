@@ -674,4 +674,10 @@ package body RP.PIO is
        return RP.DMA.DMA_Request_Trigger
    is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM) + 4));
 
+   function Current_Instruction_Address
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return PIO_Address
+   is (PIO_Address (This.Periph.SM (SM).ADDR.SM0_ADDR));
+
 end RP.PIO;

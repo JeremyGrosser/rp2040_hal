@@ -349,6 +349,12 @@ is
        SM   : PIO_SM)
        return RP.DMA.DMA_Request_Trigger;
 
+   function Current_Instruction_Address
+      (This : PIO_Device;
+       SM   : PIO_SM)
+       return PIO_Address;
+   --  Current instruction address of the given state machine.
+
 private
 
    function Div_Integer
