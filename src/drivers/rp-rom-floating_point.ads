@@ -9,7 +9,7 @@ is
    procedure Initialize
      with Export,
           Convention    => C,
-          External_Name => "__gnat_initialize_bootrom";
+          External_Name => External_Name_Prefix & "__gnat_initialize_bootrom";
    --  __gnat_initialize_bootrom must be called before any of the __aeabi
    --  functions, which means it needs to be called before elaboration.
    --  crt0.S takes care of this, unless Use_Startup=false.
@@ -17,15 +17,27 @@ is
    --  Run-time ABI for the Arm® Architecture
    --  https://github.com/ARM-software/abi-aa/blob/main/rtabi32/rtabi32.rst
    function fadd (A, B : Float) return Float
-      with Export, Convention => C, External_Name => "__aeabi_fadd";
+   with Export,
+        Convention => C,
+        External_Name => External_Name_Prefix & "__aeabi_fadd";
+
    function fsub (A, B : Float) return Float
-      with Export, Convention => C, External_Name => "__aeabi_fsub";
+   with Export,
+        Convention => C,
+        External_Name => External_Name_Prefix & "__aeabi_fsub";
+
    function frsub (A, B : Float) return Float
       with Export, Convention => C, External_Name => "__aeabi_frsub";
+
    function fmul (A, B : Float) return Float
-      with Export, Convention => C, External_Name => "__aeabi_fmul";
+   with Export,
+        Convention => C,
+        External_Name => External_Name_Prefix & "__aeabi_fmul";
+
    function fdiv (A, B : Float) return Float
-      with Export, Convention => C, External_Name => "__aeabi_fdiv";
+   with Export,
+        Convention => C,
+        External_Name => External_Name_Prefix & "__aeabi_fdiv";
 
    --  __aeabi_cfcmpeq
    --  __aeabi_cfrcmple
