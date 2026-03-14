@@ -7,8 +7,6 @@ with AUnit.Assertions; use AUnit.Assertions;
 with HAL.UART; use HAL.UART;
 with HAL;      use HAL;
 with RP.UART;  use RP.UART;
-with RP.Timer.Interrupts;
-with RP.Timer;
 with RP.Device;
 with RP.Clock;
 
@@ -55,9 +53,8 @@ package body UART_Tests is
       Status : UART_Status;
    begin
       Port.Send_Break
-         (Delays   => RP.Device.Timer'Access,
-          Duration => Port.Frame_Time,
-          Start    => True);
+         (Length => Port.Frame_Time,
+          Start  => True);
       Port.Receive (Data, Status);
       Assert (Status = Busy, "Expected busy status after break");
 
@@ -75,9 +72,8 @@ package body UART_Tests is
       Assert (Port.Receive_Status = Empty, "Receive FIFO is not Empty");
 
       Port.Send_Break
-         (Delays   => RP.Device.Timer'Access,
-          Duration => Port.Frame_Time,
-          Start    => False);
+         (Length => Port.Frame_Time,
+          Start  => False);
       Port.Receive (Data, Status);
       Assert (Status = Busy, "Expected busy status after break without start");
 
@@ -119,7 +115,6 @@ package body UART_Tests is
          (Loopback     => True,
           Enable_FIFOs => False,
           others       => <>);
-      Delays : RP.Timer.Interrupts.Delays;
       Status : UART_Status;
       Data   : UART_Data_8b (1 .. 1) := (others => 16#55#);
    begin
@@ -136,7 +131,7 @@ package body UART_Tests is
       Port.Receive (Data, Status);
       Assert (Status = Ok, "UART receive with interrupt failed");
 
-      Delays.Delay_Microseconds (100);
+      delay 100.0e-6;
       Assert (TX_Count = 1, "UART transmit interrupt did not fire");
       Assert (RX_Count = 1, "UART receive interrupt did not fire");
    end Test_Interrupt;

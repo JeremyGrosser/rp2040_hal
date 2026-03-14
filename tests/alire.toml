@@ -12,14 +12,13 @@ executables = ["test_rp2040_hal"]
 rp2040_hal = "^3"
 aunit = "^24"
 gnatcov = "^22"
-embedded_rp2040 = ">=15"
+embedded_rp2350 = ">=15"
 
 [[pins]]
 rp2040_hal = { path='..' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "ravenscar"
-EMBEDDED_RP2040_BUILD = "Debug"
 
 [build-profiles]
 "*" = "validation"
@@ -29,4 +28,5 @@ atomic = "release"
 aunit = "release"
 
 [configuration.values]
-embedded_rp2040.Board = "rpi_pico"
+rp2040_hal.Device = "RP2350"
+embedded_rp2350.Board = "rpi_pico2"

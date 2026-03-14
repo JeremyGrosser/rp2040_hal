@@ -5,7 +5,6 @@
 --
 with RP2040_SVD.UART; use RP2040_SVD.UART;
 with HAL.UART; use HAL.UART;
-with HAL.Time;
 with RP.Clock;
 with System;
 
@@ -72,10 +71,9 @@ is
    --  cannot be shorter. If Start = True, an additional delay of one bit
    --  period will be added before the break.
    procedure Send_Break
-      (This     : in out UART_Port;
-       Delays   : HAL.Time.Any_Delays;
-       Duration : Microseconds;
-       Start    : Boolean := True);
+      (This   : in out UART_Port;
+       Length : Microseconds;
+       Start  : Boolean := True);
 
    function Transmit_Status
       (This : UART_Port)

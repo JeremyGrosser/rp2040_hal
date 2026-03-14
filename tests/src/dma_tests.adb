@@ -5,8 +5,6 @@
 --
 with AUnit.Assertions; use AUnit.Assertions;
 with Ada.Interrupts;
-
-with RP.Device;
 with RP.Clock;
 with RP.DMA;
 with HAL;
@@ -120,7 +118,7 @@ package body DMA_Tests is
 
       for I in 1 .. 10 loop
          From := UInt32 (I);
-         RP.Device.Timer.Delay_Microseconds (100);
+         delay 100.0e-6;
          Assert (To = From, "Paced transfer did not happen on schedule.");
       end loop;
 

@@ -17,6 +17,7 @@ package body RP.PIO is
       case This.Num is
          when 0 => Reset_Peripheral (Reset_PIO0);
          when 1 => Reset_Peripheral (Reset_PIO1);
+         when 2 => Reset_Peripheral (Reset_PIO2);
       end case;
    end Enable;
 
@@ -254,6 +255,7 @@ package body RP.PIO is
       case PIO.Num is
          when 0 => return RP.GPIO.PIO0;
          when 1 => return RP.GPIO.PIO1;
+         when 2 => raise Program_Error; --  TODO
       end case;
    end GPIO_Function;
 
@@ -527,6 +529,8 @@ package body RP.PIO is
                when 0 => return PIO1_IRQ_0_Interrupt;
                when 1 => return PIO1_IRQ_1_Interrupt;
             end case;
+         when 2 =>
+            raise Program_Error; --  TODO
       end case;
    end NVIC_IRQ_Line;
 

@@ -5,8 +5,6 @@
 --
 with AUnit.Assertions;
 with HAL.Real_Time_Clock;
-with RP.Timer.Interrupts;
-with RP.Timer;
 with RP.RTC;
 
 package body RTC_Tests is
@@ -44,9 +42,6 @@ package body RTC_Tests is
       --  that we get the expected values back.
       use AUnit.Assertions;
       use HAL.Real_Time_Clock;
-      use RP.Timer.Interrupts;
-      use RP.Timer;
-      Timer : RP.Timer.Interrupts.Delays;
       RT    : RTC_Time;
       RD    : RTC_Date;
    begin
@@ -58,14 +53,14 @@ package body RTC_Tests is
          (Time => (Hour => 23, Min => 59, Sec => 56),
           Date => (Year => 99, Month => December, Day => 31, Day_Of_Week => Friday));
       --  Wait 1 second for the RTC to latch the new time into its registers.
-      Timer.Delay_Microseconds (Ticks_Per_Second);
+      delay 1.0;
       --  Sec = 57
       RT := RTC.Get_Time;
       --  Another second passes while we wait for the read to sync (Sec = 58)
       Assert (RT = (Hour => 23, Min => 59, Sec => 58), "Time readback incorrect");
       RD := RTC.Get_Date;
       Assert (RD = (Year => 99, Month => December, Day => 31, Day_Of_Week => Friday), "Date readback incorrect");
-      Timer.Delay_Microseconds (2 * Ticks_Per_Second);
+      delay 2.0;
       RT := RTC.Get_Time;
       --  Sec = 0
       Assert (RT = (Hour => 0, Min => 0, Sec => 0), "Time did not count up");
@@ -80,7 +75,7 @@ package body RTC_Tests is
       RTC.Set
          (Time => (Hour => 23, Min => 59, Sec => 59),
           Date => (Year => 99, Month => December, Day => 31, Day_Of_Week => Friday));
-      Timer.Delay_Microseconds (Ticks_Per_Second);
+      delay 1.0;
       RTC.Get (RT, RD);
       Assert (RT = (Hour => 23, Min => 59, Sec => 59),
          "Set while Paused readback time failed");
@@ -94,7 +89,6 @@ package body RTC_Tests is
    is
       use AUnit.Assertions;
       use HAL.Real_Time_Clock;
-      use RP.Timer;
       RT  : RTC_Time;
       RD  : RTC_Date;
       Now     : Time;

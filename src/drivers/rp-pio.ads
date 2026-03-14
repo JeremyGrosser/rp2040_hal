@@ -15,7 +15,7 @@ package RP.PIO
    with Preelaborate
 is
    type PIO_Peripheral is private;
-   subtype PIO_Number is Natural range 0 .. 1;
+   subtype PIO_Number is Natural range 0 .. 2;
    type PIO_Device
       (Num    : PIO_Number;
        Periph : not null access PIO_Peripheral)

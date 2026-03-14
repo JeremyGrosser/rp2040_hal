@@ -5,7 +5,6 @@
 --
 with AUnit.Assertions; use AUnit.Assertions;
 with RP2040_SVD;
-with RP.Timer.Interrupts;
 with RP.I2C_Master;
 with RP.GPIO;
 with HAL.I2C; use HAL.I2C;
@@ -18,7 +17,6 @@ package body I2CM_Tests is
    IC : aliased RP.I2C_Master.I2C_Peripheral
       with Import, Address => RP2040_SVD.I2C0_Base;
    I2CM0 : RP.I2C_Master.I2C_Master_Port (0, IC'Access);
-   Timer : RP.Timer.Interrupts.Delays;
 
    Target_Addr : constant I2C_Address := 2#1010_0000#; --  24FC64F with A0,A1,A2=GND
    Bad_Addr    : constant I2C_Address := 2#0101_0000#; --  no device at this address
@@ -32,7 +30,6 @@ package body I2CM_Tests is
       I2CM0_SDA.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
       I2CM0_SCL.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
       I2CM0.Configure (400_000);
-      Timer.Enable;
    end Set_Up;
 
    procedure Test_Master_Transmit
@@ -83,7 +80,7 @@ package body I2CM_Tests is
           Status        => Status);
       Assert (Status = Ok, "8-bit memory write");
 
-      Timer.Delay_Milliseconds (5);
+      delay 0.005;
       --  write cycle time
 
       Data := (others => 16#B2#);
@@ -113,7 +110,7 @@ package body I2CM_Tests is
           Status        => Status);
       Assert (Status = Ok, "16-bit write zero");
 
-      Timer.Delay_Milliseconds (5);
+      delay 0.005;
       --  write cycle time
 
       Data := (others => 16#AA#);
@@ -135,7 +132,7 @@ package body I2CM_Tests is
           Status        => Status);
       Assert (Status = Ok, "16-bit test write data");
 
-      Timer.Delay_Milliseconds (5);
+      delay 0.005;
       --  write cycle time
 
       I2CM0.Mem_Read
@@ -165,7 +162,7 @@ package body I2CM_Tests is
           Status        => Status);
       Assert (Status = Ok, "8-bit write zero");
 
-      Timer.Delay_Milliseconds (5);
+      delay 0.005;
       --  write cycle time
 
       Data := (others => 16#AA#);
@@ -192,7 +189,7 @@ package body I2CM_Tests is
           Status        => Status);
       Assert (Status = Ok, "8-bit test write pattern");
 
-      Timer.Delay_Milliseconds (5);
+      delay 0.005;
       --  write cycle time
 
       I2CM0.Mem_Read
@@ -224,7 +221,7 @@ package body I2CM_Tests is
           Status        => Status);
       Assert (Status = Ok, "1 MHz write");
 
-      Timer.Delay_Milliseconds (5);
+      delay 0.005;
       --  write cycle time
 
       Data := (others => 16#AA#);
