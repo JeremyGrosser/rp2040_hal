@@ -6,7 +6,6 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with HAL; use HAL;
 with RP.PWM; use RP.PWM;
-with RP.PWM.Interrupts;
 with RP.Timer.Interrupts;
 with RP.Timer;
 with RP.GPIO;
@@ -14,7 +13,6 @@ with RP.Clock;
 
 package body PWM_Tests is
    P : constant PWM_Point := To_PWM (RP.GPIO.GPIO_Point'(Pin => 0));
-   IRQ_Count : Natural := 0;
 
    overriding
    procedure Set_Up
@@ -69,8 +67,7 @@ package body PWM_Tests is
    begin
       Delays.Enable;
 
-      IRQ_Count := 0;
-      Interrupts.Attach_Handler (P.Slice, IRQ_Handler'Access);
+      Interrupts.Reset_Count;
 
       Set_Frequency (P.Slice, 10_000_000);
       Set_Interval (P.Slice, 10_000);
@@ -80,13 +77,8 @@ package body PWM_Tests is
       Delays.Delay_Milliseconds (1);
 
       Disable (P.Slice);
-      Assert (IRQ_Count > 0, "PWM IRQ did not fire");
+      Assert (Interrupts.Interrupt_Count > 0, "PWM IRQ did not fire");
    end Test_Interrupt;
-
-   procedure IRQ_Handler is
-   begin
-      IRQ_Count := IRQ_Count + 1;
-   end IRQ_Handler;
 
    overriding
    procedure Register_Tests
@@ -104,5 +96,21 @@ package body PWM_Tests is
       (T : PWM_Test)
       return AUnit.Message_String
    is (AUnit.Format ("RP.PWM"));
+
+   protected body Interrupts is
+      procedure PWM_Interrupt is
+      begin
+         Count := Count + 1;
+      end PWM_Interrupt;
+
+      procedure Reset_Count is
+      begin
+         Count := 0;
+      end Reset_Count;
+
+      function Interrupt_Count
+         return Natural
+      is (Count);
+   end Interrupts;
 
 end PWM_Tests;

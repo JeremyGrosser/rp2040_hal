@@ -5,7 +5,6 @@
 --
 with Interfaces.C; use Interfaces.C;
 with Interfaces;   use Interfaces;
-with Rp2040_Hal_Config;
 with System;
 
 package RP.ROM
@@ -48,11 +47,9 @@ is
        Code  : Table_Code)
        return System.Address;
 
-   External_Name_Prefix : constant String :=
-     (if Rp2040_Hal_Config.Use_Startup then "" else "RP_");
+   External_Name_Prefix : constant String := "RP_";
    --  This prefix is prepend to external names to avoid name clash with
-   --  symbols in Ada runtimes (light_tasking_rp2040, etc) when setting
-   --  use_startup = false.
+   --  symbols in Ada runtimes (light_tasking_rp2040, etc)
 
    function ROM_Func_Lookup
       (Code : Table_Code)

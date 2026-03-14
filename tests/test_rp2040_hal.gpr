@@ -1,10 +1,11 @@
 with "config/test_rp2040_hal_config.gpr";
 with "rp2040_hal.gpr";
+with "runtime_build.gpr";
 
 project Test_Rp2040_Hal is
 
-   for Target use "arm-eabi";
-   for Runtime ("Ada") use "light-cortex-m0p";
+   for Target use Runtime_Build'Target;
+   for Runtime ("Ada") use Runtime_Build'Runtime ("Ada");
 
    for Source_Dirs use ("src/", "config/");
    for Object_Dir use "obj/" & Test_Rp2040_Hal_Config.Build_Profile;
@@ -30,7 +31,7 @@ project Test_Rp2040_Hal is
    end Install;
 
    package Linker is
-      for Switches ("Ada") use RP2040_HAL.Linker_Switches &
+      for Switches ("Ada") use Runtime_Build.Linker_Switches &
          ("-Wl,-print-memory-usage");
    end Linker;
 

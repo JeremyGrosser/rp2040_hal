@@ -3,6 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+private with Ada.Interrupts.Names;
 with AUnit.Test_Cases;
 with AUnit;
 
@@ -37,6 +38,16 @@ package DMA_Tests is
 
 private
 
-   procedure Interrupt_Handler;
+   protected Interrupts is
+      procedure DMA_Interrupt
+         with Attach_Handler => Ada.Interrupts.Names.DMA_IRQ_0_Interrupt_CPU_1;
+
+      procedure Reset_Count;
+
+      function Interrupt_Count
+         return Natural;
+   private
+      Count : Natural := 0;
+   end Interrupts;
 
 end DMA_Tests;

@@ -6,9 +6,6 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with HAL.UART; use HAL.UART;
 with HAL;      use HAL;
-with RP2040_SVD.Interrupts;
-with RP_Interrupts;
-with Cortex_M.NVIC;
 with RP.UART;  use RP.UART;
 with RP.Timer.Interrupts;
 with RP.Timer;
@@ -91,18 +88,29 @@ package body UART_Tests is
       Assert (Data (1) = 16#FF# and then Status = Ok, "Failed to recover from break without start");
    end Test_Break;
 
-   procedure UART0_IRQ_Handler is
-   begin
-      if Port.Masked_IRQ_Status (Receive) then
-         Port.Clear_IRQ (Receive);
-         RX_Count := RX_Count + 1;
-      end if;
+   protected body Interrupts is
+      procedure UART_Interrupt is
+      begin
+         if Port.Masked_IRQ_Status (Receive) then
+            Port.Clear_IRQ (Receive);
+            RX_Count := RX_Count + 1;
+         end if;
 
-      if Port.Masked_IRQ_Status (Transmit) then
-         Port.Clear_IRQ (Transmit);
-         TX_Count := TX_Count + 1;
-      end if;
-   end UART0_IRQ_Handler;
+         if Port.Masked_IRQ_Status (Transmit) then
+            Port.Clear_IRQ (Transmit);
+            TX_Count := TX_Count + 1;
+         end if;
+      end UART_Interrupt;
+
+      procedure Reset_Count is
+      begin
+         Count := 0;
+      end Reset_Count;
+
+      function Interrupt_Count
+         return Natural
+      is (Count);
+   end Interrupts;
 
    procedure Test_Interrupt
       (T : in out AUnit.Test_Cases.Test_Case'Class)
@@ -115,17 +123,12 @@ package body UART_Tests is
       Status : UART_Status;
       Data   : UART_Data_8b (1 .. 1) := (others => 16#55#);
    begin
-      RP_Interrupts.Attach_Handler
-         (Handler  => UART0_IRQ_Handler'Access,
-          Id       => RP2040_SVD.Interrupts.UART0_Interrupt,
-          Prio     => RP_Interrupts.Interrupt_Priority'First);
       Port.Configure (Config);
       Port.Enable_IRQ (Transmit);
       Port.Enable_IRQ (Receive);
       Port.Clear_IRQ (Transmit);
       Port.Clear_IRQ (Receive);
-      Cortex_M.NVIC.Clear_Pending (RP2040_SVD.Interrupts.UART0_Interrupt);
-      Cortex_M.NVIC.Enable_Interrupt (RP2040_SVD.Interrupts.UART0_Interrupt);
+      Interrupts.Reset_Count;
 
       Port.Transmit (Data, Status);
       Assert (Status = Ok, "UART transmit with interrupt failed");
@@ -136,8 +139,6 @@ package body UART_Tests is
       Delays.Delay_Microseconds (100);
       Assert (TX_Count = 1, "UART transmit interrupt did not fire");
       Assert (RX_Count = 1, "UART receive interrupt did not fire");
-
-      Cortex_M.NVIC.Disable_Interrupt (RP2040_SVD.Interrupts.UART0_Interrupt);
    end Test_Interrupt;
 
    overriding

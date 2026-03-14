@@ -16,7 +16,7 @@ package body Multicore_Tests is
       (Integer_Address
          (RP2040_SVD.PPB.PPB_Periph.VTOR.TBLOFF));
    Stack_One_Top : HAL.UInt32
-      with Import, External_Name => "__StackOneTop";
+      with Import, External_Name => "__stack_start_core1";
 
    procedure Run_Core1 is
       Echo : UInt32;

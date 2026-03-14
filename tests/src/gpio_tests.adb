@@ -4,14 +4,13 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions;
-with RP.GPIO.Interrupts;
 with HAL.GPIO;
 with RP.Timer;
+with RP.GPIO;
 
 package body GPIO_Tests is
 
    LED : RP.GPIO.GPIO_Point := (Pin => 25);
-   IRQ_Count : Natural := 0;
 
    procedure Test_Configure
       (T : in out AUnit.Test_Cases.Test_Case'Class)
@@ -82,18 +81,22 @@ package body GPIO_Tests is
       Assert (LED.Set = False, "Set returned incorrect value");
    end Test_HAL;
 
-   procedure Interrupt_Handler
-      (Pin     : RP.GPIO.GPIO_Pin;
-       Trigger : RP.GPIO.Interrupt_Triggers)
-   is
-      use AUnit.Assertions;
-      use RP.GPIO;
-   begin
-      Disable_Interrupt (LED, Low_Level);
-      Assert (Pin = LED.Pin, "Interrupt from wrong pin");
-      Assert (Trigger = Low_Level, "Wrong interrupt level");
-      IRQ_Count := IRQ_Count + 1;
-   end Interrupt_Handler;
+   protected body Interrupts is
+      procedure GPIO_Interrupt is
+      begin
+         RP.GPIO.Disable_Interrupt (LED, RP.GPIO.Low_Level);
+         Count := Count + 1;
+      end GPIO_Interrupt;
+
+      procedure Reset_Count is
+      begin
+         Count := 0;
+      end Reset_Count;
+
+      function Interrupt_Count
+         return Natural
+      is (Count);
+   end Interrupts;
 
    procedure Test_Interrupts
       (T : in out AUnit.Test_Cases.Test_Case'Class)
@@ -104,17 +107,16 @@ package body GPIO_Tests is
       Deadline : Time;
    begin
       LED.Configure (Input, Pull_Down);
-      RP.GPIO.Interrupts.Attach_Handler (LED, Interrupt_Handler'Access);
-      IRQ_Count := 0;
+      Interrupts.Reset_Count;
       LED.Enable_Interrupt (Low_Level);
 
       Deadline := Clock + Milliseconds (1);
-      while Clock < Deadline and then IRQ_Count = 0 loop
+      while Clock < Deadline and then Interrupts.Interrupt_Count = 0 loop
          null;
       end loop;
 
-      Assert (IRQ_Count = 1, "Only one interrupt expected");
-      RP.GPIO.Interrupts.Attach_Handler (LED, null);
+      Assert (Interrupts.Interrupt_Count = 1, "Only one interrupt expected");
+      LED.Disable_Interrupt (Low_Level);
    end Test_Interrupts;
 
    overriding

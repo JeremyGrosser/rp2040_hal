@@ -4,10 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions; use AUnit.Assertions;
-
-with RP2040_SVD.Interrupts;
-with RP_Interrupts;
-with System;
+with Ada.Interrupts;
 
 with RP.Device;
 with RP.Clock;
@@ -15,7 +12,6 @@ with RP.DMA;
 with HAL;
 
 package body DMA_Tests is
-   Interrupt_Count : Natural := 0 with Volatile;
 
    overriding
    procedure Set_Up
@@ -146,32 +142,27 @@ package body DMA_Tests is
       From   : UInt32 := UInt32'Last with Volatile;
       To     : UInt32 := 0 with Volatile;
    begin
-      RP_Interrupts.Attach_Handler
-         (Handler => Interrupt_Handler'Access,
-          Id      => RP2040_SVD.Interrupts.DMA_IRQ_0_Interrupt,
-          Prio    => System.Interrupt_Priority'Last);
-
       Configure (Ch, Config);
       Setup (Ch, From'Address, To'Address, 1);
 
-      Interrupt_Count := 0;
+      Interrupts.Reset_Count;
       Enable_IRQ (Ch, 0);
       Assert (IRQ_Status (Ch, 0) = False, "DMA IRQ triggered before Start");
-      Assert (Interrupt_Count = 0, "Interrupted before Start");
+      Assert (Interrupts.Interrupt_Count = 0, "Interrupted before Start");
 
       Start (Ch);
-      while Interrupt_Count = 0 loop
+      while Interrupts.Interrupt_Count = 0 loop
          null;
       end loop;
       Assert (IRQ_Status (Ch, 0) = False, "Ack_IRQ didn't");
-      Assert (Interrupt_Count = 1, "Incorrect interrupt count");
+      Assert (Interrupts.Interrupt_Count = 1, "Incorrect interrupt count");
 
       Disable_IRQ (Ch, 0);
       Start (Ch);
       while Busy (Ch) loop
          null;
       end loop;
-      Assert (Interrupt_Count = 1, "Interrupt count incremented while disabled");
+      Assert (Interrupts.Interrupt_Count = 1, "Interrupt count incremented while disabled");
       Assert (IRQ_Status (Ch, 0) = False, "DMA IRQ triggered while disabled");
    end Test_IRQ;
 
@@ -193,10 +184,21 @@ package body DMA_Tests is
       return AUnit.Message_String
    is (AUnit.Format ("RP.DMA"));
 
-   procedure Interrupt_Handler is
-   begin
-      RP.DMA.Ack_IRQ (0, 0);
-      Interrupt_Count := Interrupt_Count + 1;
-   end Interrupt_Handler;
+   protected body Interrupts is
+      procedure DMA_Interrupt is
+      begin
+         RP.DMA.Ack_IRQ (0, 0);
+         Count := Count + 1;
+      end DMA_Interrupt;
+
+      procedure Reset_Count is
+      begin
+         Count := 0;
+      end Reset_Count;
+
+      function Interrupt_Count
+         return Natural
+      is (Count);
+   end Interrupts;
 
 end DMA_Tests;

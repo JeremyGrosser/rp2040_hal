@@ -9,16 +9,16 @@ maintainers-logins = ["JeremyGrosser"]
 executables = ["test_rp2040_hal"]
 
 [[depends-on]]  # Added by alr
-rp2040_hal = "^2"
+rp2040_hal = "^3"
 aunit = "^24"
 gnatcov = "^22"
-gnat_arm_elf = ">=14"
+embedded_rp2040 = ">=15"
 
 [[pins]]
 rp2040_hal = { path='..' }
 
 [gpr-set-externals]
-AUNIT_RUNTIME = "zfp-cross"
+AUNIT_RUNTIME = "ravenscar"
 
 [build-profiles]
 "*" = "validation"
@@ -26,3 +26,6 @@ cortex_m = "release"
 usb_embedded = "release"
 atomic = "release"
 aunit = "release"
+
+[configuration.values]
+embedded_rp2040.Board = "rpi_pico"
