@@ -17,7 +17,7 @@ package body RP.PIO is
       case This.Num is
          when 0 => Reset_Peripheral (Reset_PIO0);
          when 1 => Reset_Peripheral (Reset_PIO1);
-         when 2 => Reset_Peripheral (Reset_PIO2);
+         when 2 => raise Program_Error; --  TODO
       end case;
    end Enable;
 

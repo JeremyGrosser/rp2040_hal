@@ -1,0 +1,156 @@
+--
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
+with AUnit.Assertions; use AUnit.Assertions;
+with HAL.UART; use HAL.UART;
+with HAL;      use HAL;
+with RP.UART;  use RP.UART;
+with RP.Device;
+with RP.Clock;
+
+package body UART_Tests is
+   Port : RP.UART.UART_Port renames RP.Device.UART_0;
+   RX_Count, TX_Count : Natural := 0;
+
+   overriding
+   procedure Set_Up
+      (T : in out UART_Test)
+   is
+      Config : constant UART_Configuration :=
+         (Loopback => True,
+          others   => <>);
+   begin
+      RP.Clock.Enable (RP.Clock.PERI);
+      Port.Configure (Config);
+   end Set_Up;
+
+   procedure Test_Data
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      TX_Data : constant UART_Data_8b := (0, 1, 16#80#, 16#7F#, 16#FF#, 16#55#);
+      RX_Data : UART_Data_8b (TX_Data'Range);
+      Status  : UART_Status;
+   begin
+      Port.Transmit (TX_Data, Status);
+      Assert (Status = Ok, "Transmit failed");
+      Port.Receive (RX_Data, Status);
+      Assert (Status = Ok, "Receive failed");
+      Assert (RX_Data = TX_Data, "Data mismatch");
+
+      Assert (Port.Transmit_Status = Empty, "Transmit FIFO was not empty");
+      Assert (Port.Receive_Status = Empty, "Receive FIFO was not empty");
+
+      Port.Receive (RX_Data, Status, Timeout => 1);
+      Assert (Status = Err_Timeout, "Expected receive timeout");
+   end Test_Data;
+
+   procedure Test_Break
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      Data   : UART_Data_8b (1 .. 1);
+      Status : UART_Status;
+   begin
+      Port.Send_Break
+         (Length => Port.Frame_Time,
+          Start  => True);
+      Port.Receive (Data, Status);
+      Assert (Status = Busy, "Expected busy status after break");
+
+      Port.Receive (Data, Status);
+      Assert (Status = Err_Timeout, "Expected timeout after recovery from break");
+
+      Data (1) := 16#55#;
+      Port.Transmit (Data, Status);
+      Assert (Status = Ok, "Expected Transmit Ok after recovery from break");
+
+      Port.Receive (Data, Status);
+      Assert (Status = Ok, "Expected Receive Ok after recovery from break");
+      Assert (Data (1) = 16#55#, "Received data did not match");
+      Assert (Port.Transmit_Status = Empty, "Transmit FIFO is not Empty");
+      Assert (Port.Receive_Status = Empty, "Receive FIFO is not Empty");
+
+      Port.Send_Break
+         (Length => Port.Frame_Time,
+          Start  => False);
+      Port.Receive (Data, Status);
+      Assert (Status = Busy, "Expected busy status after break without start");
+
+      Data (1) := 16#FF#;
+      Port.Transmit (Data, Status);
+      Assert (Status = Ok, "Failed to transmit after break without start");
+      Port.Receive (Data, Status);
+      Assert (Data (1) = 16#FF# and then Status = Ok, "Failed to recover from break without start");
+   end Test_Break;
+
+   protected body Interrupts is
+      procedure UART_Interrupt is
+      begin
+         if Port.Masked_IRQ_Status (Receive) then
+            Port.Clear_IRQ (Receive);
+            RX_Count := RX_Count + 1;
+         end if;
+
+         if Port.Masked_IRQ_Status (Transmit) then
+            Port.Clear_IRQ (Transmit);
+            TX_Count := TX_Count + 1;
+         end if;
+      end UART_Interrupt;
+
+      procedure Reset_Count is
+      begin
+         Count := 0;
+      end Reset_Count;
+
+      function Interrupt_Count
+         return Natural
+      is (Count);
+   end Interrupts;
+
+   procedure Test_Interrupt
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      Config : constant UART_Configuration :=
+         (Loopback     => True,
+          Enable_FIFOs => False,
+          others       => <>);
+      Status : UART_Status;
+      Data   : UART_Data_8b (1 .. 1) := (others => 16#55#);
+   begin
+      Port.Configure (Config);
+      Port.Enable_IRQ (Transmit);
+      Port.Enable_IRQ (Receive);
+      Port.Clear_IRQ (Transmit);
+      Port.Clear_IRQ (Receive);
+      Interrupts.Reset_Count;
+
+      Port.Transmit (Data, Status);
+      Assert (Status = Ok, "UART transmit with interrupt failed");
+
+      Port.Receive (Data, Status);
+      Assert (Status = Ok, "UART receive with interrupt failed");
+
+      delay 100.0e-6;
+      Assert (TX_Count = 1, "UART transmit interrupt did not fire");
+      Assert (RX_Count = 1, "UART receive interrupt did not fire");
+   end Test_Interrupt;
+
+   overriding
+   procedure Register_Tests
+      (T : in out UART_Test)
+   is
+      use AUnit.Test_Cases.Registration;
+   begin
+      Register_Routine (T, Test_Data'Access, "Data");
+      Register_Routine (T, Test_Break'Access, "Break");
+      Register_Routine (T, Test_Interrupt'Access, "Interrupt");
+   end Register_Tests;
+
+   overriding
+   function Name
+      (T : UART_Test)
+      return AUnit.Message_String
+   is (AUnit.Format ("RP.UART"));
+
+end UART_Tests;
