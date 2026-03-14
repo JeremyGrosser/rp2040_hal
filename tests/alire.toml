@@ -19,6 +19,7 @@ rp2040_hal = { path='..' }
 
 [gpr-set-externals]
 AUNIT_RUNTIME = "ravenscar"
+EMBEDDED_RP2040_BUILD = "Debug"
 
 [build-profiles]
 "*" = "validation"

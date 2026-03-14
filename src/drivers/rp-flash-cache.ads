@@ -5,9 +5,7 @@
 --
 with HAL;
 
-package RP.Flash.Cache
-   with Preelaborate
-is
+package RP.Flash.Cache is
    procedure Enable;
    procedure Disable;
    procedure Power_Down;
