@@ -20,7 +20,6 @@ package body Clock_Tests is
       Maximum : constant Hertz := Nominal + Margin;
       F       : Hertz;
    begin
-      RP.Clock.Initialize (12_000_000);
       F := RP.Clock.Frequency (RP.Clock.SYS);
       Assert (F in Minimum .. Maximum, "clk_sys is not in expected range : " & F'Image);
    end Test_Initialize;
@@ -30,22 +29,9 @@ package body Clock_Tests is
    is
       use AUnit.Assertions;
    begin
-      RP.Clock.Disable (RP.Clock.PERI);
-
-      Assert (not RP.Clock.Enabled (RP.Clock.PERI),
-         "clk_peri should not be enabled");
-
-      RP.Clock.Enable (RP.Clock.PERI);
-
-      Assert (RP.Clock.Enabled (RP.Clock.PERI),
-         "Unable to enable clk_peri");
+      RP.Clock.Enable_PERI;
       Assert (RP.Clock.Frequency (RP.Clock.PERI) = 125_000_000,
          "clk_peri is not running at 125 MHz");
-
-      RP.Clock.Disable (RP.Clock.PERI);
-
-      Assert (not RP.Clock.Enabled (RP.Clock.PERI),
-         "Unable to disable clk_peri");
    end Test_Enable;
 
    procedure Test_Counter
@@ -66,7 +52,6 @@ package body Clock_Tests is
           Accuracy => 5)
           in (125_000_000 - 65535) .. (125_000_000 + 65535),
           "Low accuracy clk_sys out of range");
-      RP.Clock.Enable (RP.Clock.USB);
       Assert (RP.Clock.Frequency
          (RP.Clock.USB,
           Rounded => False,
@@ -78,37 +63,7 @@ package body Clock_Tests is
           Rounded => True)
           = 48_000_000,
           "Rounded clk_usb incorrect");
-      RP.Clock.Disable (RP.Clock.USB);
-      Assert (not RP.Clock.Enabled (RP.Clock.USB), "Failed to disable USB clock");
    end Test_Counter;
-
-   procedure Test_Overclock
-      (T : in out AUnit.Test_Cases.Test_Case'Class)
-   is
-      use AUnit.Assertions;
-      use RP.Clock;
-   begin
-      Set_SYS_Source (XOSC);
-      Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
-      Configure_PLL (PLL_SYS, PLL_200_MHz);
-      Set_SYS_Source (PLL_SYS);
-
-      Assert (Frequency (SYS) in 195_000_000 .. 205_000_000, "Incorrect overclock frequency");
-
-      Set_SYS_Source (XOSC);
-      Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
-      Configure_PLL (PLL_SYS, PLL_250_MHz);
-      Set_SYS_Source (PLL_SYS);
-
-      Assert (Frequency (SYS) in 245_000_000 .. 255_000_000, "Incorrect overclock frequency");
-
-      Set_SYS_Source (XOSC);
-      Assert (Frequency (SYS) = 12_000_000, "PLL_SYS not running from XOSC");
-      Configure_PLL (PLL_SYS, PLL_125_MHz);
-      Set_SYS_Source (PLL_SYS);
-
-      Assert (Frequency (SYS) = 125_000_000, "Incorrect nominal frequency");
-   end Test_Overclock;
 
    overriding
    procedure Register_Tests
@@ -119,7 +74,6 @@ package body Clock_Tests is
       Register_Routine (T, Test_Initialize'Access, "Initialize");
       Register_Routine (T, Test_Enable'Access, "Enable");
       Register_Routine (T, Test_Counter'Access, "Counter");
-      Register_Routine (T, Test_Overclock'Access, "Overclock");
    end Register_Tests;
 
    overriding

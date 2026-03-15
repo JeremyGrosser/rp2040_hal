@@ -7,22 +7,19 @@ with System;
 
 package body RP.Clock is
 
-   type GPOUT_CTRL_Register is record
-      ENABLED  : Boolean := False;
+   type CLK_CTRL_Register is record
       NUDGE    : Boolean := False;
       PHASE    : UInt2 := 0;
       DC50     : Boolean := False;
       ENABLE   : Boolean := False;
       KILL     : Boolean := False;
-      AUXSRC   : GP_Source := PLL_SYS;
+      AUXSRC   : UInt4 := 0;
    end record
       with Volatile_Full_Access,
            Effective_Writes,
-           Async_Writers,
            Async_Readers,
            Size => 32;
-   for GPOUT_CTRL_Register use record
-      ENABLED  at 0 range 28 .. 28;
+   for CLK_CTRL_Register use record
       NUDGE    at 0 range 20 .. 20;
       PHASE    at 0 range 16 .. 17;
       DC50     at 0 range 12 .. 12;
@@ -32,9 +29,9 @@ package body RP.Clock is
    end record;
 
    type GPOUT_Register is record
-      CTRL     : GPOUT_CTRL_Register;
-      DIV      : GP_Divider;
-      SELECTED : UInt32;
+      CTRL     : CLK_CTRL_Register;
+      DIV      : GP_Divider := 1.0;
+      SELECTED : UInt32 := 1;
    end record
       with Volatile, Size => 96;
    for GPOUT_Register use record
@@ -82,27 +79,10 @@ package body RP.Clock is
       FRAC  at 0 range 0 .. 4;
    end record;
 
-   type CLK_CTRL_Register is record
-      ENABLED  : Boolean := False;
-      ENABLE   : Boolean := False;
-      KILL     : Boolean := False;
-      AUXSRC   : UInt3 := 0;
-   end record
-      with Volatile_Full_Access,
-           Effective_Writes,
-           Async_Writers,
-           Async_Readers,
-           Size => 32;
-   for CLK_CTRL_Register use record
-      ENABLED  at 0 range 28 .. 28;
-      ENABLE   at 0 range 11 .. 11;
-      KILL     at 0 range 10 .. 10;
-      AUXSRC   at 0 range 5 .. 7;
-   end record;
-
    type CLOCKS_Peripheral is record
       GPOUT          : GPOUT_Array;
       CLK_PERI_CTRL  : CLK_CTRL_Register;
+      CLK_RTC_CTRL   : CLK_CTRL_Register;
       FC0_INTERVAL   : UInt32;
       FC0_SRC        : FC_Source;
       FC0_STATUS     : FC0_STATUS_Register;
@@ -112,10 +92,11 @@ package body RP.Clock is
    for CLOCKS_Peripheral use record
       GPOUT          at 16#00# range 0 .. 383;
       CLK_PERI_CTRL  at 16#48# range 0 .. 31;
-      FC0_INTERVAL   at 16#9C# range 0 .. 31;
-      FC0_SRC        at 16#A0# range 0 .. 31;
-      FC0_STATUS     at 16#A4# range 0 .. 31;
-      FC0_RESULT     at 16#A8# range 0 .. 31;
+      CLK_RTC_CTRL   at 16#6C# range 0 .. 31;
+      FC0_INTERVAL   at 16#90# range 0 .. 31;
+      FC0_SRC        at 16#94# range 0 .. 31;
+      FC0_STATUS     at 16#98# range 0 .. 31;
+      FC0_RESULT     at 16#9C# range 0 .. 31;
    end record;
 
    CLOCKS : CLOCKS_Peripheral
@@ -134,7 +115,7 @@ package body RP.Clock is
        Source : GP_Source)
    is
    begin
-      CLOCKS.GPOUT (GP).CTRL.AUXSRC := Source;
+      CLOCKS.GPOUT (GP).CTRL.AUXSRC := UInt4 (GP_Source'Pos (Source) - 1);
    end Set_Source;
 
    procedure Enable
@@ -154,7 +135,7 @@ package body RP.Clock is
    function Enabled
       (CID : GP_Output)
       return Boolean
-   is (CLOCKS.GPOUT (CID).CTRL.ENABLED);
+   is (CLOCKS.GPOUT (CID).CTRL.ENABLE);
 
    function Frequency
       (CID      : FC_Source;
@@ -187,10 +168,23 @@ package body RP.Clock is
    procedure Enable_PERI is
    begin
       CLOCKS.CLK_PERI_CTRL :=
-         (ENABLED => False,
+         (NUDGE   => False,
+          PHASE   => 0,
+          DC50    => False,
           ENABLE  => True,
           KILL    => False,
-          AUXSRC  => 0);
+          AUXSRC  => 0); --  SYS
    end Enable_PERI;
+
+   procedure Enable_RTC is
+   begin
+      CLOCKS.CLK_RTC_CTRL :=
+         (NUDGE   => False,
+          PHASE   => 0,
+          DC50    => False,
+          ENABLE  => True,
+          KILL    => False,
+          AUXSRC  => 1); --  PLL_SYS
+   end Enable_RTC;
 
 end RP.Clock;

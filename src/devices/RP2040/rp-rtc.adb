@@ -16,7 +16,7 @@ package body RP.RTC is
    is
       use RP.Reset;
    begin
-      RP.Clock.Enable (RP.Clock.RTC);
+      RP.Clock.Enable_RTC;
       Reset_Peripheral (Reset_RTC);
 
       --  RP.Clock.Initialize sets up clk_rtc as 46_875 Hz driven by xosc.
@@ -31,7 +31,7 @@ package body RP.RTC is
    function Running
       (This : RTC_Device)
       return Boolean
-   is (RP.Clock.Enabled (RP.Clock.RTC) and RTC_Periph.CTRL.RTC_ACTIVE);
+   is (RTC_Periph.CTRL.RTC_ACTIVE);
 
    procedure Pause
       (This : in out RTC_Device)
