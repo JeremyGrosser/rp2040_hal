@@ -12,4 +12,12 @@ jobs:
       - uses: alire-project/setup-alire@v5
         with:
           version: nightly
-      - run: cd tests; alr build
+      - name: Build tests (master)
+        if: github.ref != 'refs/heads/3.x'
+        run: cd tests; alr build
+      - name: Build tests_rp2040 (3.x)
+        if: github.ref == 'refs/heads/3.x'
+        run: cd tests_rp2040; alr build
+      - name: Build tests_rp2350 (3.x)
+        if: github.ref == 'refs/heads/3.x'
+        run: cd tests_rp2350; alr build
