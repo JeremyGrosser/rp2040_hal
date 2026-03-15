@@ -6,9 +6,7 @@
 with HAL.I2C;
 with HAL;
 
-package RP.I2C_Master
-   with Preelaborate
-is
+package RP.I2C_Master is
    --  This driver only supports 7-bit I2C addresses
    --  The HAL.I2C.I2C_Address LSB is the R/W bit, so a 7-bit address is shifted left 1
    --  The R/W bit is ignored by the driver.

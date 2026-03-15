@@ -14,7 +14,6 @@ package body RP.ADC is
    is
       use RP.Reset;
    begin
-      RP.Clock.Enable (RP.Clock.ADC);
       Reset_Peripheral (Reset_ADC);
 
       ADC_Periph.CS.EN := True;

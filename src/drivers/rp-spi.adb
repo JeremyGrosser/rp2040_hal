@@ -4,7 +4,7 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.SPI; use RP2040_SVD.SPI;
-with RP.Timer;
+with Ada.Real_Time; use Ada.Real_Time;
 with RP.Reset;
 with HAL; use HAL;
 
@@ -15,7 +15,6 @@ package body RP.SPI is
    is
       use RP.Reset;
    begin
-      RP.Clock.Enable (RP.Clock.PERI);
       case This.Num is
          when 0 => Reset_Peripheral (Reset_SPI0);
          when 1 => Reset_Peripheral (Reset_SPI1);
@@ -160,12 +159,11 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
-      use type RP.Timer.Time;
-      Deadline : RP.Timer.Time;
+      Deadline : Time;
       FIFO     : SPI_FIFO_Status;
    begin
       if Timeout > 0 then
-         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+         Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
       end if;
 
       for D of Data loop
@@ -178,7 +176,7 @@ package body RP.SPI is
                return;
             end if;
 
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;
@@ -188,7 +186,7 @@ package body RP.SPI is
 
       if This.Blocking then
          while This.Transmit_Status /= Empty loop
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;
@@ -205,12 +203,11 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
-      use type RP.Timer.Time;
-      Deadline : RP.Timer.Time;
+      Deadline : Time;
       FIFO     : SPI_FIFO_Status;
    begin
       if Timeout > 0 then
-         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+         Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
       end if;
 
       for D of Data loop
@@ -223,7 +220,7 @@ package body RP.SPI is
                return;
             end if;
 
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;
@@ -233,7 +230,7 @@ package body RP.SPI is
 
       if This.Blocking then
          while This.Transmit_Status /= Empty loop
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;
@@ -250,12 +247,11 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
-      use type RP.Timer.Time;
-      Deadline : RP.Timer.Time;
+      Deadline : Time;
       FIFO     : SPI_FIFO_Status;
    begin
       if Timeout > 0 then
-         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+         Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
       end if;
 
       for I in Data'Range loop
@@ -268,7 +264,7 @@ package body RP.SPI is
                return;
             end if;
 
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;
@@ -285,12 +281,11 @@ package body RP.SPI is
        Status  : out SPI_Status;
        Timeout : Natural := 1000)
    is
-      use type RP.Timer.Time;
-      Deadline : RP.Timer.Time;
+      Deadline : Time;
       FIFO     : SPI_FIFO_Status;
    begin
       if Timeout > 0 then
-         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+         Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
       end if;
 
       for I in Data'Range loop
@@ -303,7 +298,7 @@ package body RP.SPI is
                return;
             end if;
 
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;

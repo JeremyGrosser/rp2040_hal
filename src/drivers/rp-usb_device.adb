@@ -8,8 +8,6 @@ with RP2040_SVD.USBCTRL_REGS;  use RP2040_SVD.USBCTRL_REGS;
 with RP2040_SVD.PADS_BANK0;
 with RP2040_SVD.IO_BANK0;
 with RP2040_SVD;
-with RP.Timer;
-with RP.Clock;
 with RP.Reset;
 
 package body RP.USB_Device is
@@ -41,7 +39,6 @@ package body RP.USB_Device is
    is
       use RP.Reset;
    begin
-      RP.Clock.Enable (RP.Clock.USB);
       Reset_Peripheral (Reset_USBCTRL);
    end Initialize;
 
@@ -363,13 +360,7 @@ package body RP.USB_Device is
           others         => <>);
 
       --  J state is now forced, hold for 1ms
-      declare
-         use RP.Timer;
-      begin
-         --  Use a busy wait in case this procedure is called in an interrupt
-         --  handler.
-         Busy_Wait_Until (RP.Timer.Clock + Milliseconds (1));
-      end;
+      delay 0.001;
 
       --  Put everything back the way we found it
       UR.USB_MUXING :=

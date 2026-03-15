@@ -5,12 +5,9 @@
 --
 with RP2040_SVD.UART; use RP2040_SVD.UART;
 with HAL.UART; use HAL.UART;
-with RP.Clock;
 with System;
 
-package RP.UART
-   with Preelaborate
-is
+package RP.UART is
    subtype UART_Word_Size is Integer range 5 .. 8;
    subtype UART_Stop_Bits is Integer range 1 .. 2;
    type UART_Parity_Type is (Even, Odd);
@@ -43,8 +40,7 @@ is
 
    procedure Configure
       (This   : in out UART_Port;
-       Config : UART_Configuration := Default_UART_Configuration)
-      with Pre => RP.Clock.Frequency (RP.Clock.PERI) > 3_686_400;
+       Config : UART_Configuration := Default_UART_Configuration);
 
    --  If parity is enabled, the parity bit may be forced high using this
    --  procedure. Stick parity is used in some protocols to indicate the

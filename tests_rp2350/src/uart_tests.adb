@@ -8,7 +8,6 @@ with HAL.UART; use HAL.UART;
 with HAL;      use HAL;
 with RP.UART;  use RP.UART;
 with RP.Device;
-with RP.Clock;
 
 package body UART_Tests is
    Port : RP.UART.UART_Port renames RP.Device.UART_0;
@@ -22,7 +21,6 @@ package body UART_Tests is
          (Loopback => True,
           others   => <>);
    begin
-      RP.Clock.Enable (RP.Clock.PERI);
       Port.Configure (Config);
    end Set_Up;
 

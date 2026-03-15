@@ -1,14 +1,13 @@
 --
---  Copyright 2021-2025 (C) Jeremy Grosser
+--  Copyright 2021-2026 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with Ada.Real_Time; use Ada.Real_Time;
 with RP.Clock;
-with RP.Timer;
 with RP.Reset;
 
 package body RP.I2C_Master is
-
    procedure Set_Baudrate
       (This     : in out I2C_Master_Port;
        Baudrate : Hertz)
@@ -47,7 +46,7 @@ package body RP.I2C_Master is
       This.Restart_On_Next := False;
       This.No_Stop := False;
 
-      RP.Clock.Enable (RP.Clock.PERI);
+      RP.Clock.Enable_PERI;
 
       case This.Num is
          when 0 =>
@@ -86,11 +85,10 @@ package body RP.I2C_Master is
       Status  : out HAL.I2C.I2C_Status;
       Timeout : Natural := 1000)
    is
-      use RP.Timer;
-      Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
+      Deadline : constant Time := Ada.Real_Time.Clock + Milliseconds (Timeout);
       function Time_Expired
          return Boolean
-      is (Timeout > 0 and then RP.Timer.Clock >= Deadline);
+      is (Timeout > 0 and then Ada.Real_Time.Clock >= Deadline);
 
       Did_Abort      : Boolean := False;
       --  Abort_Reason   : UInt32;
@@ -165,11 +163,10 @@ package body RP.I2C_Master is
       Status  : out HAL.I2C.I2C_Status;
       Timeout : Natural := 1000)
    is
-      use RP.Timer;
-      Deadline : constant Time := RP.Timer.Clock + Milliseconds (Timeout);
+      Deadline : constant Time := Ada.Real_Time.Clock + Milliseconds (Timeout);
       function Time_Expired
          return Boolean
-      is (Timeout > 0 and then RP.Timer.Clock >= Deadline);
+      is (Timeout > 0 and then Ada.Real_Time.Clock >= Deadline);
 
       IC : Any_I2C_Peripheral renames This.Periph;
       Did_Abort : Boolean := False;

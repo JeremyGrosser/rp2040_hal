@@ -4,13 +4,11 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.SPI;
-with RP2040_SVD.I2C;
 with RP2040_SVD.UART;
 with RP2040_SVD.ADC;
 with RP2350_SVD;
 with RP.SPI;
 with RP.I2C_Master;
-with RP.I2C;
 with RP.UART;
 with RP.PIO;
 with RP.Interpolator;
@@ -24,15 +22,6 @@ package RP.Device is
       with Import, Address => RP2350_SVD.SPI1_Base;
    SPI_0 : aliased RP.SPI.SPI_Port (0, SPI0_Periph'Access);
    SPI_1 : aliased RP.SPI.SPI_Port (1, SPI1_Periph'Access);
-
-   --  RP.I2C implements the low level interface and is recommended if you need
-   --  precise control over timing or repeated start conditions.
-   I2C0_Periph : aliased RP2040_SVD.I2C.I2C_Peripheral
-      with Import, Address => RP2350_SVD.I2C0_Base;
-   I2C1_Periph : aliased RP2040_SVD.I2C.I2C_Peripheral
-      with Import, Address => RP2350_SVD.I2C1_Base;
-   I2C_0 : aliased RP.I2C.I2C_Port (0, I2C0_Periph'Access);
-   I2C_1 : aliased RP.I2C.I2C_Port (1, I2C1_Periph'Access);
 
    I2CM0_Periph : aliased RP.I2C_Master.I2C_Peripheral
       with Import, Address => RP2350_SVD.I2C0_Base;

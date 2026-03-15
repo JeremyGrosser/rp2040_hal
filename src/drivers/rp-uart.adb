@@ -3,9 +3,10 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with Ada.Real_Time; use Ada.Real_Time;
 with HAL; use HAL;
 with RP.Reset;
-with RP.Timer;
+with RP.Clock;
 
 package body RP.UART is
 
@@ -17,6 +18,8 @@ package body RP.UART is
       Word_Length : constant UInt2 := UInt2
          (Config.Word_Size - UART_Word_Size'First);
    begin
+      RP.Clock.Enable_PERI;
+
       case This.Num is
          when 0 => Reset_Peripheral (Reset_UART0);
          when 1 => Reset_Peripheral (Reset_UART1);
@@ -164,12 +167,11 @@ package body RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000)
    is
-      use type RP.Timer.Time;
-      Deadline : RP.Timer.Time;
+      Deadline : Time;
       FIFO     : UART_FIFO_Status;
    begin
       if Timeout > 0 then
-         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+         Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
       end if;
 
       for D of Data loop
@@ -180,7 +182,7 @@ package body RP.UART is
                Status := Err_Error;
                return;
             end if;
-            if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+            if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                Status := Err_Timeout;
                return;
             end if;
@@ -198,13 +200,12 @@ package body RP.UART is
       Status  : out UART_Status;
       Timeout : Natural := 1000)
    is
-      use type RP.Timer.Time;
-      Deadline : RP.Timer.Time;
+      Deadline : Time;
       FIFO     : UART_FIFO_Status;
       DR       : UARTDR_Register;
    begin
       if Timeout > 0 then
-         Deadline := RP.Timer.Clock + RP.Timer.Milliseconds (Timeout);
+         Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
       end if;
 
       for I in Data'Range loop
@@ -217,7 +218,7 @@ package body RP.UART is
                   return;
                end if;
 
-               if Timeout > 0 and then RP.Timer.Clock >= Deadline then
+               if Timeout > 0 and then Ada.Real_Time.Clock >= Deadline then
                   Status := Err_Timeout;
                   return;
                end if;
