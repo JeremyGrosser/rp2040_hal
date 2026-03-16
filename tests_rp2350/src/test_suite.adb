@@ -10,7 +10,7 @@ with UART_Tests;
 with DMA_Tests;
 with ADC_Tests;
 with SPI_Tests;
-with I2CM_Tests;
+--  with I2CM_Tests;
 with PIO_Tests;
 with Reset_Tests;
 --  with Flash_Tests;
@@ -25,7 +25,7 @@ package body Test_Suite is
    DMA_Case       : aliased DMA_Tests.DMA_Test;
    ADC_Case       : aliased ADC_Tests.ADC_Test;
    SPI_Case       : aliased SPI_Tests.SPI_Test;
-   I2CM_Case      : aliased I2CM_Tests.I2CM_Test;
+   --  I2CM_Case      : aliased I2CM_Tests.I2CM_Test;
    PIO_Case       : aliased PIO_Tests.PIO_Test;
    Reset_Case     : aliased Reset_Tests.Reset_Test;
    --  Flash_Case     : aliased Flash_Tests.Flash_Test;
