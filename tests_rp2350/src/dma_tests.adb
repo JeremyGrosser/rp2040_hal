@@ -43,7 +43,7 @@ package body DMA_Tests is
          (Channel => Ch,
           From    => From'Address,
           To      => To'Address,
-          Count   => HAL.UInt28 (Test_Array'Length));
+          Count   => DMA_Transfer_Count (Test_Array'Length));
 
       while RP.DMA.Busy (Ch) loop
          null;
@@ -80,7 +80,7 @@ package body DMA_Tests is
          (Channel => Ch,
           From    => From'Address,
           To      => To'Address,
-          Count   => UInt28 (From'Length));
+          Count   => DMA_Transfer_Count (From'Length));
 
       while RP.DMA.Busy (Ch) loop
          null;
@@ -118,7 +118,7 @@ package body DMA_Tests is
          (Channel => Ch,
           From    => From'Address,
           To      => To'Address,
-          Count   => UInt28'Last);
+          Count   => DMA_Transfer_Count'Last);
       Next := Clock + Microseconds (100);
 
       for I in 1 .. 10 loop

@@ -51,7 +51,7 @@ package body RP.DMA is
    procedure Setup
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : UInt28)
+       Count    : DMA_Transfer_Count)
    is
    begin
       DMA_Periph.CH (Channel).READ_ADDR := From;
@@ -69,7 +69,7 @@ package body RP.DMA is
    procedure Start
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : UInt28)
+       Count    : DMA_Transfer_Count)
    is
    begin
       Setup (Channel, From, To, Count);
