@@ -86,11 +86,13 @@ is
        TIMER3     => 16#3E#,
        PERMANENT  => 16#3F#);
 
+   type Address_Update is (Static, Increment);
+
    type DMA_Configuration is record
       High_Priority   : Boolean := False;                   --  Schedule this channel before others
       Data_Size       : Transfer_Width := Transfer_8;       --  Bits per transfer (byte, halfword, word)
-      Increment_Read  : Boolean := False;                   --  Increment read address after transfer
-      Increment_Write : Boolean := False;                   --  Increment write address after transfer
+      Read_Address    : Address_Update := Static;           --  Increment read address after transfer
+      Write_Address   : Address_Update := Static;           --  Increment write address after transfer
       Ring_Size       : HAL.UInt4 := 0;                     --  Ring buffer size
       Ring_Wrap       : Ring_Wrap_Select := Wrap_Read;      --  Read or write buffer is a ring buffer
       Chain_To        : DMA_Channel_Id := 0;                --  Trigger another channel after transfer.
@@ -110,6 +112,9 @@ is
       Transfers_Remaining : Natural := 0;
    end record;
 
+   type DMA_Transfer_Count is range 0 .. 2 ** 32 - 1
+      with Size => 32;
+
    procedure Enable;
 
    procedure Configure
@@ -119,7 +124,7 @@ is
    procedure Setup
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : HAL.UInt32);
+       Count    : DMA_Transfer_Count);
 
    procedure Start
       (Channel : DMA_Channel_Id);
@@ -131,7 +136,7 @@ is
    procedure Start
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : HAL.UInt32);
+       Count    : DMA_Transfer_Count);
    --  This version of Start performs the Setup for you.
 
    procedure Disable
@@ -237,23 +242,23 @@ private
    type DMA_Channel_Register is record
       READ_ADDR            : System.Address;
       WRITE_ADDR           : System.Address;
-      TRANS_COUNT          : HAL.UInt32;
+      TRANS_COUNT          : DMA_Transfer_Count;
       CTRL_TRIG            : DMA_CTRL_Register;
 
       AL1_CTRL             : DMA_CTRL_Register;
       AL1_READ_ADDR        : System.Address;
       AL1_WRITE_ADDR       : System.Address;
-      AL1_TRANS_COUNT_TRIG : HAL.UInt32;
+      AL1_TRANS_COUNT_TRIG : DMA_Transfer_Count;
 
       AL2_CTRL             : DMA_CTRL_Register;
       AL2_READ_ADDR        : System.Address;
       AL2_WRITE_ADDR_TRIG  : System.Address;
-      AL2_TRANS_COUNT      : HAL.UInt32;
+      AL2_TRANS_COUNT      : DMA_Transfer_Count;
 
       AL3_CTRL             : DMA_CTRL_Register;
       AL3_READ_ADDR_TRIG   : System.Address;
       AL3_WRITE_ADDR       : System.Address;
-      AL3_TRANS_COUNT      : HAL.UInt32;
+      AL3_TRANS_COUNT      : DMA_Transfer_Count;
    end record
       with Volatile, Size => 512;
    for DMA_Channel_Register use record

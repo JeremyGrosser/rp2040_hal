@@ -92,7 +92,8 @@ package body RP.PIO.Audio_I2S is
       (This : in out I2S_Device;
        Data : HAL.Audio.Audio_Buffer)
    is
-      Count : HAL.UInt28 := Data'Length;
+      use type RP.DMA.DMA_Transfer_Count;
+      Count : RP.DMA.DMA_Transfer_Count := Data'Length;
    begin
       --  Wait for previous DMA transfer to finish before modifying the buffer.
       while RP.DMA.Busy (This.DMA_Channel) loop
@@ -102,7 +103,7 @@ package body RP.PIO.Audio_I2S is
       This.Buffer (1 .. Data'Length) := Data;
 
       if This.Channels > 1 then
-         Count := Data'Length / 2;
+         Count := Count / 2;
       end if;
 
       RP.DMA.Start

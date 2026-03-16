@@ -132,6 +132,9 @@ is
       Transfers_Remaining : Natural := 0;
    end record;
 
+   type DMA_Transfer_Count is range 0 .. 2 ** 28 - 1
+      with Size => 28;
+
    procedure Enable;
 
    procedure Configure
@@ -141,7 +144,7 @@ is
    procedure Setup
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : UInt28);
+       Count    : DMA_Transfer_Count);
 
    procedure Start
       (Channel : DMA_Channel_Id);
@@ -153,7 +156,7 @@ is
    procedure Start
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : UInt28);
+       Count    : DMA_Transfer_Count);
    --  This version of Start performs the Setup for you.
 
    procedure Disable
@@ -264,7 +267,7 @@ private
 
    type DMA_TRANS_COUNT_Register is record
       MODE  : UInt4 := 0;
-      COUNT : UInt28 := 0;
+      COUNT : DMA_Transfer_Count := 0;
    end record
       with Volatile_Full_Access,
            Async_Readers,

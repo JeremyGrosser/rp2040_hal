@@ -32,8 +32,8 @@ package body DMA_Tests is
       Ch     : constant DMA_Channel_Id := 0;
       Config : constant DMA_Configuration :=
          (Data_Size       => Transfer_32,
-          Increment_Read  => True,
-          Increment_Write => True,
+          Read_Address    => Increment,
+          Write_Address   => Increment,
           Trigger         => PERMANENT,
           others          => <>);
    begin
@@ -42,7 +42,7 @@ package body DMA_Tests is
          (Channel => Ch,
           From    => From'Address,
           To      => To'Address,
-          Count   => HAL.UInt32 (Test_Array'Length));
+          Count   => DMA_Transfer_Count (Test_Array'Length));
 
       while RP.DMA.Busy (Ch) loop
          null;
@@ -67,8 +67,8 @@ package body DMA_Tests is
       Ch     : constant DMA_Channel_Id := 0;
       Config : constant DMA_Configuration :=
          (Data_Size       => Transfer_8,
-          Increment_Read  => True,
-          Increment_Write => False,
+          Read_Address    => Increment,
+          Write_Address   => Static,
           Trigger         => PERMANENT,
           others          => <>);
    begin
@@ -100,8 +100,8 @@ package body DMA_Tests is
       Ch     : constant DMA_Channel_Id := 0;
       Config : constant DMA_Configuration :=
          (Data_Size       => Transfer_32,
-          Increment_Read  => False,
-          Increment_Write => False,
+          Read_Address    => Static,
+          Write_Address   => Static,
           Trigger         => TIMER0,
           others          => <>);
    begin
@@ -114,7 +114,7 @@ package body DMA_Tests is
          (Channel => Ch,
           From    => From'Address,
           To      => To'Address,
-          Count   => UInt32'Last);
+          Count   => DMA_Transfer_Count'Last);
 
       for I in 1 .. 10 loop
          From := UInt32 (I);
@@ -133,8 +133,8 @@ package body DMA_Tests is
       Ch     : constant DMA_Channel_Id := 0;
       Config : constant DMA_Configuration :=
          (Data_Size       => Transfer_32,
-          Increment_Read  => False,
-          Increment_Write => False,
+          Read_Address    => Static,
+          Write_Address   => Static,
           Quiet           => False,
           others          => <>);
       From   : UInt32 := UInt32'Last with Volatile;

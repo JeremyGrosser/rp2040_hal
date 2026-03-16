@@ -28,8 +28,8 @@ package body RP.DMA is
          (EN            => True,
           HIGH_PRIORITY => Config.High_Priority,
           DATA_SIZE     => Config.Data_Size,
-          INCR_READ     => Config.Increment_Read,
-          INCR_WRITE    => Config.Increment_Write,
+          INCR_READ     => Config.Read_Address = Increment,
+          INCR_WRITE    => Config.Write_Address = Increment,
           RING_SIZE     => Config.Ring_Size,
           RING_SEL      => Config.Ring_Wrap,
           CHAIN_TO      => Config.Chain_To,
@@ -50,7 +50,7 @@ package body RP.DMA is
    procedure Setup
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : HAL.UInt32)
+       Count    : DMA_Transfer_Count)
    is
    begin
       DMA_Periph.CH (Channel).READ_ADDR := From;
@@ -68,7 +68,7 @@ package body RP.DMA is
    procedure Start
       (Channel  : DMA_Channel_Id;
        From, To : System.Address;
-       Count    : HAL.UInt32)
+       Count    : DMA_Transfer_Count)
    is
    begin
       Setup (Channel, From, To, Count);
