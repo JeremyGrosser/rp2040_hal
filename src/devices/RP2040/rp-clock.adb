@@ -102,7 +102,7 @@ package body RP.Clock is
    end record;
 
    CLOCKS : CLOCKS_Peripheral
-      with Import, Address => System'To_Address (16#4001_0000#);
+      with Import, Address => System'To_Address (16#4000_8000#);
 
    procedure Set_Divider
       (GP  : GP_Output;
