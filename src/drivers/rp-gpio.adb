@@ -1,157 +1,236 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2026 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-
-with RP2040_SVD.SIO; use RP2040_SVD.SIO;
-with RP.Reset;
+with System;
+with HAL; use HAL;
 
 package body RP.GPIO is
-   function Pin_Mask (Pin : GPIO_Pin)
-      return GPIO_Pin_Mask
-   is (GPIO_Pin_Mask (Shift_Left (UInt32 (1), GPIO_Pin'Pos (Pin))));
 
-   procedure Enable is
-      use RP.Reset;
+   type IO_Register is record
+      STATUS : UInt32 := 0;
+      CTRL   : UInt32 := 16#0000_001F#;
+   end record
+      with Volatile, Object_Size => 64;
+   for IO_Register use record
+      STATUS at 0 range 0 .. 31;
+      CTRL   at 4 range 0 .. 31;
+   end record;
+
+   type IO_Array is array (GPIO_Pin) of IO_Register
+      with Volatile, Component_Size => 64;
+
+   type IO_BANK_Peripheral is record
+      GPIO : IO_Array;
+   end record
+      with Volatile;
+   for IO_BANK_Peripheral use record
+      GPIO at 0 range 0 .. 3071;
+   end record;
+
+   type PAD_Register is record
+      ISO      : Boolean := True;
+      OD       : Boolean := False;
+      IE       : Boolean := False;
+      DRIVE    : UInt2 := 1;
+      PUE      : Boolean := False;
+      PDE      : Boolean := True;
+      SCHMITT  : Boolean := True;
+      SLEWFAST : Boolean := False;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for PAD_Register use record
+      ISO      at 0 range 8 .. 8;
+      OD       at 0 range 7 .. 7;
+      IE       at 0 range 6 .. 6;
+      DRIVE    at 0 range 4 .. 5;
+      PUE      at 0 range 3 .. 3;
+      PDE      at 0 range 2 .. 2;
+      SCHMITT  at 0 range 1 .. 1;
+      SLEWFAST at 0 range 0 .. 0;
+   end record;
+
+   type PAD_Array is array (GPIO_Pin) of PAD_Register
+      with Volatile, Component_Size => 32;
+
+   type PADS_BANK_Peripheral is record
+      VOLTAGE_SELECT : UInt32 := 0;
+      GPIO           : PAD_Array;
+   end record
+      with Volatile;
+   for PADS_BANK_Peripheral use record
+      VOLTAGE_SELECT at 0 range 0 .. 31;
+      GPIO           at 4 range 0 .. 1535;
+   end record;
+
+   type SIO_Array is array (GPIO_Pin) of Boolean
+      with Volatile,
+           Component_Size => 1,
+           Object_Size => 32;
+
+   type SIO_Peripheral is record
+      GPIO_IN        : SIO_Array;
+      GPIO_OUT       : SIO_Array;
+      GPIO_OUT_SET   : SIO_Array;
+      GPIO_OUT_CLR   : SIO_Array;
+      GPIO_OUT_XOR   : SIO_Array;
+      GPIO_OE        : SIO_Array;
+      GPIO_OE_SET    : SIO_Array;
+      GPIO_OE_CLR    : SIO_Array;
+      GPIO_OE_XOR    : SIO_Array;
+   end record
+      with Volatile;
+   for SIO_Peripheral use record
+      GPIO_IN        at 16#004# range 0 .. 63;
+      GPIO_OUT       at 16#010# range 0 .. 63;
+      GPIO_OUT_SET   at 16#018# range 0 .. 63;
+      GPIO_OUT_CLR   at 16#020# range 0 .. 63;
+      GPIO_OUT_XOR   at 16#028# range 0 .. 63;
+      GPIO_OE        at 16#030# range 0 .. 63;
+      GPIO_OE_SET    at 16#038# range 0 .. 63;
+      GPIO_OE_CLR    at 16#040# range 0 .. 63;
+      GPIO_OE_XOR    at 16#048# range 0 .. 63;
+   end record;
+
+   IO_BANK : IO_BANK_Peripheral
+      with Import, Address => System'To_Address (16#4002_8000#);
+   PADS_BANK : PADS_BANK_Peripheral
+      with Import, Address => System'To_Address (16#4003_8000#);
+   SIO_BANK : SIO_Peripheral
+      with Import, Address => System'To_Address (16#D000_0000#);
+
+   procedure Isolate
+      (Pin     : GPIO_Pin;
+       Isolate : Boolean)
+   is
    begin
-      --  This procedure is idempotent
-      if GPIO_Enabled then
-         return;
+      PADS_BANK.GPIO (Pin).ISO := Isolate;
+   end Isolate;
+
+   procedure Drive
+      (Pin     : GPIO_Pin;
+       Current : GPIO_Drive := 1)
+   is
+   begin
+      if Current = 0 then
+         PADS_BANK.GPIO (Pin).OD := True;
+      else
+         PADS_BANK.GPIO (Pin).DRIVE := UInt2 (Current - 1);
+         PADS_BANK.GPIO (Pin).OD := False;
       end if;
+   end Drive;
 
-      Reset_Peripheral (Reset_IO_BANK0);
-      Reset_Peripheral (Reset_PADS_BANK0);
+   procedure Func
+      (Pin  : GPIO_Pin;
+       Func : GPIO_Function)
+   is
+   begin
+      IO_BANK.GPIO (Pin).CTRL := UInt32 (Func);
+   end Func;
 
-      --  Errata RP2040-E6
-      --
-      --  GPIO26-29 are shared with ADC inputs AIN0-3. The GPIO digital input
-      --  is enabled after RUN is released. If the pins are connected to an
-      --  analogue signal to measure, there could be unexpected signal levels
-      --  on these pads. This is unlikely to cause a problem as the digital
-      --  inputs have hysteresis enabled by default.
+   procedure Pull
+      (Pin  : GPIO_Pin;
+       Up   : Boolean := False;
+       Down : Boolean := False)
+   is
+   begin
+      PADS_BANK.GPIO (Pin).PUE := Up;
+      PADS_BANK.GPIO (Pin).PDE := Down;
+   end Pull;
 
-      for Pin in ADC_Pin'Range loop
-         PADS_BANK_Periph.GPIO (Pin).IE := False;
-         PADS_BANK_Periph.GPIO (Pin).OD := True;
-      end loop;
+   procedure Output_Enable
+      (Pin    : GPIO_Pin;
+       Enable : Boolean := True)
+   is
+   begin
+      if Enable then
+         SIO_BANK.GPIO_OE_SET (Pin) := True;
+      else
+         SIO_BANK.GPIO_OE_CLR (Pin) := True;
+      end if;
+   end Output_Enable;
 
-      --  Mask all pin interrupts
-      IO_BANK_Periph.PROC0_INTE := (others => (others => 0));
-      IO_BANK_Periph.PROC1_INTE := (others => (others => 0));
+   procedure Set
+      (Pin  : GPIO_Pin;
+       High : Boolean := True)
+   is
+   begin
+      if High then
+         SIO_BANK.GPIO_OUT_SET (Pin) := True;
+      else
+         SIO_BANK.GPIO_OUT_CLR (Pin) := True;
+      end if;
+   end Set;
 
-      GPIO_Enabled := True;
-   end Enable;
+   procedure Input_Enable
+      (Pin    : GPIO_Pin;
+       Enable : Boolean := True)
+   is
+   begin
+      PADS_BANK.GPIO (Pin).IE := Enable;
+   end Input_Enable;
 
-   function Enabled
-      return Boolean
-   is (GPIO_Enabled);
+   procedure Get
+      (Pin  : GPIO_Pin;
+       High : out Boolean)
+   is
+   begin
+      High := SIO_BANK.GPIO_IN (Pin);
+   end Get;
 
    procedure Configure
-      (This      : in out GPIO_Point;
-       Mode      : GPIO_Config_Mode;
-       Pull      : GPIO_Pull_Mode := Floating;
-       Func      : GPIO_Function := SIO;
-       Schmitt   : Boolean := False;
-       Slew_Fast : Boolean := False;
-       Drive     : GPIO_Drive := Drive_4mA)
+      (This       : GPIO_Point;
+       Mode       : GPIO_Config_Mode;
+       Pull       : GPIO_Pull_Mode := Floating;
+       Func       : GPIO_Function := SIO;
+       Schmitt    : Boolean := False;
+       Slew_Fast  : Boolean := False;
+       Drive      : GPIO_Drive := Drive_2mA)
    is
-      Mask : constant GPIO_Pin_Mask := Pin_Mask (This.Pin);
    begin
-      Enable;
-
-      IO_BANK_Periph.GPIO (This.Pin).CTRL :=
-         (FUNCSEL => Func,
-          others  => <>);
-
       case Mode is
-         when Input =>
-            PADS_BANK_Periph.GPIO (This.Pin) :=
-               (PUE      => (Pull = Pull_Both or Pull = Pull_Up),
-                PDE      => (Pull = Pull_Both or Pull = Pull_Down),
-                IE       => True,
-                OD       => True,
-                SCHMITT  => Schmitt,
-                SLEWFAST => Slew_Fast,
-                DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
-                others   => <>);
          when Output =>
-            PADS_BANK_Periph.GPIO (This.Pin) :=
-               (PUE      => (Pull = Pull_Both or Pull = Pull_Up),
-                PDE      => (Pull = Pull_Both or Pull = Pull_Down),
-                IE       => True,
-                OD       => False,
-                SCHMITT  => Schmitt,
-                SLEWFAST => Slew_Fast,
-                DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
-                others   => <>);
-            SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Mask;
-            SIO_Periph.GPIO_OE_SET.GPIO_OE_SET := Mask;
+            SIO_BANK.GPIO_OE_SET (This.Pin) := True;
+            IO_BANK.GPIO (This.Pin).CTRL := UInt32 (Func);
+            PADS_BANK.GPIO (This.Pin) :=
+               (ISO        => False,
+                OD         => False,
+                IE         => False,
+                DRIVE      => UInt2 (Drive - 1),
+                PUE        => (Pull = Pull_Up or else Pull = Pull_Both),
+                PDE        => (Pull = Pull_Down or else Pull = Pull_Both),
+                SCHMITT    => Schmitt,
+                SLEWFAST   => Slew_Fast);
+         when Input =>
+            SIO_BANK.GPIO_OE_CLR (This.Pin) := True;
+            IO_BANK.GPIO (This.Pin).CTRL := UInt32 (Func);
+            PADS_BANK.GPIO (This.Pin) :=
+               (ISO        => False,
+                OD         => False,
+                IE         => True,
+                DRIVE      => 0,
+                PUE        => (Pull = Pull_Up or else Pull = Pull_Both),
+                PDE        => (Pull = Pull_Down or else Pull = Pull_Both),
+                SCHMITT    => Schmitt,
+                SLEWFAST   => Slew_Fast);
          when Analog =>
-            PADS_BANK_Periph.GPIO (This.Pin) :=
-               (PUE      => False,
-                PDE      => False,
-                IE       => True,
-                OD       => True,
-                SCHMITT  => Schmitt,
-                SLEWFAST => Slew_Fast,
-                DRIVE    => GPIO0_DRIVE_Field'Val (GPIO_Drive'Pos (Drive)),
-                others   => <>);
-            IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL := HI_Z;
+            SIO_BANK.GPIO_OE_CLR (This.Pin) := True;
+            IO_BANK.GPIO (This.Pin).CTRL := 0;
+            PADS_BANK.GPIO (This.Pin) :=
+               (ISO        => False,
+                OD         => True,
+                IE         => False,
+                DRIVE      => 0,
+                PUE        => False,
+                PDE        => False,
+                SCHMITT    => False,
+                SLEWFAST   => False);
       end case;
    end Configure;
-
-   function Get
-      (This : GPIO_Point)
-      return Boolean
-   is ((SIO_Periph.GPIO_IN.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
-
-   procedure Enable_Interrupt
-      (This    : in out GPIO_Point;
-       Trigger : Interrupt_Triggers)
-   is
-      Group  : constant Natural := Natural (This.Pin) / 8;
-      Offset : constant Natural := Natural (This.Pin) mod 8;
-      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
-   begin
-      IO_BANK_Periph.INTR (Group) (Offset) := Mask;
-      IO_BANK_Periph.PROC0_INTE (Group) (Offset) := IO_BANK_Periph.PROC0_INTE (Group) (Offset) or Mask;
-   end Enable_Interrupt;
-
-   procedure Disable_Interrupt
-      (This    : in out GPIO_Point;
-       Trigger : Interrupt_Triggers)
-   is
-      Group  : constant Natural := Natural (This.Pin) / 8;
-      Offset : constant Natural := Natural (This.Pin) mod 8;
-      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
-   begin
-      IO_BANK_Periph.INTR (Group) (Offset) := Mask;
-      IO_BANK_Periph.PROC0_INTE (Group) (Offset) := IO_BANK_Periph.PROC0_INTE (Group) (Offset) and not Mask;
-   end Disable_Interrupt;
-
-   procedure Acknowledge_Interrupt
-      (Pin     : GPIO_Pin;
-       Trigger : Interrupt_Triggers)
-   is
-      Group  : constant Natural := Natural (Pin) / 8;
-      Offset : constant Natural := Natural (Pin) mod 8;
-      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
-   begin
-      IO_BANK_Periph.INTR (Group) (Offset) := Mask;
-   end Acknowledge_Interrupt;
-
-   function Interrupt_Status
-      (Pin     : GPIO_Pin;
-       Trigger : Interrupt_Triggers)
-       return Boolean
-   is
-      Group  : constant Natural := Natural (Pin) / 8;
-      Offset : constant Natural := Natural (Pin) mod 8;
-      Mask   : constant UInt4 := Interrupt_Triggers'Enum_Rep (Trigger);
-   begin
-      return (IO_BANK_Periph.PROC0_INTS (Group) (Offset) and Mask) /= 0;
-   end Interrupt_Status;
 
    overriding
    function Support
@@ -166,12 +245,14 @@ package body RP.GPIO is
       return HAL.GPIO.GPIO_Mode
    is
    begin
-      if IO_BANK_Periph.GPIO (This.Pin).CTRL.FUNCSEL /= SIO then
-         return Unknown_Mode;
-      elsif PADS_BANK_Periph.GPIO (This.Pin).OD then
-         return Input;
+      if IO_BANK.GPIO (This.Pin).CTRL /= UInt32 (SIO) then
+         return HAL.GPIO.Unknown_Mode;
+      end if;
+
+      if SIO_BANK.GPIO_OE (This.Pin) then
+         return HAL.GPIO.Output;
       else
-         return Output;
+         return HAL.GPIO.Input;
       end if;
    end Mode;
 
@@ -180,13 +261,12 @@ package body RP.GPIO is
       (This : in out GPIO_Point;
        Mode : HAL.GPIO.GPIO_Config_Mode)
    is
+      use type HAL.GPIO.GPIO_Config_Mode;
    begin
-      case Mode is
-         when HAL.GPIO.Input =>
-            Configure (This, Input);
-         when HAL.GPIO.Output =>
-            Configure (This, Output);
-      end case;
+      IO_BANK.GPIO (This.Pin).CTRL := UInt32 (SIO);
+      PADS_BANK.GPIO (This.Pin).OD := Mode = HAL.GPIO.Input;
+      PADS_BANK.GPIO (This.Pin).IE := Mode = HAL.GPIO.Input;
+      SIO_BANK.GPIO_OE (This.Pin) := Mode = HAL.GPIO.Output;
    end Set_Mode;
 
    overriding
@@ -194,13 +274,14 @@ package body RP.GPIO is
       (This : GPIO_Point)
       return HAL.GPIO.GPIO_Pull_Resistor
    is
+      Pad : constant PAD_Register := PADS_BANK.GPIO (This.Pin);
    begin
-      if PADS_BANK_Periph.GPIO (This.Pin).PUE then
-         return Pull_Up;
-      elsif PADS_BANK_Periph.GPIO (This.Pin).PDE then
-         return Pull_Down;
+      if Pad.PUE then
+         return HAL.GPIO.Pull_Up;
+      elsif Pad.PDE then
+         return HAL.GPIO.Pull_Down;
       else
-         return Floating;
+         return HAL.GPIO.Floating;
       end if;
    end Pull_Resistor;
 
@@ -209,32 +290,24 @@ package body RP.GPIO is
       (This : in out GPIO_Point;
        Pull : HAL.GPIO.GPIO_Pull_Resistor)
    is
+      use type HAL.GPIO.GPIO_Pull_Resistor;
    begin
-      case Pull is
-         when Pull_Up =>
-            PADS_BANK_Periph.GPIO (This.Pin).PUE := True;
-            PADS_BANK_Periph.GPIO (This.Pin).PDE := False;
-         when Pull_Down =>
-            PADS_BANK_Periph.GPIO (This.Pin).PUE := False;
-            PADS_BANK_Periph.GPIO (This.Pin).PDE := True;
-         when Floating =>
-            PADS_BANK_Periph.GPIO (This.Pin).PUE := False;
-            PADS_BANK_Periph.GPIO (This.Pin).PDE := False;
-      end case;
+      PADS_BANK.GPIO (This.Pin).PUE := (Pull = HAL.GPIO.Pull_Up);
+      PADS_BANK.GPIO (This.Pin).PDE := (Pull = HAL.GPIO.Pull_Down);
    end Set_Pull_Resistor;
 
    overriding
    function Set
       (This : GPIO_Point)
       return Boolean
-   is ((SIO_Periph.GPIO_IN.GPIO_IN and Pin_Mask (This.Pin)) /= 0);
+   is (SIO_BANK.GPIO_IN (This.Pin));
 
    overriding
    procedure Set
       (This : in out GPIO_Point)
    is
    begin
-      SIO_Periph.GPIO_OUT_SET.GPIO_OUT_SET := Pin_Mask (This.Pin);
+      SIO_BANK.GPIO_OUT_SET (This.Pin) := True;
    end Set;
 
    overriding
@@ -242,7 +315,7 @@ package body RP.GPIO is
       (This : in out GPIO_Point)
    is
    begin
-      SIO_Periph.GPIO_OUT_CLR.GPIO_OUT_CLR := Pin_Mask (This.Pin);
+      SIO_BANK.GPIO_OUT_CLR (This.Pin) := True;
    end Clear;
 
    overriding
@@ -250,7 +323,7 @@ package body RP.GPIO is
       (This : in out GPIO_Point)
    is
    begin
-      SIO_Periph.GPIO_OUT_XOR.GPIO_OUT_XOR := Pin_Mask (This.Pin);
+      SIO_BANK.GPIO_OUT_XOR (This.Pin) := True;
    end Toggle;
 
 end RP.GPIO;

@@ -12,8 +12,8 @@ with HAL; use HAL;
 
 package body I2CM_Tests is
 
-   I2CM0_SDA : aliased RP.GPIO.GPIO_Point := (Pin => 0);
-   I2CM0_SCL : aliased RP.GPIO.GPIO_Point := (Pin => 1);
+   I2CM0_SDA : constant RP.GPIO.GPIO_Point := (Pin => 0);
+   I2CM0_SCL : constant RP.GPIO.GPIO_Point := (Pin => 1);
    IC : aliased RP.I2C_Master.I2C_Peripheral
       with Import, Address => RP2040_SVD.I2C0_Base;
    I2CM0 : RP.I2C_Master.I2C_Master_Port (0, IC'Access);

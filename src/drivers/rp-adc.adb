@@ -50,11 +50,8 @@ package body RP.ADC is
       if Channel = Temperature_Sensor then
          P.CS.TS_EN := True;
       else
-         if not RP.GPIO.Enabled then
-            RP.GPIO.Enable;
-         end if;
          declare
-            Point : GPIO_Point := (Pin => GPIO_Pin (Channel) + 26);
+            Point : constant GPIO_Point := (Pin => GPIO_Pin (Channel) + 26);
          begin
             Configure
                (This => Point,

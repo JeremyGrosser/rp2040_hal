@@ -4,9 +4,8 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions;
-with HAL.GPIO;
-with RP.Timer;
 with RP.GPIO;
+with HAL.GPIO;
 
 package body GPIO_Tests is
 
@@ -71,7 +70,7 @@ package body GPIO_Tests is
       LED.Set_Pull_Resistor (Pull_Up);
       LED.Set_Mode (Input);
       Assert (LED.Mode = Input, "Unable to set input mode");
-      Assert (LED.Get = False, "Unable to get input");
+      Assert (LED.Get = True, "Unable to get input (pull-up)");
 
       LED.Set_Mode (Output);
       LED.Clear;
@@ -81,44 +80,6 @@ package body GPIO_Tests is
       Assert (LED.Set = False, "Set returned incorrect value");
    end Test_HAL;
 
-   protected body Interrupts is
-      procedure GPIO_Interrupt is
-      begin
-         RP.GPIO.Disable_Interrupt (LED, RP.GPIO.Low_Level);
-         Count := Count + 1;
-      end GPIO_Interrupt;
-
-      procedure Reset_Count is
-      begin
-         Count := 0;
-      end Reset_Count;
-
-      function Interrupt_Count
-         return Natural
-      is (Count);
-   end Interrupts;
-
-   procedure Test_Interrupts
-      (T : in out AUnit.Test_Cases.Test_Case'Class)
-   is
-      use AUnit.Assertions;
-      use RP.GPIO;
-      use RP.Timer;
-      Deadline : Time;
-   begin
-      LED.Configure (Input, Pull_Down);
-      Interrupts.Reset_Count;
-      LED.Enable_Interrupt (Low_Level);
-
-      Deadline := Clock + Milliseconds (1);
-      while Clock < Deadline and then Interrupts.Interrupt_Count = 0 loop
-         null;
-      end loop;
-
-      Assert (Interrupts.Interrupt_Count = 1, "Only one interrupt expected");
-      LED.Disable_Interrupt (Low_Level);
-   end Test_Interrupts;
-
    overriding
    procedure Register_Tests
       (T : in out GPIO_Test)
@@ -127,7 +88,6 @@ package body GPIO_Tests is
    begin
       Register_Routine (T, Test_Configure'Access, "Configure");
       Register_Routine (T, Test_HAL'Access, "HAL");
-      Register_Routine (T, Test_Interrupts'Access, "Interrupts");
    end Register_Tests;
 
    overriding

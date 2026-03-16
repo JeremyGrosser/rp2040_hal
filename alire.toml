@@ -21,3 +21,4 @@ cortex_m.core = "m0p"
 
 [configuration.variables]
 Device = {type = "Enum", values = ["RP2040", "RP2350"], default = "RP2040"}
+GPIO_Pin_Count = {type = "Integer", first = 30, last = 48, default = 48}
