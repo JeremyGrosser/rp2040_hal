@@ -103,6 +103,7 @@ package body RP.Clock is
    type CLOCKS_Peripheral is record
       GPOUT          : GPOUT_Array;
       CLK_PERI_CTRL  : CLK_CTRL_Register;
+      CLK_ADC_CTRL   : CLK_CTRL_Register;
       FC0_INTERVAL   : UInt32;
       FC0_SRC        : FC_Source;
       FC0_STATUS     : FC0_STATUS_Register;
@@ -112,6 +113,7 @@ package body RP.Clock is
    for CLOCKS_Peripheral use record
       GPOUT          at 16#00# range 0 .. 383;
       CLK_PERI_CTRL  at 16#48# range 0 .. 31;
+      CLK_ADC_CTRL   at 16#6C# range 0 .. 31;
       FC0_INTERVAL   at 16#9C# range 0 .. 31;
       FC0_SRC        at 16#A0# range 0 .. 31;
       FC0_STATUS     at 16#A4# range 0 .. 31;
@@ -183,6 +185,15 @@ package body RP.Clock is
          end;
       end if;
    end Frequency;
+
+   procedure Enable_ADC is
+   begin
+      CLOCKS.CLK_ADC_CTRL :=
+         (ENABLED => False,
+          ENABLE  => True,
+          KILL    => False,
+          AUXSRC  => 0);
+   end Enable_ADC;
 
    procedure Enable_PERI is
    begin

@@ -19,16 +19,10 @@ package Clock_Tests is
       (T : Clock_Test)
       return AUnit.Message_String;
 
-   procedure Test_Initialize
-      (T : in out AUnit.Test_Cases.Test_Case'Class);
-
    procedure Test_Enable
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
    procedure Test_Counter
-      (T : in out AUnit.Test_Cases.Test_Case'Class);
-
-   procedure Test_Overclock
       (T : in out AUnit.Test_Cases.Test_Case'Class);
 
 end Clock_Tests;

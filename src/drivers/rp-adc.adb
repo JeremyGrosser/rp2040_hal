@@ -3,26 +3,30 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.ADC; use RP2040_SVD.ADC;
 with RP.GPIO; use RP.GPIO;
+with RP2040_SVD.ADC;
+with RP.Device;
 with RP.Reset;
 
 package body RP.ADC is
    use HAL;
 
+   P : RP2040_SVD.ADC.ADC_Peripheral renames RP.Device.ADC;
+
    procedure Enable
    is
       use RP.Reset;
    begin
+      RP.Clock.Enable_ADC;
       Reset_Peripheral (Reset_ADC);
 
-      ADC_Periph.CS.EN := True;
-      while not ADC_Periph.CS.READY loop
+      P.CS.EN := True;
+      while not P.CS.READY loop
          null;
       end loop;
 
       --  Enable FIFO and DMA operation
-      ADC_Periph.FCS :=
+      P.FCS :=
          (DREQ_EN => True,
           EN      => True,
           THRESH  => 1,
@@ -32,19 +36,19 @@ package body RP.ADC is
    procedure Disable
    is
    begin
-      ADC_Periph.CS.EN := False;
+      P.CS.EN := False;
    end Disable;
 
    function Enabled
       return Boolean
-   is (ADC_Periph.CS.EN and ADC_Periph.CS.READY);
+   is (P.CS.EN and P.CS.READY);
 
    procedure Configure
       (Channel : ADC_Channel)
    is
    begin
       if Channel = Temperature_Sensor then
-         ADC_Periph.CS.TS_EN := True;
+         P.CS.TS_EN := True;
       else
          if not RP.GPIO.Enabled then
             RP.GPIO.Enable;
@@ -76,21 +80,21 @@ package body RP.ADC is
       (Mode : ADC_Mode)
    is
    begin
-      ADC_Periph.CS.START_MANY := (Mode = Free_Running);
+      P.CS.START_MANY := (Mode = Free_Running);
    end Set_Mode;
 
    procedure Set_Round_Robin
       (Channels : ADC_Channels)
    is
    begin
-      ADC_Periph.CS.RROBIN := To_UInt5 (Channels);
+      P.CS.RROBIN := To_UInt5 (Channels);
    end Set_Round_Robin;
 
    procedure Set_Divider
       (Div : ADC_Divider)
    is
    begin
-      ADC_Periph.DIV :=
+      P.DIV :=
          (INT    => Div_Integer (Div),
           FRAC   => Div_Fraction (Div),
           others => <>);
@@ -109,7 +113,7 @@ package body RP.ADC is
       (Bits : ADC_Sample_Bits)
    is
    begin
-      ADC_Periph.FCS.SHIFT := (Bits = 8);
+      P.FCS.SHIFT := (Bits = 8);
    end Set_Sample_Bits;
 
    function Read
@@ -117,7 +121,7 @@ package body RP.ADC is
       return Analog_Value
    is
    begin
-      ADC_Periph.CS.AINSEL := CS_AINSEL_Field (Channel);
+      P.CS.AINSEL := RP2040_SVD.ADC.CS_AINSEL_Field (Channel);
       return Read;
    end Read;
 
@@ -125,13 +129,13 @@ package body RP.ADC is
       return Analog_Value
    is
    begin
-      if not ADC_Periph.CS.START_MANY then
-         ADC_Periph.CS.START_ONCE := True;
+      if not P.CS.START_MANY then
+         P.CS.START_ONCE := True;
       end if;
-      while ADC_Periph.FCS.EMPTY loop
+      while P.FCS.EMPTY loop
          null;
       end loop;
-      return Analog_Value (ADC_Periph.FIFO.VAL);
+      return Analog_Value (P.FIFO.VAL);
    end Read;
 
    function Read_Microvolts
@@ -154,9 +158,9 @@ package body RP.ADC is
    is
       Temp : Celsius;
    begin
-      ADC_Periph.CS.TS_EN := True;
+      P.CS.TS_EN := True;
       Temp := Ref_Temp - Celsius ((Read_Microvolts (Temperature_Sensor, VREF) - Vbe) / Slope);
-      ADC_Periph.CS.TS_EN := False;
+      P.CS.TS_EN := False;
       return Temp;
    end Temperature;
 
@@ -185,6 +189,6 @@ package body RP.ADC is
 
    function FIFO_Address
       return System.Address
-   is (ADC_Periph.FIFO'Address);
+   is (P.FIFO'Address);
 
 end RP.ADC;

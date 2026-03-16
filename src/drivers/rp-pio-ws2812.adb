@@ -83,8 +83,8 @@ package body RP.PIO.WS2812 is
    begin
       Config.Trigger := This.PIO.DMA_TX_Trigger (This.SM);
       Config.Data_Size := Transfer_32;
-      Config.Increment_Read := True;
-      Config.Increment_Write := False;
+      Config.Read_Address := Increment;
+      Config.Write_Address := Static;
 
       RP.DMA.Configure (Chan, Config);
 

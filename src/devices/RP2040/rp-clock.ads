@@ -56,6 +56,7 @@ is
    --  value of Accuracy. Higher Accuracy values take longer to measure the
    --  clock, but produce more accurate results.
 
+   procedure Enable_ADC;
    procedure Enable_PERI;
    procedure Enable_RTC;
 end RP.Clock;

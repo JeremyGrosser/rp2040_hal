@@ -58,8 +58,8 @@ package body RP.PIO.Audio_I2S is
    is
       use RP.DMA;
       DMA_Config : DMA_Configuration :=
-         (Increment_Read => True,
-          others         => <>);
+         (Read_Address => Increment,
+          others => <>);
       SM_Offset  : constant PIO_Address := 0;
       AF         : constant RP.GPIO.GPIO_Function := RP.PIO.GPIO_Function (This.PIO.all);
    begin
@@ -92,7 +92,7 @@ package body RP.PIO.Audio_I2S is
       (This : in out I2S_Device;
        Data : HAL.Audio.Audio_Buffer)
    is
-      Count : HAL.UInt32 := Data'Length;
+      Count : HAL.UInt28 := Data'Length;
    begin
       --  Wait for previous DMA transfer to finish before modifying the buffer.
       while RP.DMA.Busy (This.DMA_Channel) loop

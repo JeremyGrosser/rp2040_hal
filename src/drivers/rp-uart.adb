@@ -99,7 +99,7 @@ package body RP.UART is
          delay 1.0e-6 * This.Symbol_Time;
       end if;
       This.Periph.UARTLCR_H.BRK := True;
-      delay Duration (Length);
+      delay Duration (Length) / 1.0e6;
       This.Periph.UARTLCR_H.BRK := False;
    end Send_Break;
 

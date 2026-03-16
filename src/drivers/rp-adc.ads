@@ -9,9 +9,7 @@ with RP.GPIO;
 with System;
 with HAL;
 
-package RP.ADC
-   with Preelaborate
-is
+package RP.ADC is
    subtype Analog_Value is HAL.UInt12;
 
    subtype ADC_Channel is Natural range 0 .. 4;

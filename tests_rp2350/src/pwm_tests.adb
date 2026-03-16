@@ -6,8 +6,6 @@
 with AUnit.Assertions; use AUnit.Assertions;
 with HAL; use HAL;
 with RP.PWM; use RP.PWM;
-with RP.Timer.Interrupts;
-with RP.Timer;
 with RP.GPIO;
 with RP.Clock;
 
@@ -63,10 +61,7 @@ package body PWM_Tests is
    procedure Test_Interrupt
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      Delays : RP.Timer.Interrupts.Delays;
    begin
-      Delays.Enable;
-
       Interrupts.Reset_Count;
 
       Set_Frequency (P.Slice, 10_000_000);
@@ -74,7 +69,7 @@ package body PWM_Tests is
       Set_Duty_Cycle (P.Slice, P.Channel, 5_000);
       Enable (P.Slice);
 
-      Delays.Delay_Milliseconds (1);
+      delay 0.001;
 
       Disable (P.Slice);
       Assert (Interrupts.Interrupt_Count > 0, "PWM IRQ did not fire");

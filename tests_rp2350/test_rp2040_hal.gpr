@@ -32,7 +32,8 @@ project Test_Rp2040_Hal is
 
    package Linker is
       for Switches ("Ada") use Runtime_Build.Linker_Switches &
-         ("-Wl,-print-memory-usage");
+         ("-Wl,-print-memory-usage",
+          "-Wl,--defsym,_DEFAULT_STACK_SIZE=16384");
    end Linker;
 
 end Test_Rp2040_Hal;
