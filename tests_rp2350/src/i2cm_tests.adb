@@ -4,8 +4,8 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions; use AUnit.Assertions;
-with RP2040_SVD;
 with RP.I2C_Master;
+with RP.Device;
 with RP.GPIO;
 with HAL.I2C; use HAL.I2C;
 with HAL; use HAL;
@@ -14,9 +14,7 @@ package body I2CM_Tests is
 
    I2CM0_SDA : aliased RP.GPIO.GPIO_Point := (Pin => 0);
    I2CM0_SCL : aliased RP.GPIO.GPIO_Point := (Pin => 1);
-   IC : aliased RP.I2C_Master.I2C_Peripheral
-      with Import, Address => RP2040_SVD.I2C0_Base;
-   I2CM0 : RP.I2C_Master.I2C_Master_Port (0, IC'Access);
+   I2CM0 : RP.I2C_Master.I2C_Master_Port renames RP.Device.I2CM_0;
 
    Target_Addr : constant I2C_Address := 2#1010_0000#; --  24FC64F with A0,A1,A2=GND
    Bad_Addr    : constant I2C_Address := 2#0101_0000#; --  no device at this address
@@ -27,8 +25,8 @@ package body I2CM_Tests is
    is
       use RP.GPIO;
    begin
-      I2CM0_SDA.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
-      I2CM0_SCL.Configure (Output, Pull_Up, RP.GPIO.I2C, Schmitt => True);
+      I2CM0_SDA.Configure (Input, Pull_Up, RP.GPIO.I2C, Schmitt => True);
+      I2CM0_SCL.Configure (Input, Pull_Up, RP.GPIO.I2C, Schmitt => True);
       I2CM0.Configure (400_000);
    end Set_Up;
 
