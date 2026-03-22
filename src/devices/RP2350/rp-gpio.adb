@@ -21,12 +21,46 @@ package body RP.GPIO is
    type IO_Array is array (GPIO_Pin) of IO_Register
       with Volatile, Component_Size => 64;
 
+   type IRQ_Register is array (Interrupt.Interrupt_Trigger) of Boolean
+      with Component_Size => 1, Size => 4;
+
+   type IRQ_Array is array (0 .. 7) of IRQ_Register
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Component_Size => 4,
+           Object_Size => 32;
+
+   type IRQ_Group is array (0 .. 5) of IRQ_Array
+      with Volatile, Component_Size => 32, Object_Size => 192;
+
+   type IRQ_PROC_Register is record
+      INTE : IRQ_Group;
+      INTF : IRQ_Group;
+      INTS : IRQ_Group;
+   end record
+      with Volatile, Size => 576;
+   for IRQ_PROC_Register use record
+      INTE at 16#00# range 0 .. 191;
+      INTF at 16#18# range 0 .. 191;
+      INTS at 16#30# range 0 .. 191;
+   end record;
+
+   type IRQ_PROC_Group is array (Interrupt.Interrupt_CPU) of IRQ_PROC_Register
+      with Volatile, Component_Size => 576;
+
    type IO_BANK_Peripheral is record
-      GPIO : IO_Array;
+      GPIO           : IO_Array;
+      INTR           : IRQ_Group;
+      PROC           : IRQ_PROC_Group;
+      DORMANT_WAKE   : IRQ_Group;
    end record
       with Volatile;
    for IO_BANK_Peripheral use record
-      GPIO at 0 range 0 .. 3071;
+      GPIO           at 16#000# range 0 .. 3071;
+      INTR           at 16#230# range 0 .. 191;
+      PROC           at 16#248# range 0 .. 1151;
+      DORMANT_WAKE   at 16#2D8# range 0 .. 191;
    end record;
 
    type PAD_Register is record
@@ -181,6 +215,83 @@ package body RP.GPIO is
    begin
       High := SIO_BANK.GPIO_IN (Pin);
    end Get;
+
+   package body Interrupt is
+      procedure Enable
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger;
+          CPU     : Interrupt_CPU := 1)
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         IO_BANK.PROC (CPU).INTE (Group) (Index) (Trigger) := True;
+      end Enable;
+
+      procedure Disable
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger;
+          CPU     : Interrupt_CPU := 1)
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         IO_BANK.PROC (CPU).INTE (Group) (Index) (Trigger) := False;
+      end Disable;
+
+      procedure Acknowledge
+         (Pin     : GPIO_Pin;
+          Trigger : Edge_Trigger)
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         IO_BANK.INTR (Group) (Index) (Trigger) := True;
+      end Acknowledge;
+
+      procedure Force
+         (Pin     : GPIO_Pin;
+          Forced  : Boolean;
+          Trigger : Interrupt_Trigger;
+          CPU     : Interrupt_CPU := 1)
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         IO_BANK.PROC (CPU).INTF (Group) (Index) (Trigger) := Forced;
+      end Force;
+
+      procedure Enable_Wake
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger)
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         IO_BANK.DORMANT_WAKE (Group) (Index) (Trigger) := True;
+      end Enable_Wake;
+
+      procedure Disable_Wake
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger)
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         IO_BANK.DORMANT_WAKE (Group) (Index) (Trigger) := False;
+      end Disable_Wake;
+
+      function Triggered
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger)
+          return Boolean
+      is
+         Group : constant Natural := Natural (Pin) / 8;
+         Index : constant Natural := Natural (Pin) mod 8;
+      begin
+         return IO_BANK.INTR (Group) (Index) (Trigger);
+      end Triggered;
+   end Interrupt;
 
    procedure Configure
       (This       : GPIO_Point;

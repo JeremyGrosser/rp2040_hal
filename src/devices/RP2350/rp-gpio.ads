@@ -62,6 +62,46 @@ is
        High : out Boolean);
    --  Get the input level
 
+   package Interrupt is
+      type Interrupt_Trigger is (Low, High, Falling, Rising);
+      subtype Edge_Trigger is Interrupt_Trigger range Falling .. Rising;
+
+      type Interrupt_CPU is range 1 .. 2;
+
+      procedure Enable
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger;
+          CPU     : Interrupt_CPU := 1);
+
+      procedure Disable
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger;
+          CPU     : Interrupt_CPU := 1);
+
+      procedure Acknowledge
+         (Pin     : GPIO_Pin;
+          Trigger : Edge_Trigger);
+
+      procedure Force
+         (Pin     : GPIO_Pin;
+          Forced  : Boolean;
+          Trigger : Interrupt_Trigger;
+          CPU     : Interrupt_CPU := 1);
+
+      procedure Enable_Wake
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger);
+
+      procedure Disable_Wake
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger);
+
+      function Triggered
+         (Pin     : GPIO_Pin;
+          Trigger : Interrupt_Trigger)
+          return Boolean;
+   end Interrupt;
+
    HI_Z  : constant GPIO_Function := 0;
    HSTX  : constant GPIO_Function := 0;
    SPI   : constant GPIO_Function := 1;

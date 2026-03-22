@@ -4,6 +4,8 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with AUnit.Assertions;
+with Ada.Interrupts.Names;
+with System;
 with RP.GPIO;
 with HAL.GPIO;
 
@@ -80,6 +82,79 @@ package body GPIO_Tests is
       Assert (LED.Set = False, "Set returned incorrect value");
    end Test_HAL;
 
+   protected Interrupts
+      with Interrupt_Priority => System.Interrupt_Priority'First
+   is
+      procedure GPIO_Interrupt
+         with Attach_Handler => Ada.Interrupts.Names.IO_IRQ_BANK0_Interrupt_CPU_1;
+
+      procedure Reset_Count;
+
+      function Interrupt_Count
+         return Natural;
+   private
+      Count : Natural := 0;
+   end Interrupts;
+
+   protected body Interrupts is
+      procedure GPIO_Interrupt is
+      begin
+         if RP.GPIO.Interrupt.Triggered (LED.Pin, RP.GPIO.Interrupt.Low) then
+            RP.GPIO.Interrupt.Disable (LED.Pin, RP.GPIO.Interrupt.Low);
+         elsif RP.GPIO.Interrupt.Triggered (LED.Pin, RP.GPIO.Interrupt.Rising) then
+            RP.GPIO.Interrupt.Acknowledge (LED.Pin, RP.GPIO.Interrupt.Rising);
+         end if;
+         Count := Count + 1;
+      end GPIO_Interrupt;
+
+      procedure Reset_Count is
+      begin
+         Count := 0;
+      end Reset_Count;
+
+      function Interrupt_Count
+         return Natural
+      is (Count);
+   end Interrupts;
+
+   procedure Test_Interrupts
+      (T : in out AUnit.Test_Cases.Test_Case'Class)
+   is
+      use AUnit.Assertions;
+      use RP.GPIO;
+   begin
+      --  Drive pin low, input latch enabled
+      Isolate (LED.Pin, False);
+      Func (LED.Pin, SIO);
+      Pull (LED.Pin, False, False);
+      Output_Enable (LED.Pin, True);
+      Set (LED.Pin, False);
+      Input_Enable (LED.Pin, True);
+      Assert (not LED.Get, "Pin not driven low");
+
+      Interrupts.Reset_Count;
+      Interrupt.Acknowledge (LED.Pin, Interrupt.Rising);
+      Interrupt.Enable (LED.Pin, Interrupt.Rising);
+      Set (LED.Pin, True);
+      delay 0.001;
+      Assert (Interrupts.Interrupt_Count > 0, "Rising edge not triggered");
+      Assert (Interrupts.Interrupt_Count = 1, "Rising edge triggered more than once");
+
+      Interrupts.Reset_Count;
+      Interrupt.Enable (LED.Pin, Interrupt.Low);
+      Assert (Interrupts.Interrupt_Count = 0, "Unexpected interrupt before changing pin state");
+      Set (LED.Pin, False);
+      delay 0.001;
+      Assert (Interrupts.Interrupt_Count > 0, "Low interrupt not triggered");
+      Interrupts.Reset_Count;
+      delay 0.001;
+      Assert (Interrupts.Interrupt_Count = 0, "Low interrupt triggered after disable");
+      Interrupt.Disable (LED.Pin, Interrupt.Rising);
+      delay 0.001;
+      Set (LED.Pin, True);
+      Assert (Interrupts.Interrupt_Count = 0, "Rising interrupt triggered after disable");
+   end Test_Interrupts;
+
    overriding
    procedure Register_Tests
       (T : in out GPIO_Test)
@@ -88,6 +163,7 @@ package body GPIO_Tests is
    begin
       Register_Routine (T, Test_Configure'Access, "Configure");
       Register_Routine (T, Test_HAL'Access, "HAL");
+      Register_Routine (T, Test_Interrupts'Access, "Interrupts");
    end Register_Tests;
 
    overriding
