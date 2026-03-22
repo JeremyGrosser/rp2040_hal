@@ -10,7 +10,7 @@ with RP.GPIO;
 with RP.Clock;
 
 package body PWM_Tests is
-   P : constant PWM_Point := To_PWM (RP.GPIO.GPIO_Point'(Pin => 0));
+   P : PWM_Point;
 
    overriding
    procedure Set_Up
@@ -18,6 +18,7 @@ package body PWM_Tests is
    is
    begin
       RP.PWM.Initialize;
+      P := To_PWM (RP.GPIO.GPIO_Point'(Pin => 0));
    end Set_Up;
 
    procedure Test_Divider
@@ -31,7 +32,7 @@ package body PWM_Tests is
          Div := Div + Divider'Small;
       end loop;
 
-      Set_Frequency (P.Slice, 488_400);
+      Set_Frequency (P.Slice, 585_937);
       Set_Frequency (P.Slice, 1_000_000);
       Set_Frequency (P.Slice, 16_000_000);
       Set_Frequency (P.Slice, RP.Clock.Frequency (RP.Clock.SYS));
@@ -67,11 +68,13 @@ package body PWM_Tests is
       Set_Frequency (P.Slice, 10_000_000);
       Set_Interval (P.Slice, 10_000);
       Set_Duty_Cycle (P.Slice, P.Channel, 5_000);
+      Enable_Interrupt (P.Slice);
       Enable (P.Slice);
 
       delay 0.001;
 
       Disable (P.Slice);
+      Disable_Interrupt (P.Slice);
       Assert (Interrupts.Interrupt_Count > 0, "PWM IRQ did not fire");
    end Test_Interrupt;
 
@@ -95,6 +98,7 @@ package body PWM_Tests is
    protected body Interrupts is
       procedure PWM_Interrupt is
       begin
+         RP.PWM.Acknowledge_Interrupt (P.Slice);
          Count := Count + 1;
       end PWM_Interrupt;
 

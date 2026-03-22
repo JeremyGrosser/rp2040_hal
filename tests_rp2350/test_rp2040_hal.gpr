@@ -17,7 +17,8 @@ project Test_Rp2040_Hal is
       for Default_Switches ("Ada") use Test_Rp2040_Hal_Config.Ada_Compiler_Switches & (
          "-gnatyM120",  --  Maximum line length
          "-gnatw.X",    --  Disable warnings for No_Exception_Propagation
-         "-fdump-scos"  --  Generates SCO (Source Coverage Obligation) information in the ALI file
+         "-fdump-scos", --  Generates SCO (Source Coverage Obligation) information in the ALI file
+         "-fstack-usage"
       );
       for Local_Configuration_Pragmas use "gnat.adc";
    end Compiler;

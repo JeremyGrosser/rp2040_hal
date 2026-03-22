@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP2040_SVD.PWM;
-with RP2040_SVD;
 with RP.Clock;
 with RP.GPIO;
 with HAL; use HAL;
@@ -209,7 +208,4 @@ private
       INTF at 172 range 0 .. 31;
       INTS at 176 range 0 .. 31;
    end record;
-
-   PWM_Periph : aliased PWM_Peripheral
-      with Import, Address => RP2040_SVD.PWM_Base;
 end RP.PWM;

@@ -6,6 +6,8 @@
 with RP.Reset;
 
 package body RP.PWM is
+   PWM_Periph : aliased PWM_Peripheral
+      with Import, Address => RP2040_SVD.PWM_Base;
 
    procedure Initialize is
       use RP.Reset;
