@@ -21,9 +21,9 @@ cortex_m.core = "m0p"
 
 [configuration.variables]
 Device = {type = "Enum", values = [
-    "RP2040", 
-    "RP2350A", 
-    "RP2354A",
-    "RP2350B",
-    "RP2354B"
+    "RP2040",  # Cortex-M0+, QFN-60EP, 30 GPIO, no internal flash
+    "RP2350A", # Cortex-M33, QFN-60EP, 30 GPIO, no internal flash
+    "RP2354A", # Cortex-M33, QFN-80EP, 48 GPIO, no internal flash
+    "RP2350B", # Cortex-M33, QFN-60EP, 30 GPIO, 2 MB internal flash
+    "RP2354B", # Cortex-M33, QFN-80EP, 48 GPIO, 2 MB internal flash
 ], default = "RP2040"}
