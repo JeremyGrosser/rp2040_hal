@@ -8,6 +8,7 @@ with HAL; use HAL;
 
 package body RP.GPIO is
 
+   pragma Warnings (Off, "* bits of ""GPIO*"" unused");
    type IO_Register is record
       STATUS : UInt32 := 0;
       CTRL   : UInt32 := 16#0000_001F#;
@@ -129,6 +130,7 @@ package body RP.GPIO is
       GPIO_OE_CLR    at 16#040# range 0 .. 63;
       GPIO_OE_XOR    at 16#048# range 0 .. 63;
    end record;
+   pragma Warnings (On, "* bits of ""GPIO*"" unused");
 
    IO_BANK : IO_BANK_Peripheral
       with Import, Address => System'To_Address (16#4002_8000#);

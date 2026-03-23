@@ -13,6 +13,24 @@ package body RP.ADC is
 
    P : RP2040_SVD.ADC.ADC_Peripheral renames RP.Device.ADC;
 
+   function Div_Integer
+      (V : ADC_Divider)
+      return UInt16
+   is
+      I : constant Natural := Natural (V);
+   begin
+      if ADC_Divider (I) > V then
+         return UInt16 (I - 1);
+      else
+         return UInt16 (I);
+      end if;
+   end Div_Integer;
+
+   function Div_Fraction
+      (V : ADC_Divider)
+      return UInt8
+   is (UInt8 ((V - ADC_Divider (Div_Integer (V))) * 2 ** 8));
+
    procedure Enable
    is
       use RP.Reset;
@@ -83,8 +101,15 @@ package body RP.ADC is
    procedure Set_Round_Robin
       (Channels : ADC_Channels)
    is
+      Val : UInt32 := 0;
    begin
-      P.CS.RROBIN := To_UInt5 (Channels);
+      for Ch of Channels loop
+         Val := Shift_Left (Val, 1);
+         if Ch then
+            Val := Val or 1;
+         end if;
+      end loop;
+      P.CS.RROBIN := RP2040_SVD.ADC.CS_RROBIN_Field (Val);
    end Set_Round_Robin;
 
    procedure Set_Divider
@@ -162,27 +187,14 @@ package body RP.ADC is
    end Temperature;
 
    function To_ADC_Channel
+      (Pin : RP.GPIO.GPIO_Pin)
+      return ADC_Channel
+   is (ADC_Channel (Pin - 26));
+
+   function To_ADC_Channel
       (Point : RP.GPIO.GPIO_Point)
       return ADC_Channel
-   is (ADC_Channel (Point.Pin - 26));
-
-   function Div_Integer
-      (V : ADC_Divider)
-      return UInt16
-   is
-      I : constant Natural := Natural (V);
-   begin
-      if ADC_Divider (I) > V then
-         return UInt16 (I - 1);
-      else
-         return UInt16 (I);
-      end if;
-   end Div_Integer;
-
-   function Div_Fraction
-      (V : ADC_Divider)
-      return UInt8
-   is (UInt8 ((V - ADC_Divider (Div_Integer (V))) * 2 ** 8));
+   is (To_ADC_Channel (Point.Pin));
 
    function FIFO_Address
       return System.Address

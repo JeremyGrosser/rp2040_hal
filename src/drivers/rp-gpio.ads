@@ -15,17 +15,45 @@ is
    --  Low level interface  --
    ---------------------------
 
-   type GPIO_Pin is range 0 .. Rp2040_Hal_Config.GPIO_Pin_Count - 1;
+   package Config renames Rp2040_Hal_Config;
+   use type Config.Device_Kind;
+   Pin_Count : constant :=
+      (case Config.Device is
+         when Config.RP2040 => 30,
+         when Config.RP2350A | Config.RP2354A => 30,
+         when Config.RP2350B | Config.RP2354B => 48);
+
+   type GPIO_Pin is range 0 .. Pin_Count - 1;
 
    type GPIO_Function is range 0 .. 11;
+   HI_Z  : constant GPIO_Function := 0;
+   HSTX  : constant GPIO_Function := 0; --  RP2350 only
+   SPI   : constant GPIO_Function := 1;
+   UART  : constant GPIO_Function := 2;
+   I2C   : constant GPIO_Function := 3;
+   PWM   : constant GPIO_Function := 4;
+   SIO   : constant GPIO_Function := 5;
+   PIO0  : constant GPIO_Function := 6;
+   PIO1  : constant GPIO_Function := 7;
+   PIO2  : constant GPIO_Function := 8; --  RP2350 only
+   CLK   : constant GPIO_Function := (if Config.Device = Config.RP2040 then 8 else 9);
+   USB   : constant GPIO_Function := (if Config.Device = Config.RP2040 then 9 else 10);
+   UARTN : constant GPIO_Function := 11; --  RP2350 only
+
    type GPIO_Drive is range 0 .. 4;
+   Off         : constant GPIO_Drive := 0;
+   Drive_2mA   : constant GPIO_Drive := 1;
+   Drive_4mA   : constant GPIO_Drive := 2;
+   Drive_8mA   : constant GPIO_Drive := 3;
+   Drive_12mA  : constant GPIO_Drive := 4;
 
    --  After reset, all input and output buffers are disabled, output level is
    --  low, isolation latches are enabled
 
    procedure Isolate
       (Pin     : GPIO_Pin;
-       Isolate : Boolean);
+       Isolate : Boolean)
+   with Pre => Config.Device /= Config.RP2040;
 
    procedure Drive
       (Pin     : GPIO_Pin;
@@ -101,29 +129,6 @@ is
           Trigger : Interrupt_Trigger)
           return Boolean;
    end Interrupt;
-
-   HI_Z  : constant GPIO_Function := 0;
-   HSTX  : constant GPIO_Function := 0;
-   SPI   : constant GPIO_Function := 1;
-   UART  : constant GPIO_Function := 2;
-   I2C   : constant GPIO_Function := 3;
-   PWM   : constant GPIO_Function := 4;
-   SIO   : constant GPIO_Function := 5;
-   PIO0  : constant GPIO_Function := 6;
-   PIO1  : constant GPIO_Function := 7;
-   PIO2  : constant GPIO_Function := 8;
-   CLK   : constant GPIO_Function := 9;
-   USB   : constant GPIO_Function := 10;
-   UARTN : constant GPIO_Function := 11;
-
-   Off         : constant GPIO_Drive := 0;
-   Drive_2mA   : constant GPIO_Drive := 1;
-   Drive_4mA   : constant GPIO_Drive := 2;
-   Drive_8mA   : constant GPIO_Drive := 3;
-   Drive_12mA  : constant GPIO_Drive := 4;
-
-   subtype ADC_Pin is GPIO_Pin
-      with Static_Predicate => ADC_Pin in 26 .. 29 or ADC_Pin in 40 .. 47;
 
    ----------------------------
    --  High level interface  --

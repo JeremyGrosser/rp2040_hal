@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Ada.Unchecked_Conversion;
+with Rp2040_Hal_Config;
 with RP.Clock;
 with RP.GPIO;
 with System;
@@ -12,11 +12,17 @@ with HAL;
 package RP.ADC is
    subtype Analog_Value is HAL.UInt12;
 
-   subtype ADC_Channel is Natural range 0 .. 4;
+   package Config renames Rp2040_Hal_Config;
+   Num_Channels : constant :=
+      (case Config.Device is
+         when Config.RP2040 => 5,
+         when Config.RP2350A | Config.RP2354A | Config.RP2350B | Config.RP2354B => 9);
+
+   type ADC_Channel is range 0 .. Num_Channels - 1;
 
    type ADC_Channels is array (ADC_Channel) of Boolean
       with Component_Size => 1,
-           Size           => 5;
+           Size           => Num_Channels;
 
    type Microvolts is new Integer;
 
@@ -24,7 +30,8 @@ package RP.ADC is
    --  resolution is fine.
    type Celsius is new Integer;
 
-   Temperature_Sensor : constant ADC_Channel := 4;
+   Temperature_Sensor : constant ADC_Channel :=
+      (if RP.GPIO.Pin_Count = 48 then 8 else 4);
 
    procedure Enable;
    procedure Disable;
@@ -93,25 +100,14 @@ package RP.ADC is
       return Celsius;
 
    function To_ADC_Channel
+      (Pin : RP.GPIO.GPIO_Pin)
+      return ADC_Channel;
+
+   function To_ADC_Channel
       (Point : RP.GPIO.GPIO_Point)
-      return ADC_Channel
-      with Pre => Point.Pin in RP.GPIO.ADC_Pin;
+      return ADC_Channel;
 
    function FIFO_Address
       return System.Address;
-
-private
-
-   function To_UInt5 is new Ada.Unchecked_Conversion
-      (Source => ADC_Channels,
-       Target => HAL.UInt5);
-
-   function Div_Integer
-      (V : ADC_Divider)
-      return HAL.UInt16;
-
-   function Div_Fraction
-      (V : ADC_Divider)
-      return HAL.UInt8;
 
 end RP.ADC;

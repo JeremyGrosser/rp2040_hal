@@ -29,5 +29,5 @@ atomic = "release"
 aunit = "development"
 
 [configuration.values]
-rp2040_hal.Device = "RP2350"
+rp2040_hal.Device = "RP2350A"
 embedded_rp2350.Board = "rpi_pico2"

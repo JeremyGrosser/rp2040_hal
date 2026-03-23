@@ -5,7 +5,6 @@
 --
 with RP2040_SVD.SPI;
 with RP2040_SVD.UART;
-with RP2040_SVD.ADC;
 with RP2350_SVD;
 with RP.SPI;
 with RP.I2C_Master;
@@ -55,7 +54,4 @@ package RP.Device is
       with Import, Address => INTERP1_Base;
 
    UDC     : aliased RP.USB_Device.USB_Device_Controller;
-
-   ADC     : aliased RP2040_SVD.ADC.ADC_Peripheral
-      with Import, Address => RP2350_SVD.ADC_Base;
 end RP.Device;

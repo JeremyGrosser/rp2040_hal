@@ -20,5 +20,10 @@ atomic.Backend = "armv6m"
 cortex_m.core = "m0p"
 
 [configuration.variables]
-Device = {type = "Enum", values = ["RP2040", "RP2350"], default = "RP2040"}
-GPIO_Pin_Count = {type = "Integer", first = 30, last = 48, default = 48}
+Device = {type = "Enum", values = [
+    "RP2040", 
+    "RP2350A", 
+    "RP2354A",
+    "RP2350B",
+    "RP2354B"
+], default = "RP2040"}

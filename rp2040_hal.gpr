@@ -7,11 +7,19 @@ project Rp2040_Hal is
    for Library_Name use "Rp2040_Hal";
    for Library_Version use Project'Library_Name & ".so." & Rp2040_Hal_Config.Crate_Version;
 
+   Device_Sources := ();
+   case Rp2040_Hal_Config.Device is
+      when "RP2040" =>
+         Device_Sources := ("src/devices/rp2040");
+      when "RP2350A" | "RP2354A" | "RP2350B" | "RP2354B" =>
+         Device_Sources := ("src/devices/rp2350");
+   end case;
+
    for Source_Dirs use
+      Device_Sources &
       ("src/",
        "src/drivers",
        "src/svd",
-       "src/devices/" & Rp2040_Hal_Config.Device,
        "config/");
 
    for Object_Dir use "obj/" & Rp2040_Hal_Config.Build_Profile;
