@@ -192,7 +192,7 @@ package body RP.ADC is
       return ADC_Channel
    is
    begin
-      pragma Warnings (Off, "condition is always False");
+      pragma Warnings (Off, "condition is always *");
       if RP.GPIO.Pin_Count = 48 and then Pin in 40 .. 47 then
          return ADC_Channel (Pin - 40);
       elsif Pin in 26 .. 29 then
@@ -200,7 +200,7 @@ package body RP.ADC is
       else
          raise Program_Error with "Not an ADC pin";
       end if;
-      pragma Warnings (On, "condition is always False");
+      pragma Warnings (On, "condition is always *");
    end To_ADC_Channel;
 
    function To_ADC_Channel
