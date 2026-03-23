@@ -21,10 +21,15 @@ package body RP.PWM is
    end Initialize;
 
    function To_PWM
+      (Pin : RP.GPIO.GPIO_Pin)
+      return PWM_Point
+   is ((Slice   => PWM_Slice (Shift_Right (UInt32 (Pin), 1) and 2#111#),
+        Channel => PWM_Channel'Val (UInt32 (Pin) and 1)));
+
+   function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
       return PWM_Point
-   is ((Slice   => PWM_Slice (Shift_Right (UInt32 (GPIO.Pin), 1) and 2#111#),
-        Channel => PWM_Channel'Val (UInt32 (GPIO.Pin) and 1)));
+   is (To_PWM (GPIO.Pin));
 
    procedure Enable
       (Slice : PWM_Slice)

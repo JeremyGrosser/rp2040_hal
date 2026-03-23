@@ -50,6 +50,10 @@ is
       (GPIO : RP.GPIO.GPIO_Point)
       return PWM_Point;
 
+   function To_PWM
+      (Pin : RP.GPIO.GPIO_Pin)
+      return PWM_Point;
+
    procedure Set_Mode
       (Slice : PWM_Slice;
        Mode  : PWM_Divider_Mode)
