@@ -5,9 +5,9 @@ package RP.Device_Parameters
 is
    Pin_Count : constant :=
       (case Device is
-         when RP2040 => 30,
-         when RP2350A | RP2354A => 30,
-         when RP2350B | RP2354B => 48);
+         when RP2040             => 30,
+         when RP2350A | RP2354A  => 30,
+         when RP2350B | RP2354B  => 48);
    GPIO_CLK_Func : constant :=
       (case Device is
          when RP2040 => 8,
@@ -20,9 +20,9 @@ is
 
    ADC_Channel_Count : constant :=
       (case Device is
-         when RP2040 => 5,
-         when RP2350A | RP2354A => 5,
-         when RP2350B | RP2354B => 9);
+         when RP2040             => 5,
+         when RP2350A | RP2354A  => 5,
+         when RP2350B | RP2354B  => 9);
    ADC_Temperature_Channel : constant :=
       (if Pin_Count = 48 then 8 else 4);
 
