@@ -3,17 +3,27 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.PWM;
-with RP.Clock;
-with RP.GPIO;
+with Rp2040_Hal_Config;
 with HAL; use HAL;
-
 with System;
+with RP.GPIO;
+with RP.Clock;
 
-package RP.PWM
-   with Preelaborate
-is
-   type PWM_Slice is range 0 .. 7;
+package RP.PWM is
+
+   package Config renames Rp2040_Hal_Config;
+   use type Config.Device_Kind;
+   Slice_Count : constant :=
+      (case Config.Device is
+         when Config.RP2040 => 8,
+         when others => 12);
+   IRQ_Count : constant :=
+      (case Config.Device is
+         when Config.RP2040 => 1,
+         when others => 2);
+
+   type PWM_Slice is range 0 .. Slice_Count - 1;
+   type PWM_IRQ is range 0 .. IRQ_Count - 1;
    type PWM_Channel is (A, B);
 
    type PWM_Divider_Mode is
@@ -33,7 +43,8 @@ is
       Channel : PWM_Channel;
    end record;
 
-   type PWM_Slice_Array is array (PWM_Slice) of Boolean;
+   type PWM_Slice_Array is array (PWM_Slice) of Boolean
+      with Component_Size => 1;
 
    Divider_Fraction : constant := 1.0 / (2.0 ** 4);
    type Divider is delta Divider_Fraction range 1.0 .. (2.0 ** 8);
@@ -48,10 +59,6 @@ is
 
    function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
-      return PWM_Point;
-
-   function To_PWM
-      (Pin : RP.GPIO.GPIO_Pin)
       return PWM_Point;
 
    procedure Set_Mode
@@ -144,72 +151,19 @@ is
        Value : Period)
    with Pre => Initialized;
 
-   function Compare_Reg_Address (Slice : PWM_Slice) return System.Address;
+   function Compare_Reg_Address
+      (Slice : PWM_Slice)
+      return System.Address;
    --  For DMA transfers
 
    procedure Enable_Interrupt
-      (Slice : PWM_Slice);
+      (Slice : PWM_Slice;
+       IRQ   : PWM_IRQ := 0);
 
    procedure Disable_Interrupt
-      (Slice : PWM_Slice);
+      (Slice : PWM_Slice;
+       IRQ   : PWM_IRQ := 0);
 
    procedure Acknowledge_Interrupt
       (Slice : PWM_Slice);
-
-private
-
-   function To_Mask
-      (Slices : PWM_Slice_Array)
-      return UInt8;
-
-   function Div_Integer
-      (V : Divider)
-      return UInt8;
-
-   function Div_Fraction
-      (V : Divider)
-      return UInt4;
-
-   function Div_Value
-      (Int  : UInt8;
-       Frac : UInt4)
-      return Divider;
-
-   type PWM_Slice_Register is record
-      CSR : aliased RP2040_SVD.PWM.CH0_CSR_Register;
-      DIV : aliased RP2040_SVD.PWM.CH0_DIV_Register;
-      CTR : aliased RP2040_SVD.PWM.CH0_CTR_Register;
-      CC  : aliased RP2040_SVD.PWM.CH0_CC_Register;
-      TOP : aliased RP2040_SVD.PWM.CH0_TOP_Register;
-   end record
-      with Size => 32 * 5,
-           Volatile;
-   for PWM_Slice_Register use record
-      CSR at 0 range 0 .. 31;
-      DIV at 4 range 0 .. 31;
-      CTR at 8 range 0 .. 31;
-      CC  at 12 range 0 .. 31;
-      TOP at 16 range 0 .. 31;
-   end record;
-
-   type PWM_Slices is array (PWM_Slice) of PWM_Slice_Register;
-
-   type PWM_Peripheral is record
-      CH   : PWM_Slices;
-      EN   : aliased RP2040_SVD.PWM.EN_Register;
-      INTR : aliased RP2040_SVD.PWM.INTR_Register;
-      INTE : aliased RP2040_SVD.PWM.INTE_Register;
-      INTF : aliased RP2040_SVD.PWM.INTF_Register;
-      INTS : aliased RP2040_SVD.PWM.INTS_Register;
-   end record
-      with Size => 1440,
-           Volatile;
-   for PWM_Peripheral use record
-      CH   at   0 range 0 .. 1279;
-      EN   at 160 range 0 .. 31;
-      INTR at 164 range 0 .. 31;
-      INTE at 168 range 0 .. 31;
-      INTF at 172 range 0 .. 31;
-      INTS at 176 range 0 .. 31;
-   end record;
 end RP.PWM;

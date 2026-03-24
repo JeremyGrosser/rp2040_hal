@@ -3,11 +3,77 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+with RP2040_SVD.PWM;
 with RP.Reset;
 
 package body RP.PWM is
+   type PWM_Slice_Register is record
+      CSR : aliased RP2040_SVD.PWM.CH0_CSR_Register;
+      DIV : aliased RP2040_SVD.PWM.CH0_DIV_Register;
+      CTR : aliased RP2040_SVD.PWM.CH0_CTR_Register;
+      CC  : aliased RP2040_SVD.PWM.CH0_CC_Register;
+      TOP : aliased RP2040_SVD.PWM.CH0_TOP_Register;
+   end record
+      with Size => 32 * 5,
+           Volatile;
+   for PWM_Slice_Register use record
+      CSR at 0 range 0 .. 31;
+      DIV at 4 range 0 .. 31;
+      CTR at 8 range 0 .. 31;
+      CC  at 12 range 0 .. 31;
+      TOP at 16 range 0 .. 31;
+   end record;
+
+   type PWM_Slices is array (PWM_Slice) of PWM_Slice_Register;
+
+   type PWM_Peripheral is record
+      CH   : PWM_Slices;
+      EN   : aliased RP2040_SVD.PWM.EN_Register;
+      INTR : aliased RP2040_SVD.PWM.INTR_Register;
+      INTE : aliased RP2040_SVD.PWM.INTE_Register;
+      INTF : aliased RP2040_SVD.PWM.INTF_Register;
+      INTS : aliased RP2040_SVD.PWM.INTS_Register;
+   end record
+      with Size => 1440,
+           Volatile;
+   for PWM_Peripheral use record
+      CH   at   0 range 0 .. 1279;
+      EN   at 160 range 0 .. 31;
+      INTR at 164 range 0 .. 31;
+      INTE at 168 range 0 .. 31;
+      INTF at 172 range 0 .. 31;
+      INTS at 176 range 0 .. 31;
+   end record;
+
    PWM_Periph : aliased PWM_Peripheral
       with Import, Address => RP2040_SVD.PWM_Base;
+
+   function Div_Integer
+      (V : Divider)
+      return UInt8
+   is
+      I : constant Natural := Natural (V);
+   begin
+      if V = Divider'Last then
+         return 0;
+      elsif Divider (I) > V then
+         return UInt8 (I - 1);
+      else
+         return UInt8 (I);
+      end if;
+   end Div_Integer;
+
+   function Div_Fraction
+      (V : Divider)
+      return UInt4
+   is
+   begin
+      if V = Divider'Last then
+         return 0;
+      else
+         return UInt4 ((V - Divider (Div_Integer (V))) * 2 ** 4);
+      end if;
+   end Div_Fraction;
 
    procedure Initialize is
       use RP.Reset;
@@ -202,15 +268,19 @@ package body RP.PWM is
    end Compare_Reg_Address;
 
    procedure Enable_Interrupt
-      (Slice : PWM_Slice)
+      (Slice : PWM_Slice;
+       IRQ   : PWM_IRQ := 0)
    is
+      pragma Unreferenced (IRQ);
    begin
       PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
    end Enable_Interrupt;
 
    procedure Disable_Interrupt
-      (Slice : PWM_Slice)
+      (Slice : PWM_Slice;
+       IRQ   : PWM_IRQ := 0)
    is
+      pragma Unreferenced (IRQ);
    begin
       PWM_Periph.INTE.CH.Arr (Natural (Slice)) := False;
    end Disable_Interrupt;
@@ -221,45 +291,5 @@ package body RP.PWM is
    begin
       PWM_Periph.INTR.CH.Arr (Natural (Slice)) := True;
    end Acknowledge_Interrupt;
-
-   function Div_Integer
-      (V : Divider)
-      return UInt8
-   is
-      I : constant Natural := Natural (V);
-   begin
-      if V = Divider'Last then
-         return 0;
-      elsif Divider (I) > V then
-         return UInt8 (I - 1);
-      else
-         return UInt8 (I);
-      end if;
-   end Div_Integer;
-
-   function Div_Fraction
-      (V : Divider)
-      return UInt4
-   is
-   begin
-      if V = Divider'Last then
-         return 0;
-      else
-         return UInt4 ((V - Divider (Div_Integer (V))) * 2 ** 4);
-      end if;
-   end Div_Fraction;
-
-   function Div_Value
-      (Int  : UInt8;
-       Frac : UInt4)
-       return Divider
-   is
-   begin
-      if Int = 0 then
-         return Divider'Last;
-      else
-         return Divider (Int) + (Divider (Frac) / 2 ** 4);
-      end if;
-   end Div_Value;
 
 end RP.PWM;
