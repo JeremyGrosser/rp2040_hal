@@ -193,7 +193,7 @@ package body RP.ADC is
    is
    begin
       pragma Warnings (Off, "condition is always *");
-      if RP.GPIO.Pin_Count = 48 and then Pin in 40 .. 47 then
+      if RP.Device_Parameters.Pin_Count = 48 and then Pin in 40 .. 47 then
          return ADC_Channel (Pin - 40);
       elsif Pin in 26 .. 29 then
          return ADC_Channel (Pin - 26);

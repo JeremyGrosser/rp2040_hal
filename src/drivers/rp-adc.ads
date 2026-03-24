@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Rp2040_Hal_Config;
+with RP.Device_Parameters;
 with RP.Clock;
 with RP.GPIO;
 with System;
@@ -12,17 +12,11 @@ with HAL;
 package RP.ADC is
    subtype Analog_Value is HAL.UInt12;
 
-   package Config renames Rp2040_Hal_Config;
-   Num_Channels : constant :=
-      (case Config.Device is
-         when Config.RP2040 => 5,
-         when Config.RP2350A | Config.RP2354A | Config.RP2350B | Config.RP2354B => 9);
-
-   type ADC_Channel is range 0 .. Num_Channels - 1;
+   type ADC_Channel is range 0 .. RP.Device_Parameters.ADC_Channel_Count - 1;
 
    type ADC_Channels is array (ADC_Channel) of Boolean
       with Component_Size => 1,
-           Size           => Num_Channels;
+           Size           => RP.Device_Parameters.ADC_Channel_Count;
 
    type Microvolts is new Integer;
 
@@ -31,7 +25,7 @@ package RP.ADC is
    type Celsius is new Integer;
 
    Temperature_Sensor : constant ADC_Channel :=
-      (if RP.GPIO.Pin_Count = 48 then 8 else 4);
+      RP.Device_Parameters.ADC_Temperature_Channel;
 
    procedure Enable;
    procedure Disable;

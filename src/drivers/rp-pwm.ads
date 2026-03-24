@@ -3,27 +3,16 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Rp2040_Hal_Config;
 with HAL; use HAL;
 with System;
+with RP.Device_Parameters;
 with RP.GPIO;
 with RP.Clock;
 
 package RP.PWM is
 
-   package Config renames Rp2040_Hal_Config;
-   use type Config.Device_Kind;
-   Slice_Count : constant :=
-      (case Config.Device is
-         when Config.RP2040 => 8,
-         when others => 12);
-   IRQ_Count : constant :=
-      (case Config.Device is
-         when Config.RP2040 => 1,
-         when others => 2);
-
-   type PWM_Slice is range 0 .. Slice_Count - 1;
-   type PWM_IRQ is range 0 .. IRQ_Count - 1;
+   type PWM_Slice is range 0 .. RP.Device_Parameters.PWM_Slice_Count - 1;
+   type PWM_IRQ is range 0 .. RP.Device_Parameters.PWM_IRQ_Count - 1;
    type PWM_Channel is (A, B);
 
    type PWM_Divider_Mode is

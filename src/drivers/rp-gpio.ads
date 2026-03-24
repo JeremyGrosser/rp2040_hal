@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Rp2040_Hal_Config;
+with RP.Device_Parameters;
 with HAL.GPIO;
 with HAL;
 
@@ -15,15 +15,7 @@ is
    --  Low level interface  --
    ---------------------------
 
-   package Config renames Rp2040_Hal_Config;
-   use type Config.Device_Kind;
-   Pin_Count : constant :=
-      (case Config.Device is
-         when Config.RP2040 => 30,
-         when Config.RP2350A | Config.RP2354A => 30,
-         when Config.RP2350B | Config.RP2354B => 48);
-
-   type GPIO_Pin is range 0 .. Pin_Count - 1;
+   type GPIO_Pin is range 0 .. RP.Device_Parameters.Pin_Count - 1;
 
    type GPIO_Function is range 0 .. 11;
    HI_Z  : constant GPIO_Function := 0;
@@ -36,8 +28,8 @@ is
    PIO0  : constant GPIO_Function := 6;
    PIO1  : constant GPIO_Function := 7;
    PIO2  : constant GPIO_Function := 8; --  RP2350 only
-   CLK   : constant GPIO_Function := (if Config.Device = Config.RP2040 then 8 else 9);
-   USB   : constant GPIO_Function := (if Config.Device = Config.RP2040 then 9 else 10);
+   CLK   : constant GPIO_Function := RP.Device_Parameters.GPIO_CLK_Func;
+   USB   : constant GPIO_Function := RP.Device_Parameters.GPIO_USB_Func;
    UARTN : constant GPIO_Function := 11; --  RP2350 only
 
    type GPIO_Drive is range 0 .. 4;
@@ -52,8 +44,8 @@ is
 
    procedure Isolate
       (Pin     : GPIO_Pin;
-       Isolate : Boolean)
-   with Pre => Config.Device /= Config.RP2040;
+       Isolate : Boolean);
+   --  Isolate has no effect on RP2040
 
    procedure Drive
       (Pin     : GPIO_Pin;
