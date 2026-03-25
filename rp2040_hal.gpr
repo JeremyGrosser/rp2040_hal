@@ -10,16 +10,14 @@ project Rp2040_Hal is
    Device_Sources := ();
    case Rp2040_Hal_Config.Device is
       when "RP2040" =>
-         Device_Sources := ("src/devices/rp2040");
+         Device_Sources := ("src/rp2040");
       when "RP2350A" | "RP2354A" | "RP2350B" | "RP2354B" =>
-         Device_Sources := ("src/devices/rp2350");
+         Device_Sources := ("src/rp2350");
    end case;
 
    for Source_Dirs use
       Device_Sources &
       ("src/",
-       "src/drivers",
-       "src/svd",
        "config/");
 
    for Object_Dir use "obj/" & Rp2040_Hal_Config.Build_Profile;
