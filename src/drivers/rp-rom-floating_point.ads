@@ -50,22 +50,27 @@ is
    --  __aeabi_fcmpun
 
    function int2float (V : int) return Float
-      with Export, Convention => C, External_Name => "__aeabi_i2f";
+      with Export, Convention => C,
+      External_Name => External_Name_Prefix & "__aeabi_i2f";
    --  pico-sdk doesn't use int2float and instead implements __aeabi_i2f in
    --  software. Maybe the ROM is missing an edge case?
 
    function uint2float (V : unsigned) return Float
-      with Export, Convention => C, External_Name => "__aeabi_ui2f";
+      with Export, Convention => C,
+      External_Name => External_Name_Prefix & "__aeabi_ui2f";
 
    function float2int (V : Float) return int
-      with Export, Convention => C, External_Name => "__aeabi_f2iz";
+      with Export, Convention => C,
+      External_Name => External_Name_Prefix & "__aeabi_f2iz";
    --  pico-sdk rewrites this one too
 
    function float2uint (V : Float) return unsigned
-      with Export, Convention => C, External_Name => "__aeabi_f2uiz";
+      with Export, Convention => C,
+      External_Name => External_Name_Prefix & "__aeabi_f2uiz";
 
    function fsqrt (V : Float) return Float
-      with Export, Convention => C, External_Name => "sqrtf";
+      with Export, Convention => C,
+      External_Name => External_Name_Prefix & "sqrtf";
 
    --  These trig functions only work in the range -128.0 .. 128.0 and return
    --  slightly incorrect values. Use at your own risk.
