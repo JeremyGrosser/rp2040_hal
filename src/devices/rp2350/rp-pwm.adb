@@ -160,9 +160,9 @@ package body RP.PWM is
       Slice    : UInt32 := Shift_Right (Pin, 1);
    begin
       if Pin < 32 then
-         Slice := Pin and 2#111#;
+         Slice := Slice and 2#111#;
       else
-         Slice := 8 + (Pin and 2#11#);
+         Slice := 8 + (Slice and 2#11#);
       end if;
       return PWM_Point'
          (Slice   => PWM_Slice (Slice),
