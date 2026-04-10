@@ -5,6 +5,7 @@
 --
 with System;
 with HAL; use HAL;
+with RP.Reset;
 
 package body RP.GPIO is
 
@@ -305,6 +306,14 @@ package body RP.GPIO is
        Drive      : GPIO_Drive := Drive_2mA)
    is
    begin
+      if not RP.Reset.Reset_Done (RP.Reset.Reset_IO_BANK0) then
+         RP.Reset.Reset_Peripheral (RP.Reset.Reset_IO_BANK0);
+      end if;
+
+      if not RP.Reset.Reset_Done (RP.Reset.Reset_PADS_BANK0) then
+         RP.Reset.Reset_Peripheral (RP.Reset.Reset_PADS_BANK0);
+      end if;
+
       case Mode is
          when Output =>
             SIO_BANK.GPIO_OE_SET (This.Pin) := True;

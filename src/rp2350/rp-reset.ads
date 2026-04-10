@@ -53,4 +53,8 @@ is
        Status     : out Reset_Status;
        Timeout    : Natural := 100);
 
+   function Reset_Done
+      (Peripheral : Reset_Id)
+      return Boolean;
+
 end RP.Reset;

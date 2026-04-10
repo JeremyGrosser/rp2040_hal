@@ -50,4 +50,8 @@ is
        Timeout    : Natural := 100)
    with Pre => Peripheral /= Reset_TIMER;
 
+   function Reset_Done
+      (Peripheral : Reset_Id)
+      return Boolean;
+
 end RP.Reset;

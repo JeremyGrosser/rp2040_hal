@@ -58,4 +58,9 @@ package body RP.Reset is
       Status := Reset_Ok;
    end Reset_Peripheral;
 
+   function Reset_Done
+      (Peripheral : Reset_Id)
+      return Boolean
+   is (RESETS_Periph.RESET_DONE (Peripheral));
+
 end RP.Reset;

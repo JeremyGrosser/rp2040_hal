@@ -5,9 +5,11 @@
 --
 with System;
 with HAL; use HAL;
+with RP.Reset;
 
 package body RP.GPIO is
 
+   pragma Warnings (Off, "* bits of ""GPIO*"" unused");
    type IO_Register is record
       STATUS : UInt32 := 0;
       CTRL   : UInt32 := 16#0000_001F#;
@@ -96,7 +98,7 @@ package body RP.GPIO is
       with Volatile;
    for PADS_BANK_Peripheral use record
       VOLTAGE_SELECT at 0 range 0 .. 31;
-      GPIO           at 4 range 0 .. 959;
+      GPIO           at 4 range 0 .. 1535;
    end record;
 
    type SIO_Array is array (GPIO_Pin) of Boolean
@@ -127,6 +129,7 @@ package body RP.GPIO is
       GPIO_OE_CLR    at 16#028# range 0 .. 31;
       GPIO_OE_XOR    at 16#02C# range 0 .. 31;
    end record;
+   pragma Warnings (On, "* bits of ""GPIO*"" unused");
 
    IO_BANK : IO_BANK_Peripheral
       with Import, Address => System'To_Address (16#4001_4000#);
@@ -298,6 +301,14 @@ package body RP.GPIO is
        Drive      : GPIO_Drive := Drive_2mA)
    is
    begin
+      if not RP.Reset.Reset_Done (RP.Reset.Reset_IO_BANK0) then
+         RP.Reset.Reset_Peripheral (RP.Reset.Reset_IO_BANK0);
+      end if;
+
+      if not RP.Reset.Reset_Done (RP.Reset.Reset_PADS_BANK0) then
+         RP.Reset.Reset_Peripheral (RP.Reset.Reset_PADS_BANK0);
+      end if;
+
       case Mode is
          when Output =>
             SIO_BANK.GPIO_OE_SET (This.Pin) := True;

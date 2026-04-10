@@ -70,7 +70,7 @@ package body GPIO_Tests is
       LED.Set_Pull_Resistor (Pull_Up);
       LED.Set_Mode (Input);
       Assert (LED.Mode = Input, "Unable to set input mode");
-      Assert (LED.Get = False, "Unable to get input");
+      Assert (LED.Get = True, "Unable to get input");
 
       LED.Set_Mode (Output);
       LED.Clear;
