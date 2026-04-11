@@ -38,7 +38,7 @@ is
 
    type Touch_Sensor
      (Pin : not null access RP.GPIO.GPIO_Point;
-      PIO : not null access PIO_Device;
+      PIO : PIO_Device;
       SM  : PIO_SM)
    is tagged private;
 
@@ -82,7 +82,7 @@ private
 
    type Touch_Sensor
      (Pin : not null access RP.GPIO.GPIO_Point;
-      PIO : not null access PIO_Device;
+      PIO : PIO_Device;
       SM  : PIO_SM)
    is tagged record
       Enabled   : Boolean := False;

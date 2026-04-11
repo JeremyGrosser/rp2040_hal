@@ -10,7 +10,6 @@ with RP2040_SVD;
 with RP.SPI;
 with RP.I2C_Master;
 with RP.UART;
-with RP.PIO;
 with RP.RTC;
 with RP.Interpolator;
 with RP.USB_Device;
@@ -29,13 +28,6 @@ package RP.Device is
 
    UART_0 : aliased RP.UART.UART_Port (0, RP2040_SVD.UART.UART0_Periph'Access);
    UART_1 : aliased RP.UART.UART_Port (1, RP2040_SVD.UART.UART1_Periph'Access);
-
-   PIO0_Periph : aliased RP.PIO.PIO_Peripheral
-      with Import, Address => RP2040_SVD.PIO0_Base;
-   PIO1_Periph : aliased RP.PIO.PIO_Peripheral
-      with Import, Address => RP2040_SVD.PIO1_Base;
-   PIO_0 : aliased RP.PIO.PIO_Device (0, PIO0_Periph'Access);
-   PIO_1 : aliased RP.PIO.PIO_Device (1, PIO1_Periph'Access);
 
    INTERP0_Base : constant System.Address := System'To_Address (16#D000_0080#);
    INTERP1_Base : constant System.Address := System'To_Address (16#D000_00C0#);

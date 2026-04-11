@@ -35,4 +35,9 @@ is
          when RP2040 => 1,
          when others => 2);
 
+   PIO_Count : constant :=
+      (case Device is
+         when RP2040 => 2,
+         when others => 3);
+
 end RP.Device_Parameters;

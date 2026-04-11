@@ -1,83 +1,259 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2026 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with Ada.Unchecked_Conversion;
-with RP.Clock;
 with RP.Reset;
-with RP2040_SVD.Interrupts;
+with RP.Clock;
 
 package body RP.PIO is
+
+   --  EXECCTRL has different layout on RP2350
+   --  store it as UInt32 and convert
+   type EXECCTRL_Register is record
+      EXEC_STALLED   : Boolean := False;
+      SIDE_EN        : Boolean := False;
+      SIDE_PINDIR    : Boolean := False;
+      JMP_PIN        : UInt5 := 0;
+      OUT_EN_SEL     : UInt5 := 0;
+      INLINE_OUT_EN  : Boolean := False;
+      OUT_STICKY     : Boolean := False;
+      WRAP_TOP       : UInt5 := 16#1F#;
+      WRAP_BOTTOM    : UInt5 := 0;
+      STATUS_SEL     : Boolean := False;
+      STATUS_N       : UInt4 := 0;
+   end record
+--      with Volatile_Full_Access,
+--           Effective_Writes,
+--           Async_Readers,
+--           Async_Writers,
+        with Object_Size => 32;
+   for EXECCTRL_Register use record
+      EXEC_STALLED   at 0 range 31 .. 31;
+      SIDE_EN        at 0 range 30 .. 30;
+      SIDE_PINDIR    at 0 range 29 .. 29;
+      JMP_PIN        at 0 range 24 .. 28;
+      OUT_EN_SEL     at 0 range 19 .. 23;
+      INLINE_OUT_EN  at 0 range 18 .. 18;
+      OUT_STICKY     at 0 range 17 .. 17;
+      WRAP_TOP       at 0 range 12 .. 16;
+      WRAP_BOTTOM    at 0 range 7 .. 11;
+      STATUS_SEL     at 0 range 4 .. 4;
+      STATUS_N       at 0 range 0 .. 3;
+   end record;
+
+   function To_UInt32 is new Ada.Unchecked_Conversion (EXECCTRL_Register, UInt32);
+   function To_EXECCTRL is new Ada.Unchecked_Conversion (UInt32, EXECCTRL_Register);
+
+   type CTRL_Register is record
+      CLKDIV_RESTART : SM_Mask;
+      SM_RESTART     : SM_Mask;
+      SM_ENABLE      : SM_Mask;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for CTRL_Register use record
+      CLKDIV_RESTART at 0 range 8 .. 11;
+      SM_RESTART     at 0 range 4 .. 7;
+      SM_ENABLE      at 0 range 0 .. 3;
+   end record;
+
+   type FSTAT_Register is record
+      TXEMPTY  : SM_Mask := (others => True);
+      TXFULL   : SM_Mask := (others => False);
+      RXEMPTY  : SM_Mask := (others => True);
+      RXFULL   : SM_Mask := (others => False);
+   end record
+      with Volatile_Full_Access,
+           Async_Writers,
+           Object_Size => 32;
+   for FSTAT_Register use record
+      TXEMPTY  at 0 range 24 .. 27;
+      TXFULL   at 0 range 16 .. 19;
+      RXEMPTY  at 0 range 8 .. 11;
+      RXFULL   at 0 range 0 .. 3;
+   end record;
+
+   type FDEBUG_Register is record
+      TXSTALL  : SM_Mask;
+      TXOVER   : SM_Mask;
+      RXUNDER  : SM_Mask;
+      RXSTALL  : SM_Mask;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Writers,
+           Async_Readers,
+           Object_Size => 32;
+   for FDEBUG_Register use record
+      TXSTALL  at 0 range 24 .. 27;
+      TXOVER   at 0 range 16 .. 19;
+      RXUNDER  at 0 range 8 .. 11;
+      RXSTALL  at 0 range 0 .. 3;
+   end record;
+
+   type FIFO_Array is array (SM_Index) of UInt32
+      with Component_Size => 32;
+
+   type IRQ_Array is array (SM_IRQ_Flag) of Boolean
+      with Component_Size => 1;
+
+   type IRQ_Register is record
+      SM : IRQ_Array := (others => False);
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Async_Writers,
+           Object_Size => 32;
+   for IRQ_Register use record
+      SM at 0 range 0 .. 7;
+   end record;
+
+   type SM_Array is array (SM_Index) of SM_Register
+      with Volatile, Component_Size => 192;
+
+   type INSTR_MEM_Array is array (PIO_Address) of PIO_Instruction
+      with Component_Size => 32;
+
+   type INT_Flag_Array is array (PIO_IRQ_Flag) of SM_Mask
+      with Component_Size => 4, Size => 12;
+
+   type INT_Register is record
+      Flag : INT_Flag_Array;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Async_Writers,
+           Object_Size => 32;
+   for INT_Register use record
+      Flag     at 0 range 0 .. 11;
+   end record;
+
+   type INT_Group is record
+      INTE : INT_Register;
+      INTF : INT_Register;
+      INTS : INT_Register;
+   end record
+      with Volatile;
+   for INT_Group use record
+      INTE at 0 range 0 .. 31;
+      INTF at 4 range 0 .. 31;
+      INTS at 8 range 0 .. 31;
+   end record;
+
+   type INT_Array is array (PIO_IRQ_ID) of INT_Group
+      with Component_Size => 96;
+
+   type PIO_Peripheral is record
+      CTRL        : CTRL_Register;
+      FSTAT       : FSTAT_Register;
+      FDEBUG      : FDEBUG_Register;
+      TXF         : FIFO_Array;
+      RXF         : FIFO_Array;
+      IRQ         : IRQ_Register;
+      IRQ_FORCE   : IRQ_Register;
+      INSTR_MEM   : INSTR_MEM_Array;
+      INTR        : INT_Register;
+      INT         : INT_Array; --  IRQn_INTE, IRQn_INTF, IRQn_INTS
+      SM          : SM_Array;
+   end record
+      with Volatile;
+   for PIO_Peripheral use record
+      CTRL        at 16#000# range 0 .. 31;
+      FSTAT       at 16#004# range 0 .. 31;
+      FDEBUG      at 16#008# range 0 .. 31;
+      TXF         at 16#010# range 0 .. 127;
+      RXF         at 16#020# range 0 .. 127;
+      IRQ         at 16#030# range 0 .. 31;
+      IRQ_FORCE   at 16#034# range 0 .. 31;
+      INSTR_MEM   at 16#048# range 0 .. 1023;
+      INTR        at 16#128# range 0 .. 31;
+      INT         at 16#12C# range 0 .. 191;
+      SM          at 16#0C8# range 0 .. 767;
+   end record;
+
+   pragma Warnings (Off, "component of ""PIO_Array"" padded by * bits");
+   type PIO_Array is array (Device) of PIO_Peripheral
+      with Volatile, Component_Size => 16#0010_0000# * 8;
+   pragma Warnings (On, "component of ""PIO_Array"" padded by * bits");
+
+   PIO : PIO_Array
+      with Import, Address => System'To_Address (16#5020_0000#);
+
    procedure Enable
-      (This : in out PIO_Device)
+      (This : Device)
    is
       use RP.Reset;
+      R : constant Reset_Id := Reset_Id'Val
+         (Reset_Id'Pos (Reset_PIO0) + Natural (This));
    begin
-      case This.Num is
-         when 0 => Reset_Peripheral (Reset_PIO0);
-         when 1 => Reset_Peripheral (Reset_PIO1);
-         when 2 => raise Program_Error; --  TODO
-      end case;
+      Reset_Peripheral (R);
    end Enable;
 
    procedure Disable
-      (This : in out PIO_Device)
+      (This : Device)
    is
    begin
-      This.Periph.CTRL.SM_ENABLE := 0;
+      PIO (This).CTRL.SM_ENABLE := (others => False);
    end Disable;
 
    procedure Set_Out_Pins
-      (Config    : in out PIO_SM_Config;
-       Out_Base  : GPIO_Pin;
+      (Config    : in out SM_Config;
+       Out_Base  : RP.GPIO.GPIO_Pin;
        Out_Count : Pin_Count)
    is
    begin
-      Config.PINCTRL.OUT_BASE := SM0_PINCTRL_OUT_BASE_Field (Out_Base);
-      Config.PINCTRL.OUT_COUNT := SM0_PINCTRL_OUT_COUNT_Field (Out_Count);
+      Config.PINCTRL.OUT_BASE := UInt5 (Out_Base);
+      Config.PINCTRL.OUT_COUNT := UInt6 (Out_Count);
    end Set_Out_Pins;
 
    procedure Set_Set_Pins
-      (Config    : in out PIO_SM_Config;
-       Set_Base  : GPIO_Pin;
+      (Config    : in out SM_Config;
+       Set_Base  : RP.GPIO.GPIO_Pin;
        Set_Count : Pin_Count)
    is
    begin
-      Config.PINCTRL.SET_BASE := SM0_PINCTRL_SET_BASE_Field (Set_Base);
-      Config.PINCTRL.SET_COUNT := SM0_PINCTRL_SET_COUNT_Field (Set_Count);
+      Config.PINCTRL.SET_BASE := UInt5 (Set_Base);
+      Config.PINCTRL.SET_COUNT := UInt3 (Set_Count);
    end Set_Set_Pins;
 
    procedure Set_In_Pins
-      (Config    : in out PIO_SM_Config;
-       In_Base   : GPIO_Pin)
+      (Config    : in out SM_Config;
+       In_Base   : RP.GPIO.GPIO_Pin)
    is
    begin
-      Config.PINCTRL.IN_BASE := SM0_PINCTRL_IN_BASE_Field (In_Base);
+      Config.PINCTRL.IN_BASE := UInt5 (In_Base);
    end Set_In_Pins;
 
    procedure Set_Sideset_Pins
-      (Config       : in out PIO_SM_Config;
-       Sideset_Base : GPIO_Pin)
+      (Config       : in out SM_Config;
+       Sideset_Base : RP.GPIO.GPIO_Pin)
    is
    begin
-      Config.PINCTRL.SIDESET_BASE := SM0_PINCTRL_SIDESET_BASE_Field (Sideset_Base);
+      Config.PINCTRL.SIDESET_BASE := UInt5 (Sideset_Base);
    end Set_Sideset_Pins;
 
    procedure Set_Sideset
-      (Config    : in out PIO_SM_Config;
+      (Config    : in out SM_Config;
        Bit_Count : Sideset_Bit_Count;
        Optional  : Boolean;
        Pindirs   : Boolean)
    is
+      EXECCTRL : EXECCTRL_Register := To_EXECCTRL (Config.EXECCTRL);
    begin
-      Config.PINCTRL.SIDESET_COUNT := SM0_PINCTRL_SIDESET_COUNT_Field (Bit_Count);
-      Config.EXECCTRL.SIDE_EN := Optional;
-      Config.EXECCTRL.SIDE_PINDIR := Pindirs;
+      EXECCTRL.SIDE_EN := Optional;
+      EXECCTRL.SIDE_PINDIR := Pindirs;
+      Config.EXECCTRL := To_UInt32 (EXECCTRL);
+      Config.PINCTRL.SIDESET_COUNT := UInt3 (Bit_Count);
    end Set_Sideset;
 
    procedure Set_Clock_Frequency
-      (Config    : in out PIO_SM_Config;
+      (Config    : in out SM_Config;
        Frequency : Hertz)
    is
       Div : constant Divider :=
@@ -88,24 +264,24 @@ package body RP.PIO is
 
    function Div_Integer
       (Div : Divider)
-      return SM0_CLKDIV_INT_Field
+      return UInt16
    is
       I : constant Natural := Natural (Div);
    begin
       if Divider (I) > Div then
-         return SM0_CLKDIV_INT_Field (I - 1);
+         return UInt16 (I - 1);
       else
-         return SM0_CLKDIV_INT_Field (I);
+         return UInt16 (I);
       end if;
    end Div_Integer;
 
    function Div_Fraction
       (Div : Divider)
-      return SM0_CLKDIV_FRAC_Field
-   is (SM0_CLKDIV_FRAC_Field ((Div - Divider (Div_Integer (Div))) * 2 ** SM0_CLKDIV_FRAC_Field'Size));
+      return UInt8
+   is (UInt8 ((Div - Divider (Div_Integer (Div))) * 2 ** UInt8'Size));
 
    procedure Set_Clock_Divider
-      (Config : in out PIO_SM_Config;
+      (Config : in out SM_Config;
        Div    : Divider)
    is
    begin
@@ -113,73 +289,72 @@ package body RP.PIO is
    end Set_Clock_Divider;
 
    procedure Set_Clkdiv_Int_Frac
-      (Config   : in out PIO_SM_Config;
-       Div_Int  : UInt16;
-       Div_Frac : UInt8)
+      (Config    : in out SM_Config;
+       Div_Int   : UInt16;
+       Div_Frac  : UInt8)
    is
    begin
       Config.CLKDIV :=
-         (INT    => SM0_CLKDIV_INT_Field (Div_Int),
-          FRAC   => SM0_CLKDIV_FRAC_Field (Div_Frac),
-          others => 0);
+         (INT  => Div_Int,
+          FRAC => Div_Frac);
    end Set_Clkdiv_Int_Frac;
 
    procedure Set_Wrap
-      (Config      : in out PIO_SM_Config;
+      (Config      : in out SM_Config;
        Wrap_Target : PIO_Address;
        Wrap        : PIO_Address)
    is
+      EXECCTRL : EXECCTRL_Register := To_EXECCTRL (Config.EXECCTRL);
    begin
-      Config.EXECCTRL.WRAP_BOTTOM := SM0_EXECCTRL_WRAP_BOTTOM_Field (Wrap_Target);
-      Config.EXECCTRL.WRAP_TOP := SM0_EXECCTRL_WRAP_TOP_Field (Wrap);
+      EXECCTRL.WRAP_BOTTOM := UInt5 (Wrap_Target);
+      EXECCTRL.WRAP_TOP := UInt5 (Wrap);
+      Config.EXECCTRL := To_UInt32 (EXECCTRL);
    end Set_Wrap;
 
    procedure Set_Jmp_Pin
-      (Config : in out PIO_SM_Config;
-       Pin    : GPIO_Pin)
+      (Config : in out SM_Config;
+       Pin    : RP.GPIO.GPIO_Pin)
    is
+      EXECCTRL : EXECCTRL_Register := To_EXECCTRL (Config.EXECCTRL);
    begin
-      Config.EXECCTRL.JMP_PIN := SM0_EXECCTRL_JMP_PIN_Field (Pin);
+      EXECCTRL.JMP_PIN := UInt5 (Pin);
+      Config.EXECCTRL := To_UInt32 (EXECCTRL);
    end Set_Jmp_Pin;
 
    procedure Set_In_Shift
-      (Config         : in out PIO_SM_Config;
+      (Config         : in out SM_Config;
        Shift_Right    : Boolean;
        Autopush       : Boolean;
        Push_Threshold : Shift_Threshold)
    is
-      Thresh : SM0_SHIFTCTRL_PUSH_THRESH_Field;
    begin
       Config.SHIFTCTRL.IN_SHIFTDIR := Shift_Right;
       Config.SHIFTCTRL.AUTOPUSH := Autopush;
       if Push_Threshold = 32 then
-         Thresh := 0;
+         Config.SHIFTCTRL.PUSH_THRESH := 0;
       else
-         Thresh := SM0_SHIFTCTRL_PUSH_THRESH_Field (Push_Threshold);
+         Config.SHIFTCTRL.PUSH_THRESH := UInt5 (Push_Threshold);
       end if;
-      Config.SHIFTCTRL.PUSH_THRESH := Thresh;
    end Set_In_Shift;
 
    procedure Set_Out_Shift
-      (Config         : in out PIO_SM_Config;
+      (Config         : in out SM_Config;
        Shift_Right    : Boolean;
        Autopull       : Boolean;
        Pull_Threshold : Shift_Threshold)
    is
-      Thresh : SM0_SHIFTCTRL_PULL_THRESH_Field;
    begin
       Config.SHIFTCTRL.OUT_SHIFTDIR := Shift_Right;
       Config.SHIFTCTRL.AUTOPULL := Autopull;
       if Pull_Threshold = 32 then
-         Thresh := 0;
+         Config.SHIFTCTRL.PULL_THRESH := 0;
       else
-         Thresh := SM0_SHIFTCTRL_PULL_THRESH_Field (Pull_Threshold);
+         Config.SHIFTCTRL.PULL_THRESH := UInt5 (Pull_Threshold);
       end if;
-      Config.SHIFTCTRL.PULL_THRESH := Thresh;
    end Set_Out_Shift;
 
    procedure Set_FIFO_Join
-      (Config  : in out PIO_SM_Config;
+      (Config  : in out SM_Config;
        Join_TX : Boolean;
        Join_RX : Boolean)
    is
@@ -189,499 +364,407 @@ package body RP.PIO is
    end Set_FIFO_Join;
 
    procedure Set_Out_Special
-      (Config           : in out PIO_SM_Config;
+      (Config           : in out SM_Config;
        Sticky           : Boolean;
        Has_Enable_Pin   : Boolean;
-       Enable_Pin_Index : GPIO_Pin)
+       Enable_Pin_Index : RP.GPIO.GPIO_Pin)
    is
+      EXECCTRL : EXECCTRL_Register := To_EXECCTRL (Config.EXECCTRL);
    begin
-      Config.EXECCTRL.OUT_STICKY := Sticky;
-      Config.EXECCTRL.INLINE_OUT_EN := Has_Enable_Pin;
-      Config.EXECCTRL.OUT_EN_SEL := SM0_EXECCTRL_OUT_EN_SEL_Field (Enable_Pin_Index);
+      EXECCTRL.OUT_STICKY := Sticky;
+      EXECCTRL.INLINE_OUT_EN := Has_Enable_Pin;
+      EXECCTRL.OUT_EN_SEL := UInt5 (Enable_Pin_Index);
+      Config.EXECCTRL := To_UInt32 (EXECCTRL);
    end Set_Out_Special;
 
    procedure Set_MOV_Status
-      (Config     : in out PIO_SM_Config;
-       Status_Sel : PIO_MOV_Status_Type;
+      (Config     : in out SM_Config;
+       Status_Sel : MOV_Status_Type;
        Status_N   : UInt4)
    is
+      EXECCTRL : EXECCTRL_Register := To_EXECCTRL (Config.EXECCTRL);
    begin
-      case Status_Sel is
-         when TX_Less_Than =>
-            Config.EXECCTRL.STATUS_SEL := TXLEVEL;
-         when RX_Less_Than =>
-            Config.EXECCTRL.STATUS_SEL := RXLEVEL;
-      end case;
-      Config.EXECCTRL.STATUS_N := Status_N;
+      EXECCTRL.STATUS_N := Status_N;
+      EXECCTRL.STATUS_SEL := Status_Sel = RX_Less_Than;
+      Config.EXECCTRL := To_UInt32 (EXECCTRL);
    end Set_MOV_Status;
 
    function Default_SM_Config
-      return PIO_SM_Config
-   is (PIO_SM_Config'(others => <>));
-   --  Default_SM_Config is equivalent to:
-   --
-   --  Set_Clkdiv_Int_Frac (C,
-   --      Div_Int  => 1,
-   --      Div_Frac => 0);
-   --   Set_Wrap (C,
-   --      Wrap_Target => 0,
-   --      Wrap        => 31);
-   --   Set_In_Shift (C,
-   --      Shift_Right    => True,
-   --      Autopush       => False,
-   --      Push_Threshold => 32);
-   --   Set_Out_Shift (C,
-   --      Shift_Right    => True,
-   --      Autopull       => False,
-   --      Pull_Threshold => 32);
+      return SM_Config
+   is (SM_Config'(others => <>));
 
    procedure Set_Config
-      (This   : in out PIO_Device;
-       SM     : PIO_SM;
-       Config : PIO_SM_Config)
+      (This   : Device;
+       SM     : SM_Index;
+       Config : SM_Config)
    is
    begin
-      This.Periph.SM (SM).CLKDIV := Config.CLKDIV;
-      This.Periph.SM (SM).EXECCTRL := Config.EXECCTRL;
-      This.Periph.SM (SM).SHIFTCTRL := Config.SHIFTCTRL;
-      This.Periph.SM (SM).PINCTRL := Config.PINCTRL;
+      PIO (This).SM (SM).CLKDIV := Config.CLKDIV;
+      PIO (This).SM (SM).EXECCTRL := Config.EXECCTRL;
+      PIO (This).SM (SM).SHIFTCTRL := Config.SHIFTCTRL;
+      PIO (This).SM (SM).PINCTRL := Config.PINCTRL;
    end Set_Config;
 
    function GPIO_Function
-      (PIO : PIO_Device)
+      (PIO : Device)
       return RP.GPIO.GPIO_Function
    is
+      use type RP.GPIO.GPIO_Function;
    begin
-      case PIO.Num is
-         when 0 => return RP.GPIO.PIO0;
-         when 1 => return RP.GPIO.PIO1;
-         when 2 => raise Program_Error; --  TODO
-      end case;
+      return RP.GPIO.PIO0 + RP.GPIO.GPIO_Function (PIO);
    end GPIO_Function;
 
    procedure Set_Enabled
-      (This    : in out PIO_Device;
-       SM      : PIO_SM;
+      (This    : Device;
+       SM      : SM_Index;
        Enabled : Boolean)
    is
-      Mask : constant CTRL_SM_ENABLE_Field := CTRL_SM_ENABLE_Field
-         (Shift_Left (UInt32 (1), Natural (SM)));
    begin
-      if Enabled then
-         This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE or Mask;
-      else
-         This.Periph.CTRL.SM_ENABLE := This.Periph.CTRL.SM_ENABLE and not Mask;
-      end if;
+      PIO (This).CTRL.SM_ENABLE (SM) := Enabled;
    end Set_Enabled;
 
    procedure Set_Enabled
-      (This : in out PIO_Device;
-       SM   : PIO_SM_Mask)
+      (This : Device;
+       SM   : SM_Mask)
    is
-      function To_UInt4 is new Ada.Unchecked_Conversion
-         (Source => PIO_SM_Mask,
-          Target => UInt4);
    begin
-      This.Periph.CTRL.SM_ENABLE := To_UInt4 (SM);
+      PIO (This).CTRL.SM_ENABLE := SM;
    end Set_Enabled;
 
    function Enabled
-      (This : PIO_Device)
-      return PIO_SM_Mask
-   is
-      function To_PIO_SM_Mask is new Ada.Unchecked_Conversion
-         (Source => UInt4,
-          Target => PIO_SM_Mask);
-   begin
-      return To_PIO_SM_Mask (This.Periph.CTRL.SM_ENABLE);
-   end Enabled;
+      (This : Device)
+      return SM_Mask
+   is (PIO (This).CTRL.SM_ENABLE);
 
    procedure Clear_FIFOs
-      (This : in out PIO_Device;
-       SM   : PIO_SM)
+      (This    : Device;
+       SM      : SM_Index)
    is
    begin
-      This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX :=
-         This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX xor True;
-      This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX :=
-         This.Periph.SM (SM).SHIFTCTRL.FJOIN_RX xor True;
+      PIO (This).SM (SM).SHIFTCTRL.FJOIN_RX :=
+         PIO (This).SM (SM).SHIFTCTRL.FJOIN_RX xor True;
+      PIO (This).SM (SM).SHIFTCTRL.FJOIN_RX :=
+         PIO (This).SM (SM).SHIFTCTRL.FJOIN_RX xor True;
    end Clear_FIFOs;
 
    procedure SM_Initialize
-      (This       : in out PIO_Device;
-       SM         : PIO_SM;
+      (This       : Device;
+       SM         : SM_Index;
        Initial_PC : PIO_Address;
-       Config     : PIO_SM_Config)
+       Config     : SM_Config)
    is
+      Mask : SM_Mask := (others => False);
    begin
+      Mask (SM) := True;
+
       Set_Enabled (This, SM, False);
       Set_Config (This, SM, Config);
       Clear_FIFOs (This, SM);
 
-      This.Periph.FDEBUG := (others => (others => True));
-
-      This.Periph.CTRL.SM_RESTART := CTRL_SM_RESTART_Field
-         (Shift_Left (UInt32 (1), Natural (SM)));
-      This.Periph.CTRL.CLKDIV_RESTART := CTRL_CLKDIV_RESTART_Field
-         (Shift_Left (UInt32 (1), Natural (SM)));
+      PIO (This).FDEBUG := (others => Mask);
+      PIO (This).CTRL.SM_RESTART := Mask;
+      PIO (This).CTRL.CLKDIV_RESTART := Mask;
 
       Execute (This, SM, PIO_Instruction (Initial_PC));
    end SM_Initialize;
 
    procedure Set_Pin_Direction
-      (This      : in out PIO_Device;
-       SM        : PIO_SM;
-       Pin       : GPIO_Pin;
-       Direction : PIO_Pin_Direction)
+      (This      : Device;
+       SM        : SM_Index;
+       Pin       : RP.GPIO.GPIO_Pin;
+       Direction : Pin_Direction)
    is
-      Save : constant SM0_PINCTRL_Register := This.Periph.SM (SM).PINCTRL;
-      Instruction : PIO_Instruction;
+      Instruction : constant PIO_Instruction :=
+         (if Direction = Output then 16#E081# else 16#E080#);
+      Save : PINCTRL_Register;
    begin
-      This.Periph.SM (SM).PINCTRL :=
-         (SET_COUNT => 1,
-          SET_BASE  => SM0_PINCTRL_SET_BASE_Field (Pin),
-          others    => <>);
-      case Direction is
-         when Output =>
-            Instruction := 16#e081#;
-         when Input =>
-            Instruction := 16#e080#;
-      end case;
+      Save := PIO (This).SM (SM).PINCTRL;
+      PIO (This).SM (SM).PINCTRL :=
+         (SET_COUNT  => 1,
+          SET_BASE   => UInt5 (Pin),
+          others     => <>);
       Execute (This, SM, Instruction);
-      This.Periph.SM (SM).PINCTRL := Save;
+      PIO (This).SM (SM).PINCTRL := Save;
    end Set_Pin_Direction;
 
    procedure Execute
-      (This        : in out PIO_Device;
-       SM          : PIO_SM;
+      (This        : Device;
+       SM          : SM_Index;
        Instruction : PIO_Instruction)
    is
    begin
-      This.Periph.SM (SM).INSTR.SM0_INSTR := Instruction;
+      PIO (This).SM (SM).INSTR := UInt32 (Instruction);
    end Execute;
 
+   function Is_JMP
+      (Insn : PIO_Instruction)
+      return Boolean
+   is ((Insn and 16#E000#) = 0);
+
    procedure Load
-      (This        : in out PIO_Device;
-       Prog        : Program;
-       Offset      : PIO_Address)
+      (This   : Device;
+       Prog   : Program;
+       Offset : PIO_Address)
    is
-      Insn : PIO_Instruction;
+      J : PIO_Address := Offset;
    begin
-      for I in Prog'Range loop
-         Insn := Prog (I);
-
-         --  Check for JMP instruction
-         if (Insn and 2#111_00000_000_00000#) = 2#000_00000_000_00000# then
-            --  JMP instructions use absolute target addresses. If the program
-            --  is loaded at an offset, the JMP targets have to be adjusted with
-            --  this offset.
-
-            Insn := Insn + PIO_Instruction (Offset);
+      for Instruction of Prog loop
+         if Is_JMP (Instruction) then
+            PIO (This).INSTR_MEM (J) := Instruction + PIO_Instruction (Offset);
+         else
+            PIO (This).INSTR_MEM (J) := Instruction;
          end if;
-
-         This.Periph.INSTR_MEM (Offset + I - Prog'First) := UInt32 (Insn);
+         J := J + 1;
       end loop;
    end Load;
 
    procedure Put
-      (This : in out PIO_Device;
-       SM   : PIO_SM;
+      (This : Device;
+       SM   : SM_Index;
        Data : UInt32)
    is
+      TXFULL : Boolean;
    begin
-      while This.Periph.FSTAT.TXFULL (SM) loop
-         null;
+      loop
+         TXFULL := PIO (This).FSTAT.TXFULL (SM);
+         exit when not TXFULL;
       end loop;
-      This.Periph.TXF (SM) := Data;
+      PIO (This).TXF (SM) := Data;
    end Put;
 
    procedure Put
-      (This : in out PIO_Device;
-       SM   : PIO_SM;
+      (This : Device;
+       SM   : SM_Index;
        Data : UInt32_Array)
    is
    begin
       for D of Data loop
-         while This.Periph.FSTAT.TXFULL (SM) loop
-            null;
-         end loop;
-         This.Periph.TXF (SM) := D;
+         Put (This, SM, D);
       end loop;
    end Put;
 
    procedure Try_Put
-     (This    : in out PIO_Device;
-      SM      : PIO_SM;
-      Data    : UInt32;
-      Success : out Boolean)
+      (This    : Device;
+       SM      : SM_Index;
+       Data    : UInt32;
+       Success : out Boolean)
    is
    begin
-      Success := not This.TX_FIFO_Full (SM);
+      Success := PIO (This).FSTAT.TXFULL (SM);
       if Success then
-         This.Periph.TXF (SM) := Data;
+         PIO (This).TXF (SM) := Data;
       end if;
    end Try_Put;
 
    procedure Get
-      (This : in out PIO_Device;
-       SM   : PIO_SM;
+      (This : Device;
+       SM   : SM_Index;
        Data : out UInt32)
    is
+      RXEMPTY : Boolean;
    begin
-      while This.Periph.FSTAT.RXEMPTY (SM) loop
-         null;
+      loop
+         RXEMPTY := PIO (This).FSTAT.RXEMPTY (SM);
+         exit when not RXEMPTY;
       end loop;
-      Data := This.Periph.RXF (SM);
+      Data := PIO (This).RXF (SM);
    end Get;
 
    procedure Get
-      (This : in out PIO_Device;
-       SM   : PIO_SM;
+      (This : Device;
+       SM   : SM_Index;
        Data : out UInt32_Array)
    is
    begin
       for I in Data'Range loop
-         while This.Periph.FSTAT.RXEMPTY (SM) loop
-            null;
-         end loop;
-         Data (I) := This.Periph.RXF (SM);
+         Get (This, SM, Data (I));
       end loop;
    end Get;
 
    procedure Try_Get
-      (This    : in out PIO_Device;
-       SM      : PIO_SM;
+      (This    : Device;
+       SM      : SM_Index;
        Data    : out UInt32;
        Success : out Boolean)
    is
    begin
-      Success := not This.RX_FIFO_Empty (SM);
+      Success := PIO (This).FSTAT.RXEMPTY (SM);
+      Success := not Success;
       if Success then
-         Data := This.Periph.RXF (SM);
+         Data := PIO (This).RXF (SM);
       end if;
    end Try_Get;
 
-   function RX_FIFO_Full (This : PIO_Device; SM : PIO_SM) return Boolean
-   is (This.Periph.FSTAT.RXFULL (SM));
+   function RX_FIFO_Full
+      (This : Device;
+       SM   : SM_Index)
+       return Boolean
+   is (PIO (This).FSTAT.RXFULL (SM));
 
-   function RX_FIFO_Empty (This : PIO_Device; SM : PIO_SM) return Boolean
-   is (This.Periph.FSTAT.RXEMPTY (SM));
+   function RX_FIFO_Empty
+      (This : Device;
+       SM   : SM_Index)
+       return Boolean
+   is (PIO (This).FSTAT.RXEMPTY (SM));
 
-   function TX_FIFO_Full (This : PIO_Device; SM : PIO_SM) return Boolean
-   is (This.Periph.FSTAT.TXFULL (SM));
+   function TX_FIFO_Full
+      (This : Device;
+       SM   : SM_Index)
+       return Boolean
+   is (PIO (This).FSTAT.TXFULL (SM));
 
-   function TX_FIFO_Empty (This : PIO_Device; SM : PIO_SM) return Boolean
-   is (This.Periph.FSTAT.TXEMPTY (SM));
+   function TX_FIFO_Empty
+      (This : Device;
+       SM   : SM_Index)
+       return Boolean
+   is (PIO (This).FSTAT.TXEMPTY (SM));
 
    function TX_FIFO_Address
-      (This : PIO_Device;
-       SM   : PIO_SM)
+      (This : Device;
+       SM   : SM_Index)
       return System.Address
-   is (This.Periph.TXF (SM)'Address);
+   is (PIO (This).TXF (SM)'Address);
 
    function RX_FIFO_Address
-      (This : PIO_Device;
-       SM   : PIO_SM)
+      (This : Device;
+       SM   : SM_Index)
       return System.Address
-   is (This.Periph.RXF (SM)'Address);
+   is (PIO (This).RXF (SM)'Address);
 
    function FIFO_Status
-      (This : PIO_Device;
-       SM   : PIO_SM)
+      (This : Device;
+       SM   : SM_Index)
        return SM_FIFO_Status
-   is (SM_FIFO_Status'
-      (TXSTALL  => This.Periph.FDEBUG.TXSTALL (SM),
-       TXOVER   => This.Periph.FDEBUG.TXOVER (SM),
-       RXUNDER  => This.Periph.FDEBUG.RXUNDER (SM),
-       RXSTALL  => This.Periph.FDEBUG.RXSTALL (SM)));
+   is
+      FDEBUG : constant FDEBUG_Register := PIO (This).FDEBUG;
+   begin
+      return SM_FIFO_Status'
+         (TXSTALL => FDEBUG.TXSTALL (SM),
+          TXOVER  => FDEBUG.TXOVER (SM),
+          RXUNDER => FDEBUG.RXUNDER (SM),
+          RXSTALL => FDEBUG.RXSTALL (SM));
+   end FIFO_Status;
 
    procedure Clear_FIFO_Status
-      (This  : in out PIO_Device;
-       SM    : PIO_SM;
+      (This  : Device;
+       SM    : SM_Index;
        Flags : SM_FIFO_Status := (others => True))
    is
-      Mask : PIO_SM_Mask := (others => False);
-      None : constant PIO_SM_Mask := (others => False);
+      FDEBUG : FDEBUG_Register := (others => (others => False));
    begin
-      Mask (SM) := True;
-      This.Periph.FDEBUG :=
-         (TXSTALL => (if Flags.TXSTALL then Mask else None),
-          TXOVER  => (if Flags.TXOVER  then Mask else None),
-          RXUNDER => (if Flags.RXUNDER then Mask else None),
-          RXSTALL => (if Flags.RXSTALL then Mask else None));
+      FDEBUG.TXSTALL (SM) := Flags.TXSTALL;
+      FDEBUG.TXOVER (SM) := Flags.TXOVER;
+      FDEBUG.RXUNDER (SM) := Flags.RXUNDER;
+      FDEBUG.RXSTALL (SM) := Flags.RXSTALL;
+      PIO (This).FDEBUG := FDEBUG;
    end Clear_FIFO_Status;
 
-   function NVIC_IRQ_Line
-      (This : PIO_Device;
-       IRQ  : PIO_IRQ_ID)
-      return Cortex_M.NVIC.Interrupt_ID
+   procedure Enable_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       SM   : SM_Index;
+       Flag : PIO_IRQ_Flag)
    is
-      use RP2040_SVD.Interrupts;
    begin
-      case This.Num is
-         when 0 =>
-            case IRQ is
-               when 0 => return PIO0_IRQ_0_Interrupt;
-               when 1 => return PIO0_IRQ_1_Interrupt;
-            end case;
-         when 1 =>
-            case IRQ is
-               when 0 => return PIO1_IRQ_0_Interrupt;
-               when 1 => return PIO1_IRQ_1_Interrupt;
-            end case;
-         when 2 =>
-            raise Program_Error; --  TODO
-      end case;
-   end NVIC_IRQ_Line;
-
-   procedure Enable_IRQ (This : in out PIO_Device;
-                         IRQ  :        PIO_IRQ_ID)
-   is
-      Line : constant Cortex_M.NVIC.Interrupt_ID := NVIC_IRQ_Line (This, IRQ);
-   begin
-      Cortex_M.NVIC.Clear_Pending (Line);
-      Cortex_M.NVIC.Enable_Interrupt (Line);
-   end Enable_IRQ;
-
-   procedure Disable_IRQ (This : in out PIO_Device;
-                          IRQ  :        PIO_IRQ_ID)
-   is
-      Line : constant Cortex_M.NVIC.Interrupt_ID := NVIC_IRQ_Line (This, IRQ);
-   begin
-      Cortex_M.NVIC.Disable_Interrupt (Line);
-   end Disable_IRQ;
-
-   procedure Enable_IRQ_Flag (This : in out PIO_Device;
-                              IRQ  :        PIO_IRQ_ID;
-                              Flag :        PIO_IRQ_Flag)
-   is
-      INTE_Addr : constant System.Address :=
-        (case IRQ is
-            when 0 => This.Periph.IRQ0_INTE'Address,
-            when 1 => This.Periph.IRQ1_INTE'Address);
-
-      INTE : UInt32
-        with Address => INTE_Addr, Volatile_Full_Access;
-   begin
-
-      INTE := INTE or Flag'Enum_Rep;
+      PIO (This).INT (IRQ).INTE.Flag (Flag) (SM) := True;
    end Enable_IRQ_Flag;
 
-   procedure Disable_IRQ_Flag (This : in out PIO_Device;
-                               IRQ  :        PIO_IRQ_ID;
-                               Flag :        PIO_IRQ_Flag)
+   procedure Disable_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       SM   : SM_Index;
+       Flag : PIO_IRQ_Flag)
    is
-      INTE_Addr : constant System.Address :=
-        (case IRQ is
-            when 0 => This.Periph.IRQ0_INTE'Address,
-            when 1 => This.Periph.IRQ1_INTE'Address);
-
-      INTE : UInt32
-        with Address => INTE_Addr, Volatile_Full_Access;
    begin
-      INTE := INTE and (not Flag'Enum_Rep);
+      PIO (This).INT (IRQ).INTE.Flag (Flag) (SM) := False;
    end Disable_IRQ_Flag;
 
-   function IRQ_Flag_Status (This : in out PIO_Device;
-                             IRQ  :        PIO_IRQ_ID;
-                             Flag :        PIO_IRQ_Flag)
-                             return Boolean
+   function IRQ_Flag_Status
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       SM   : SM_Index;
+       Flag : PIO_IRQ_Flag)
+       return Boolean
+   is (PIO (This).INT (IRQ).INTS.Flag (Flag) (SM));
+
+   procedure Force_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       SM   : SM_Index;
+       Flag : PIO_IRQ_Flag)
    is
-      INTS_Addr : constant System.Address :=
-        (case IRQ is
-            when 0 => This.Periph.IRQ0_INTS'Address,
-            when 1 => This.Periph.IRQ1_INTS'Address);
-
-      INTS : UInt32
-        with Address => INTS_Addr, Volatile_Full_Access;
    begin
-      return (INTS and Flag'Enum_Rep) /= 0;
-   end IRQ_Flag_Status;
-
-   procedure Force_IRQ_Flag (This : in out PIO_Device;
-                             IRQ  :        PIO_IRQ_ID;
-                             Flag :        PIO_IRQ_Flag)
-   is
-      INTF_Addr : constant System.Address :=
-        (case IRQ is
-            when 0 => This.Periph.IRQ0_INTF'Address,
-            when 1 => This.Periph.IRQ1_INTF'Address);
-
-      INTF : UInt32
-        with Address => INTF_Addr, Volatile_Full_Access;
-   begin
-      INTF := INTF or Flag'Enum_Rep;
+      PIO (This).INT (IRQ).INTF.Flag (Flag) (SM) := True;
    end Force_IRQ_Flag;
 
-   procedure Clear_Force_IRQ_Flag (This : in out PIO_Device;
-                                   IRQ  :        PIO_IRQ_ID;
-                                   Flag :        PIO_IRQ_Flag)
+   procedure Clear_Force_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       SM   : SM_Index;
+       Flag : PIO_IRQ_Flag)
    is
-      INTF_Addr : constant System.Address :=
-        (case IRQ is
-            when 0 => This.Periph.IRQ0_INTF'Address,
-            when 1 => This.Periph.IRQ1_INTF'Address);
-
-      INTF : UInt32
-        with Address => INTF_Addr, Volatile_Full_Access;
    begin
-      INTF := INTF and (not Flag'Enum_Rep);
+      PIO (This).INT (IRQ).INTF.Flag (Flag) (SM) := False;
    end Clear_Force_IRQ_Flag;
 
-   procedure Ack_SM_IRQ (This : in out PIO_Device;
-                         Flag :        PIO_SM_IRQ_Flag)
+   procedure Ack_SM_IRQ
+      (This : Device;
+       Flag : SM_IRQ_Flag)
    is
-      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
    begin
-      --  Write 1 to clear
-      This.Periph.IRQ.IRQ := Mask;
+      PIO (This).IRQ.SM (Flag) := True;
    end Ack_SM_IRQ;
 
-   --  Acknolege a state-machine-level IRQ
+   function SM_IRQ_Status
+      (This : Device;
+       Flag : SM_IRQ_Flag)
+       return Boolean
+   is (PIO (This).IRQ.SM (Flag));
 
-   function SM_IRQ_Status (This : in out PIO_Device;
-                           Flag :        PIO_SM_IRQ_Flag)
-                           return Boolean
+   procedure Force_SM_IRQ
+      (This : Device;
+       Flag : SM_IRQ_Flag)
    is
-      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
    begin
-      return (This.Periph.IRQ.IRQ and Mask) /= 0;
-   end SM_IRQ_Status;
-
-   procedure Force_SM_IRQ (This : in out PIO_Device;
-                           Flag :        PIO_SM_IRQ_Flag)
-   is
-      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
-   begin
-      This.Periph.IRQ_FORCE.IRQ_FORCE :=
-        This.Periph.IRQ_FORCE.IRQ_FORCE or Mask;
+      PIO (This).IRQ_FORCE.SM (Flag) := True;
    end Force_SM_IRQ;
 
-   procedure Clear_Force_SM_IRQ (This : in out PIO_Device;
-                                 Flag :        PIO_SM_IRQ_Flag)
+   procedure Clear_Force_SM_IRQ
+      (This : Device;
+       Flag : SM_IRQ_Flag)
    is
-      Mask : constant UInt8 := Shift_Left (1,  Natural (Flag));
    begin
-      This.Periph.IRQ_FORCE.IRQ_FORCE :=
-        This.Periph.IRQ_FORCE.IRQ_FORCE and (not Mask);
+      PIO (This).IRQ_FORCE.SM (Flag) := True;
    end Clear_Force_SM_IRQ;
 
    function DMA_TX_Trigger
-      (This : PIO_Device;
-       SM   : PIO_SM)
+      (This : Device;
+       SM   : SM_Index)
        return RP.DMA.DMA_Request_Trigger
-   is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM)));
+   is
+      use RP.DMA;
+      RT : Natural := DMA_Request_Trigger'Pos (PIO0_TX0);
+   begin
+      RT := RT + Natural (SM) + (Natural (This) * 8);
+      return DMA_Request_Trigger'Val (RT);
+   end DMA_TX_Trigger;
 
    function DMA_RX_Trigger
-      (This : PIO_Device;
-       SM   : PIO_SM)
+      (This : Device;
+       SM   : SM_Index)
        return RP.DMA.DMA_Request_Trigger
-   is (RP.DMA.DMA_Request_Trigger'Val (This.Num * 8 + Natural (SM) + 4));
+   is
+      use RP.DMA;
+      RT : Natural := DMA_Request_Trigger'Pos (PIO0_RX0);
+   begin
+      RT := RT + Natural (SM) + (Natural (This) * 8);
+      return DMA_Request_Trigger'Val (RT);
+   end DMA_RX_Trigger;
 
    function Current_Instruction_Address
-      (This : PIO_Device;
-       SM   : PIO_SM)
+      (This : Device;
+       SM   : SM_Index)
        return PIO_Address
-   is (PIO_Address (This.Periph.SM (SM).ADDR.SM0_ADDR));
+   is (PIO_Address (PIO (This).SM (SM).ADDR));
 
 end RP.PIO;
