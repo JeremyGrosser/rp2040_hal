@@ -1,60 +1,79 @@
 --
---  Copyright 2021 (C) Jeremy Grosser
+--  Copyright 2021-2026 (C) Jeremy Grosser
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with Ada.Real_Time; use Ada.Real_Time;
-with HAL; use HAL;
 with RP.Reset;
 with RP.Clock;
 
 package body RP.UART is
+
+   UART_Fraction : constant := 1.0 / 2 ** 6;
+   type UART_Divider is delta UART_Fraction
+      range UART_Fraction .. (2.0 ** 16) - UART_Fraction;
+
+   function Div_Integer
+      (D : UART_Divider)
+      return UInt32
+   is
+      I : constant Natural := Natural (D);
+   begin
+      if UART_Divider (I) > D then
+         return UInt32 (I - 1);
+      else
+         return UInt32 (I);
+      end if;
+   end Div_Integer;
+
+   function Div_Fraction
+      (D : UART_Divider)
+      return UInt32
+   is
+      Multiple : constant UART_Divider := UART_Divider (2 ** 6);
+      Int      : constant UART_Divider := UART_Divider (Div_Integer (D));
+   begin
+      return UInt32 ((D - Int) * Multiple);
+   end Div_Fraction;
 
    procedure Configure
       (This   : in out UART_Port;
        Config : UART_Configuration := Default_UART_Configuration)
    is
       use RP.Reset;
-      Word_Length : constant UInt2 := UInt2
-         (Config.Word_Size - UART_Word_Size'First);
+      R : constant Reset_Id := Reset_Id'Val (Reset_Id'Pos (Reset_UART0) + Natural (This.Num));
+      Bus_Clock    : constant Hertz := RP.Clock.Frequency (RP.Clock.PERI);
+      Sample_Clock : constant Hertz := Config.Baud * 16;
+      Div : constant UART_Divider := UART_Divider
+         (Float (Bus_Clock) / Float (Sample_Clock));
    begin
       RP.Clock.Enable_PERI;
+      Reset_Peripheral (R);
 
-      case This.Num is
-         when 0 => Reset_Peripheral (Reset_UART0);
-         when 1 => Reset_Peripheral (Reset_UART1);
-      end case;
-
-      This.Periph.UARTDMACR :=
-         (RXDMAE => True,
-          TXDMAE => True,
-          others => <>);
-
-      declare
-         Div : constant UART_Divider := UART_Divider
-            (Float (RP.Clock.Frequency (RP.Clock.PERI)) / Float (Config.Baud * 16));
-      begin
-         This.Periph.UARTIBRD.BAUD_DIVINT := Div_Integer (Div);
-         This.Periph.UARTFBRD.BAUD_DIVFRAC := Div_Fraction (Div);
-      end;
-
-      This.Periph.UARTLCR_H :=
-         (WLEN   => Word_Length,
-          PEN    => Config.Parity,
-          EPS    => Config.Parity_Type = Even,
-          STP2   => (Config.Stop_Bits = 2),
-          SPS    => False, --  Stick parity is disabled by default
+      This.Periph.DMACR := 2#11#;
+      This.Periph.IBRD := Div_Integer (Div);
+      This.Periph.FBRD := Div_Fraction (Div);
+      This.Periph.LCR_H :=
+         (SPS    => False,
+          WLEN   => UInt2 (Config.Word_Size - UART_Word_Size'First),
           FEN    => Config.Enable_FIFOs,
-          BRK    => False, --  Don't send break initially
-          others => <>);
-
-      This.Periph.UARTCR :=
-         (UARTEN => True,
-          TXE    => True,
-          RXE    => True,
-          LBE    => Config.Loopback,
-          others => <>);
-
+          STP2   => Config.Stop_Bits = 2,
+          EPS    => Config.Parity_Type = Even,
+          PEN    => Config.Parity,
+          BRK    => False);
+      This.Periph.CR :=
+         (CTSEN   => False,
+          RTSEN   => False,
+          OUT2    => False,
+          OUT1    => False,
+          RTS     => False,
+          DTR     => False,
+          TXE     => True,
+          RXE     => True,
+          LBE     => Config.Loopback,
+          SIRLP   => False,
+          SIREN   => False,
+          UARTEN  => True);
       This.Config := Config;
    end Configure;
 
@@ -63,7 +82,7 @@ package body RP.UART is
        Enabled : Boolean)
    is
    begin
-      This.Periph.UARTLCR_H.SPS := Enabled;
+      This.Periph.LCR_H.SPS := Enabled;
    end Set_Stick_Parity;
 
    function Symbol_Time
@@ -98,9 +117,9 @@ package body RP.UART is
       if Start then
          delay 1.0e-6 * This.Symbol_Time;
       end if;
-      This.Periph.UARTLCR_H.BRK := True;
+      This.Periph.LCR_H.BRK := True;
       delay Duration (Length) / 1.0e6;
-      This.Periph.UARTLCR_H.BRK := False;
+      This.Periph.LCR_H.BRK := False;
    end Send_Break;
 
    function Transmit_Status
@@ -112,7 +131,7 @@ package body RP.UART is
       --  0    1     Full
       --  1    0     Empty
       --  1    1     Invalid
-      Flags : constant UARTFR_Register := This.Periph.UARTFR;
+      Flags : constant FR_Register := This.Periph.FR;
    begin
       if Flags.TXFE = False and Flags.TXFF = False then
          return Not_Full;
@@ -136,7 +155,7 @@ package body RP.UART is
       --  0    1     Full
       --  1    0     Empty
       --  1    1     Invalid
-      Flags : constant UARTFR_Register := This.Periph.UARTFR;
+      Flags : constant FR_Register := This.Periph.FR;
    begin
       if Flags.RXFE = False and Flags.RXFF = False then
          return Not_Full;
@@ -152,7 +171,7 @@ package body RP.UART is
    function FIFO_Address
       (This : UART_Port)
       return System.Address
-   is (This.Periph.UARTDR'Address);
+   is (This.Periph.DR'Address);
 
    overriding
    function Data_Size
@@ -188,7 +207,11 @@ package body RP.UART is
             end if;
          end loop;
 
-         This.Periph.UARTDR.DATA := D;
+         This.Periph.DR :=
+            (BE   => False,
+             PE   => False,
+             FE   => False,
+             DATA => D);
       end loop;
       Status := Ok;
    end Transmit;
@@ -202,7 +225,7 @@ package body RP.UART is
    is
       Deadline : Time;
       FIFO     : UART_FIFO_Status;
-      DR       : UARTDR_Register;
+      DR       : DR_Register;
    begin
       if Timeout > 0 then
          Deadline := Ada.Real_Time.Clock + Milliseconds (Timeout);
@@ -227,7 +250,7 @@ package body RP.UART is
 
          --  Read the whole UARTDR at once so that we get the flags
          --  synchronized with the DATA read.
-         DR := This.Periph.UARTDR;
+         DR := This.Periph.DR;
          Data (I) := DR.DATA;
          if DR.BE then
             Status := Busy;
@@ -266,95 +289,51 @@ package body RP.UART is
       Status := Err_Error;
    end Receive;
 
-   function Div_Integer
-      (D : UART_Divider)
-      return UARTIBRD_BAUD_DIVINT_Field
-   is
-      I : constant Natural := Natural (D);
-   begin
-      if UART_Divider (I) > D then
-         return UARTIBRD_BAUD_DIVINT_Field (I - 1);
-      else
-         return UARTIBRD_BAUD_DIVINT_Field (I);
-      end if;
-   end Div_Integer;
-
-   function Div_Fraction
-      (D : UART_Divider)
-      return UARTFBRD_BAUD_DIVFRAC_Field
-   is
-      Multiple : constant UART_Divider := UART_Divider (2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size);
-      Int      : constant UART_Divider := UART_Divider (Div_Integer (D));
-   begin
-      return UARTFBRD_BAUD_DIVFRAC_Field ((D - Int) * Multiple);
-   end Div_Fraction;
-
-   function Div_Value
-      (Int  : UARTIBRD_BAUD_DIVINT_Field;
-       Frac : UARTFBRD_BAUD_DIVFRAC_Field)
-       return UART_Divider
-   is (UART_Divider (Int) + (UART_Divider (Frac) / UART_Divider (2 ** UARTFBRD_BAUD_DIVFRAC_Field'Size)));
-
-   procedure Set_FIFO_IRQ_Level (This : in out UART_Port;
-                                 RX   :        FIFO_IRQ_Level;
-                                 TX   :        FIFO_IRQ_Level)
+   procedure Set_FIFO_IRQ_Level
+      (This : UART_Port;
+       RX   : FIFO_IRQ_Level;
+       TX   : FIFO_IRQ_Level)
    is
    begin
-      This.Periph.UARTIFLS := (TXIFLSEL => TX'Enum_Rep,
-                               RXIFLSEL => RX'Enum_Rep,
-                               others   => <>);
+      This.Periph.IFLS :=
+         (TXIFLSEL => TX,
+          RXIFLSEL => RX);
    end Set_FIFO_IRQ_Level;
 
-   procedure Enable_IRQ (This : in out UART_Port;
-                         IRQ  :        UART_IRQ_Flag)
+   procedure Enable_IRQ
+      (This : UART_Port;
+       IRQ  : UART_IRQ_Flag)
    is
-      Mask : HAL.UInt32
-        with Address => This.Periph.UARTIMSC'Address,
-        Volatile_Full_Access;
    begin
-      Mask := Mask or IRQ'Enum_Rep;
+      This.Periph.IMSC.Flags (IRQ) := True;
    end Enable_IRQ;
 
-   procedure Disable_IRQ (This : in out UART_Port;
-                          IRQ  :        UART_IRQ_Flag)
+   procedure Disable_IRQ
+      (This : UART_Port;
+       IRQ  : UART_IRQ_Flag)
    is
-      Mask : HAL.UInt32
-        with Address => This.Periph.UARTIMSC'Address,
-        Volatile_Full_Access;
    begin
-      Mask := Mask and (not IRQ'Enum_Rep);
+      This.Periph.IMSC.Flags (IRQ) := False;
    end Disable_IRQ;
 
-   procedure Clear_IRQ (This : in out UART_Port;
-                        IRQ  :        UART_IRQ_Flag)
+   procedure Clear_IRQ
+      (This : UART_Port;
+       IRQ  : UART_IRQ_Flag)
    is
-      Clear : HAL.UInt32
-        with Address => This.Periph.UARTICR'Address,
-        Volatile_Full_Access;
    begin
-      Clear := IRQ'Enum_Rep;
+      This.Periph.ICR.Flags (IRQ) := True;
    end Clear_IRQ;
 
-   function Masked_IRQ_Status (This : UART_Port;
-                               IRQ  : UART_IRQ_Flag)
-                               return Boolean
-   is
-      Masked_Status : HAL.UInt32
-        with Address => This.Periph.UARTMIS'Address,
-        Volatile_Full_Access;
-   begin
-      return (Masked_Status and IRQ'Enum_Rep) /= 0;
-   end Masked_IRQ_Status;
+   function Masked_IRQ_Status
+      (This : UART_Port;
+       IRQ  : UART_IRQ_Flag)
+       return Boolean
+   is (This.Periph.MIS.Flags (IRQ));
 
-   function Raw_IRQ_Status (This : UART_Port;
-                            IRQ  : UART_IRQ_Flag)
-                            return Boolean
-   is
-      RAW_Status : HAL.UInt32
-        with Address => This.Periph.UARTRIS'Address,
-        Volatile_Full_Access;
-   begin
-      return (RAW_Status and IRQ'Enum_Rep) /= 0;
-   end Raw_IRQ_Status;
+   function Raw_IRQ_Status
+      (This : UART_Port;
+       IRQ  : UART_IRQ_Flag)
+       return Boolean
+   is (This.Periph.RIS.Flags (IRQ));
 
 end RP.UART;

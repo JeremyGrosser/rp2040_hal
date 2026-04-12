@@ -11,9 +11,10 @@ with System;
 package RP.SPI is
    type SPI_Number is range 0 .. 1;
    type SPI_Peripheral is private;
+   type Any_SPI_Peripheral is access all SPI_Peripheral;
    type SPI_Port
       (Num : SPI_Number;
-       Periph : not null access SPI_Peripheral)
+       Periph : not null Any_SPI_Peripheral)
    is new HAL.SPI.SPI_Port with record
       Blocking : Boolean := False;
    end record;
