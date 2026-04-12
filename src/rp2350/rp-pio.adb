@@ -21,8 +21,8 @@ package body RP.PIO is
       OUT_STICKY     : Boolean := False;
       WRAP_TOP       : UInt5 := 16#1F#;
       WRAP_BOTTOM    : UInt5 := 0;
-      STATUS_SEL     : Boolean := False;
-      STATUS_N       : UInt4 := 0;
+      STATUS_SEL     : UInt2 := 0;
+      STATUS_N       : UInt5 := 0;
    end record
 --      with Volatile_Full_Access,
 --           Effective_Writes,
@@ -39,8 +39,8 @@ package body RP.PIO is
       OUT_STICKY     at 0 range 17 .. 17;
       WRAP_TOP       at 0 range 12 .. 16;
       WRAP_BOTTOM    at 0 range 7 .. 11;
-      STATUS_SEL     at 0 range 4 .. 4;
-      STATUS_N       at 0 range 0 .. 3;
+      STATUS_SEL     at 0 range 5 .. 6;
+      STATUS_N       at 0 range 0 .. 4;
    end record;
 
    function To_UInt32 is new Ada.Unchecked_Conversion (EXECCTRL_Register, UInt32);
@@ -119,11 +119,10 @@ package body RP.PIO is
    type INSTR_MEM_Array is array (PIO_Address) of PIO_Instruction
       with Component_Size => 32;
 
-   type INT_Flag_Array is array (PIO_IRQ_Flag) of SM_Mask
-      with Component_Size => 4, Size => 12;
-
    type INT_Register is record
-      Flag : INT_Flag_Array;
+      SM       : IRQ_Array;
+      TXNFULL  : SM_Mask;
+      RXNEMPTY : SM_Mask;
    end record
       with Volatile_Full_Access,
            Effective_Writes,
@@ -131,7 +130,9 @@ package body RP.PIO is
            Async_Writers,
            Object_Size => 32;
    for INT_Register use record
-      Flag     at 0 range 0 .. 11;
+      SM       at 0 range 8 .. 15;
+      TXNFULL  at 0 range 4 .. 7;
+      RXNEMPTY at 0 range 0 .. 3;
    end record;
 
    type INT_Group is record
@@ -161,6 +162,7 @@ package body RP.PIO is
       INTR        : INT_Register;
       INT         : INT_Array; --  IRQn_INTE, IRQn_INTF, IRQn_INTS
       SM          : SM_Array;
+      GPIOBASE    : UInt32;
    end record
       with Volatile;
    for PIO_Peripheral use record
@@ -172,9 +174,10 @@ package body RP.PIO is
       IRQ         at 16#030# range 0 .. 31;
       IRQ_FORCE   at 16#034# range 0 .. 31;
       INSTR_MEM   at 16#048# range 0 .. 1023;
-      INTR        at 16#128# range 0 .. 31;
-      INT         at 16#12C# range 0 .. 191;
       SM          at 16#0C8# range 0 .. 767;
+      GPIOBASE    at 16#168# range 0 .. 31;
+      INTR        at 16#16C# range 0 .. 31;
+      INT         at 16#170# range 0 .. 191;
    end record;
 
    pragma Warnings (Off, "component of ""PIO_Array"" padded by * bits");
@@ -380,12 +383,12 @@ package body RP.PIO is
    procedure Set_MOV_Status
       (Config     : in out SM_Config;
        Status_Sel : MOV_Status_Type;
-       Status_N   : UInt4)
+       Status_N   : UInt5)
    is
       EXECCTRL : EXECCTRL_Register := To_EXECCTRL (Config.EXECCTRL);
    begin
       EXECCTRL.STATUS_N := Status_N;
-      EXECCTRL.STATUS_SEL := Status_Sel = RX_Less_Than;
+      EXECCTRL.STATUS_SEL := UInt2 (MOV_Status_Type'Pos (Status_Sel));
       Config.EXECCTRL := To_UInt32 (EXECCTRL);
    end Set_MOV_Status;
 
@@ -551,6 +554,7 @@ package body RP.PIO is
    is
    begin
       Success := PIO (This).FSTAT.TXFULL (SM);
+      Success := not Success;
       if Success then
          PIO (This).TXF (SM) := Data;
       end if;
@@ -594,6 +598,14 @@ package body RP.PIO is
          Data := PIO (This).RXF (SM);
       end if;
    end Try_Get;
+
+   procedure Set_GPIO_Base
+      (This : Device;
+       Base : PIO_GPIO_Base)
+   is
+   begin
+      PIO (This).GPIOBASE := UInt32 (Base);
+   end Set_GPIO_Base;
 
    function RX_FIFO_Full
       (This : Device;
@@ -666,7 +678,14 @@ package body RP.PIO is
        Flag : PIO_IRQ_Flag)
    is
    begin
-      PIO (This).INT (IRQ).INTE.Flag (Flag) (SM) := True;
+      case Flag is
+         when RXNEMPTY =>
+            PIO (This).INT (IRQ).INTE.RXNEMPTY (SM) := True;
+         when TXNFULL =>
+            PIO (This).INT (IRQ).INTE.TXNFULL (SM) := True;
+         when SM_IRQ =>
+            PIO (This).INT (IRQ).INTE.SM (SM_IRQ_Flag (SM)) := True;
+      end case;
    end Enable_IRQ_Flag;
 
    procedure Disable_IRQ_Flag
@@ -676,7 +695,14 @@ package body RP.PIO is
        Flag : PIO_IRQ_Flag)
    is
    begin
-      PIO (This).INT (IRQ).INTE.Flag (Flag) (SM) := False;
+      case Flag is
+         when RXNEMPTY =>
+            PIO (This).INT (IRQ).INTE.RXNEMPTY (SM) := False;
+         when TXNFULL =>
+            PIO (This).INT (IRQ).INTE.TXNFULL (SM) := False;
+         when SM_IRQ =>
+            PIO (This).INT (IRQ).INTE.SM (SM_IRQ_Flag (SM)) := False;
+      end case;
    end Disable_IRQ_Flag;
 
    function IRQ_Flag_Status
@@ -685,7 +711,17 @@ package body RP.PIO is
        SM   : SM_Index;
        Flag : PIO_IRQ_Flag)
        return Boolean
-   is (PIO (This).INT (IRQ).INTS.Flag (Flag) (SM));
+   is
+   begin
+      case Flag is
+         when RXNEMPTY =>
+            return PIO (This).INT (IRQ).INTS.RXNEMPTY (SM);
+         when TXNFULL =>
+            return PIO (This).INT (IRQ).INTS.TXNFULL (SM);
+         when SM_IRQ =>
+            return PIO (This).INT (IRQ).INTS.SM (SM_IRQ_Flag (SM));
+      end case;
+   end IRQ_Flag_Status;
 
    procedure Force_IRQ_Flag
       (This : Device;
@@ -694,7 +730,14 @@ package body RP.PIO is
        Flag : PIO_IRQ_Flag)
    is
    begin
-      PIO (This).INT (IRQ).INTF.Flag (Flag) (SM) := True;
+      case Flag is
+         when RXNEMPTY =>
+            PIO (This).INT (IRQ).INTF.RXNEMPTY (SM) := True;
+         when TXNFULL =>
+            PIO (This).INT (IRQ).INTF.TXNFULL (SM) := True;
+         when SM_IRQ =>
+            PIO (This).INT (IRQ).INTF.SM (SM_IRQ_Flag (SM)) := True;
+      end case;
    end Force_IRQ_Flag;
 
    procedure Clear_Force_IRQ_Flag
@@ -704,8 +747,33 @@ package body RP.PIO is
        Flag : PIO_IRQ_Flag)
    is
    begin
-      PIO (This).INT (IRQ).INTF.Flag (Flag) (SM) := False;
+      case Flag is
+         when RXNEMPTY =>
+            PIO (This).INT (IRQ).INTF.RXNEMPTY (SM) := False;
+         when TXNFULL =>
+            PIO (This).INT (IRQ).INTF.TXNFULL (SM) := False;
+         when SM_IRQ =>
+            PIO (This).INT (IRQ).INTF.SM (SM_IRQ_Flag (SM)) := False;
+      end case;
    end Clear_Force_IRQ_Flag;
+
+   procedure Enable_SM_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       Flag : SM_IRQ_Flag)
+   is
+   begin
+      PIO (This).INT (IRQ).INTE.SM (Flag) := True;
+   end Enable_SM_IRQ_Flag;
+
+   procedure Disable_SM_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       Flag : SM_IRQ_Flag)
+   is
+   begin
+      PIO (This).INT (IRQ).INTE.SM (Flag) := False;
+   end Disable_SM_IRQ_Flag;
 
    procedure Ack_SM_IRQ
       (This : Device;
@@ -734,7 +802,7 @@ package body RP.PIO is
        Flag : SM_IRQ_Flag)
    is
    begin
-      PIO (This).IRQ_FORCE.SM (Flag) := True;
+      PIO (This).IRQ_FORCE.SM (Flag) := False;
    end Clear_Force_SM_IRQ;
 
    function DMA_TX_Trigger

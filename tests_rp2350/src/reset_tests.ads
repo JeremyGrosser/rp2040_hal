@@ -23,7 +23,4 @@ package Reset_Tests is
    procedure Set_Up
       (T : in out Reset_Test);
 
-   procedure Test_Timeout
-      (T : in out AUnit.Test_Cases.Test_Case'Class);
-
 end Reset_Tests;

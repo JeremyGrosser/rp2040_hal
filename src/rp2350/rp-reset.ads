@@ -38,20 +38,9 @@ is
        Reset_UART1,
        Reset_USBCTRL);
 
-   type Reset_Status is
-      (Reset_Ok,
-       Reset_Timeout);
-
    --  This will hang if the reset fails. Most drivers use this version.
    procedure Reset_Peripheral
       (Peripheral : Reset_Id);
-
-   --  Timeout is specified in Milliseconds. No peripheral should take more
-   --  than a few cycles to reset.
-   procedure Reset_Peripheral
-      (Peripheral : Reset_Id;
-       Status     : out Reset_Status;
-       Timeout    : Natural := 100);
 
    function Reset_Done
       (Peripheral : Reset_Id)

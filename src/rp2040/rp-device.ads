@@ -3,21 +3,24 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.SPI;
 with RP2040_SVD.UART;
 with RP2040_SVD.ADC;
 with RP2040_SVD;
-with RP.SPI;
 with RP.I2C_Master;
 with RP.UART;
+with RP.SPI;
 with RP.RTC;
 with RP.Interpolator;
 with RP.USB_Device;
 with System;
 
 package RP.Device is
-   SPI_0 : aliased RP.SPI.SPI_Port (0, RP2040_SVD.SPI.SPI0_Periph'Access);
-   SPI_1 : aliased RP.SPI.SPI_Port (1, RP2040_SVD.SPI.SPI1_Periph'Access);
+   SPI0_Periph : aliased RP.SPI.SPI_Peripheral
+      with Import, Address => RP2040_SVD.SPI0_Base;
+   SPI1_Periph : aliased RP.SPI.SPI_Peripheral
+      with Import, Address => RP2040_SVD.SPI1_Base;
+   SPI_0 : aliased RP.SPI.SPI_Port (0, SPI0_Periph'Access);
+   SPI_1 : aliased RP.SPI.SPI_Port (1, SPI1_Periph'Access);
 
    I2CM0_Periph : aliased RP.I2C_Master.I2C_Peripheral
       with Import, Address => RP2040_SVD.I2C0_Base;

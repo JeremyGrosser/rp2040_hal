@@ -106,12 +106,13 @@ is
        Has_Enable_Pin   : Boolean;
        Enable_Pin_Index : RP.GPIO.GPIO_Pin);
 
-   type MOV_Status_Type is (TX_Less_Than, RX_Less_Than);
+   type MOV_Status_Type is (TX_Less_Than, RX_Less_Than, IRQ_Flag);
 
    procedure Set_MOV_Status
       (Config     : in out SM_Config;
        Status_Sel : MOV_Status_Type;
-       Status_N   : UInt4);
+       Status_N   : UInt5);
+   --  Status_Sel = IRQ_Flag or Status_N > 15 not supported on RP2040
 
    function Default_SM_Config
       return SM_Config;
@@ -211,6 +212,15 @@ is
    --  Try to get one word from the RX FIFO of the given state machine. If the
    --  FIFO is empty, Success is set to False and Data is not set.
 
+   type PIO_GPIO_Base is range 0 .. 16
+      with Static_Predicate => PIO_GPIO_Base = 0 or PIO_GPIO_Base = 16;
+
+   procedure Set_GPIO_Base
+      (This : Device;
+       Base : PIO_GPIO_Base);
+   --  PIO GPIO numbering can be offset by 0 or 16 pins on RP2350
+   --  On RP2040 this procedure raises an exception
+
    function RX_FIFO_Full
       (This : Device;
        SM   : SM_Index)
@@ -278,7 +288,7 @@ is
 
    type PIO_IRQ_ID is range 0 .. 1;
 
-   type PIO_IRQ_Flag is (SM_IRQ, RXNEMPTY, TXNFULL);
+   type PIO_IRQ_Flag is (RXNEMPTY, TXNFULL, SM_IRQ);
 
    procedure Enable_IRQ_Flag
       (This : Device;
@@ -317,6 +327,20 @@ is
    --  Clear force a system-level IRQ
 
    type SM_IRQ_Flag is range 0 .. 7;
+
+   procedure Enable_SM_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       Flag : SM_IRQ_Flag);
+   --  Enable a system-level IRQ for SM IRQ flag 0..7.
+   --  On RP2040, Flag must be in 0..3 or Constraint_Error is raised.
+
+   procedure Disable_SM_IRQ_Flag
+      (This : Device;
+       IRQ  : PIO_IRQ_ID;
+       Flag : SM_IRQ_Flag);
+   --  Disable a system-level IRQ for SM IRQ flag 0..7.
+   --  On RP2040, Flag must be in 0..3 or Constraint_Error is raised.
 
    procedure Ack_SM_IRQ
       (This : Device;
