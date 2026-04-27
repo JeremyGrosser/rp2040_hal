@@ -32,14 +32,21 @@ package body SPI_Tests is
    procedure Test_Transfer
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      Config : RP.SPI.SPI_Configuration :=
-         (Loopback => True,
-          others   => <>);
+      Config : RP.SPI.SPI_Configuration := RP.SPI.Default_SPI_Configuration;
       Status : SPI_Status;
    begin
       declare
+         Data : UInt8 := 16#AA#;
+      begin
+         Port.Configure (Config);
+         Port.Transfer (Data);
+         Assert (Data = 16#00#, "Expected null");
+      end;
+
+      declare
          Data : SPI_Data_8b (1 .. 1) := (1 => 42);
       begin
+         Config.Loopback := True;
          Port.Configure (Config);
          Port.Transmit (Data, Status);
          Assert (Status = Ok, "Transmit failed");

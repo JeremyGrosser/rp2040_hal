@@ -12,7 +12,7 @@ is
 
    type Strip
       (Pin : not null access RP.GPIO.GPIO_Point;
-       PIO : not null access PIO_Device;
+       PIO : PIO_Device;
        SM  : PIO_SM;
        Number_Of_LEDs : Positive)
    is tagged record

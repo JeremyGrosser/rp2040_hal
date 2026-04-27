@@ -197,7 +197,7 @@ package body RP.Clock is
           DC50    => False,
           ENABLE  => True,
           KILL    => False,
-          AUXSRC  => 1); --  PLL_SYS
+          AUXSRC  => 3); --  XOSC
    end Enable_RTC;
 
 end RP.Clock;

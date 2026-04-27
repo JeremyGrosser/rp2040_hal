@@ -37,14 +37,15 @@ package body RP.PIO.WS2812 is
       Bit_Per_LED : constant := 24;
 
    begin
-      This.Pin.Configure (Output, Pull_Up, This.PIO.GPIO_Function);
+      This.Pin.Configure (RP.GPIO.Output, RP.GPIO.Pull_Up, GPIO_Function (This.PIO));
 
-      This.PIO.Enable;
-      This.PIO.Load
-         (Prog   => WS2812_PIO.Ws2812_Program_Instructions,
+      Enable (This.PIO);
+      Load
+         (This   => This.PIO,
+          Prog   => WS2812_PIO.Ws2812_Program_Instructions,
           Offset => ASM_Offset);
 
-      This.PIO.Set_Pin_Direction (This.SM, This.Pin.Pin, Output);
+      Set_Pin_Direction (This.PIO, This.SM, This.Pin.Pin, RP.PIO.Output);
 
       Set_Sideset (Config,
                    Bit_Count => 1,
@@ -66,8 +67,8 @@ package body RP.PIO.WS2812 is
 
       Set_Clock_Frequency (Config, Freq * Cycles_Per_Bit);
 
-      This.PIO.SM_Initialize (This.SM, ASM_Offset, Config);
-      This.PIO.Set_Enabled (This.SM, True);
+      SM_Initialize (This.PIO, This.SM, ASM_Offset, Config);
+      Set_Enabled (This.PIO, This.SM, True);
 
       This.Initialized := True;
    end Initialize;
@@ -82,7 +83,7 @@ package body RP.PIO.WS2812 is
       use RP.DMA;
       Config : DMA_Configuration;
    begin
-      Config.Trigger := This.PIO.DMA_TX_Trigger (This.SM);
+      Config.Trigger := DMA_TX_Trigger (This.PIO, This.SM);
       Config.Data_Size := Transfer_32;
       Config.Read_Address := Increment;
       Config.Write_Address := Static;
@@ -193,10 +194,10 @@ package body RP.PIO.WS2812 is
 
          RP.DMA.Start (Channel => This.DMA_Chan,
                        From    => This.Data'Address,
-                       To      => This.PIO.TX_FIFO_Address (This.SM),
+                       To      => TX_FIFO_Address (This.PIO, This.SM),
                        Count   => This.Data'Length);
       else
-         This.PIO.Put (This.SM, This.Data);
+         Put (This.PIO, This.SM, This.Data);
       end if;
    end Update;
 

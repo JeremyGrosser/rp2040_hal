@@ -16,22 +16,15 @@ package body Reset_Tests is
       null;
    end Set_Up;
 
-   procedure Test_Timeout
+   procedure Test_Reset
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
       use RP.Reset;
-      Status : Reset_Status;
    begin
       RP.ADC.Enable;
-      Reset_Peripheral (Reset_ADC, Status, Timeout => 0);
-      Assert (Status = Reset_Ok, "Reset timed out with timeout = 0");
+      RP.Reset.Reset_Peripheral (Reset_ADC);
       Assert (RP.ADC.Enabled = False, "ADC still enabled after reset");
-
-      RP.ADC.Enable;
-      Reset_Peripheral (Reset_ADC, Status, Timeout => 1);
-      Assert (Status = Reset_Ok, "Reset timed out with timeout = 1");
-      Assert (RP.ADC.Enabled = False, "ADC still enabled after reset with timeout");
-   end Test_Timeout;
+   end Test_Reset;
 
    overriding
    procedure Register_Tests
@@ -39,7 +32,7 @@ package body Reset_Tests is
    is
       use AUnit.Test_Cases.Registration;
    begin
-      Register_Routine (T, Test_Timeout'Access, "Timeout");
+      Register_Routine (T, Test_Reset'Access, "Reset");
    end Register_Tests;
 
    overriding

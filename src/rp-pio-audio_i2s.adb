@@ -28,13 +28,13 @@ package body RP.PIO.Audio_I2S is
           Wrap        => Offset + RP.PIO.Audio_I2S_PIO.Audio_I2s_Wrap,
           Wrap_Target => Offset + RP.PIO.Audio_I2S_PIO.Audio_I2s_Wrap_Target);
 
-      SM_Initialize (This.PIO.all, This.SM, Offset, This.Config);
+      SM_Initialize (This.PIO, This.SM, Offset, This.Config);
 
-      Set_Pin_Direction (This.PIO.all, This.SM, This.Data.Pin, Output);
-      Set_Pin_Direction (This.PIO.all, This.SM, This.BCLK.Pin, Output);
-      Set_Pin_Direction (This.PIO.all, This.SM, This.LRCLK.Pin, Output);
+      Set_Pin_Direction (This.PIO, This.SM, This.Data.Pin, Output);
+      Set_Pin_Direction (This.PIO, This.SM, This.BCLK.Pin, Output);
+      Set_Pin_Direction (This.PIO, This.SM, This.LRCLK.Pin, Output);
 
-      Execute (This.PIO.all, This.SM, PIO_Instruction (Offset + RP.PIO.Audio_I2S_PIO.Offset_entry_point));
+      Execute (This.PIO, This.SM, PIO_Instruction (Offset + RP.PIO.Audio_I2S_PIO.Offset_entry_point));
    end Program_Init;
 
    overriding
@@ -48,7 +48,7 @@ package body RP.PIO.Audio_I2S is
       Cycles_Per_Sample : constant := 2;
    begin
       Set_Clock_Frequency (This.Config, Sample_Rate * Sample_Bits * This.Channels * Cycles_Per_Sample);
-      Set_Config (This.PIO.all, This.SM, This.Config);
+      Set_Config (This.PIO, This.SM, This.Config);
    end Set_Frequency;
 
    procedure Initialize
@@ -61,24 +61,24 @@ package body RP.PIO.Audio_I2S is
          (Read_Address => Increment,
           others => <>);
       SM_Offset  : constant PIO_Address := 0;
-      AF         : constant RP.GPIO.GPIO_Function := RP.PIO.GPIO_Function (This.PIO.all);
+      AF         : constant RP.GPIO.GPIO_Function := RP.PIO.GPIO_Function (This.PIO);
    begin
       RP.DMA.Enable;
-      This.Data.Configure (Output, Pull_Both, AF);
-      This.BCLK.Configure (Output, Pull_Both, AF);
-      This.LRCLK.Configure (Output, Pull_Both, AF);
+      This.Data.Configure (RP.GPIO.Output, RP.GPIO.Pull_Both, AF);
+      This.BCLK.Configure (RP.GPIO.Output, RP.GPIO.Pull_Both, AF);
+      This.LRCLK.Configure (RP.GPIO.Output, RP.GPIO.Pull_Both, AF);
 
-      Enable (This.PIO.all);
-      Load (This.PIO.all,
+      Enable (This.PIO);
+      Load (This.PIO,
           Prog   => RP.PIO.Audio_I2S_PIO.Audio_I2s_Program_Instructions,
           Offset => SM_Offset);
 
       Program_Init (This, SM_Offset);
       Set_Frequency (This, Frequency);
-      Set_Enabled (This.PIO.all, This.SM, True);
+      Set_Enabled (This.PIO, This.SM, True);
 
       DMA_Config.Trigger := DMA_Request_Trigger'Val
-         (DMA_Request_Trigger'Pos (PIO0_TX0) + (This.PIO.Num * 8) + Natural (This.SM));
+         (DMA_Request_Trigger'Pos (PIO0_TX0) + (Natural (This.PIO) * 8) + Natural (This.SM));
       if Channels = 1 then
          DMA_Config.Data_Size := Transfer_16;
       else
@@ -109,7 +109,7 @@ package body RP.PIO.Audio_I2S is
       RP.DMA.Start
          (Channel => This.DMA_Channel,
           From    => This.Buffer'Address,
-          To      => TX_FIFO_Address (This.PIO.all, This.SM),
+          To      => TX_FIFO_Address (This.PIO, This.SM),
           Count   => Count);
    end Transmit;
 
@@ -121,7 +121,7 @@ package body RP.PIO.Audio_I2S is
       D : UInt32;
    begin
       for I in Data'Range loop
-         Get (This.PIO.all, This.SM, D);
+         Get (This.PIO, This.SM, D);
          Data (I) := Interfaces.Integer_16 (D);
       end loop;
    end Receive;

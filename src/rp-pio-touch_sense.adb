@@ -22,16 +22,18 @@ package body RP.PIO.Touch_Sense is
 
       case Mode is
          when Discharge =>
-            This.PIO.Load
-              (Prog   => Touch_Sense_Discharge_Program_Instructions,
+            Load
+              (This   => This.PIO,
+               Prog   => Touch_Sense_Discharge_Program_Instructions,
                Offset => ASM_Offset);
          when Charge =>
-            This.PIO.Load
-              (Prog   => Touch_Sense_Charge_Program_Instructions,
+            Load
+              (This   => This.PIO,
+               Prog   => Touch_Sense_Charge_Program_Instructions,
                Offset => ASM_Offset);
       end case;
 
-      This.Pin.Configure (Output, Floating, This.PIO.GPIO_Function);
+      RP.GPIO.Configure (This.Pin.all, RP.GPIO.Output, RP.GPIO.Floating, RP.PIO.GPIO_Function (This.PIO));
 
       Set_Jmp_Pin (Config, This.Pin.Pin);
       Set_Set_Pins (Config, This.Pin.Pin, 1);
@@ -49,8 +51,8 @@ package body RP.PIO.Touch_Sense is
       end case;
 
       Set_Clock_Frequency (Config, 125_000_000);
-      This.PIO.SM_Initialize (This.SM, ASM_Offset, Config);
-      This.PIO.Set_Enabled (This.SM, True);
+      SM_Initialize (This.PIO, This.SM, ASM_Offset, Config);
+      Set_Enabled (This.PIO, This.SM, True);
 
       This.Enabled := True;
 
@@ -64,8 +66,8 @@ package body RP.PIO.Touch_Sense is
       if not This.Enabled then
          return 0;
       else
-         This.PIO.Put (This.SM, This.Max_Count);
-         This.PIO.Get (This.SM, Data);
+         Put (This.PIO, This.SM, This.Max_Count);
+         Get (This.PIO, This.SM, Data);
          return This.Max_Count - Data;
       end if;
    end Raw_Value;

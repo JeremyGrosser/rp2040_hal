@@ -21,7 +21,7 @@ is
       (Data        : not null access RP.GPIO.GPIO_Point;
        BCLK        : not null access RP.GPIO.GPIO_Point;
        LRCLK       : not null access RP.GPIO.GPIO_Point;
-       PIO         : not null access RP.PIO.PIO_Device'Class;
+       PIO         : RP.PIO.PIO_Device;
        SM          : RP.PIO.PIO_SM;
        Channels    : Channel_Count;
        DMA_Channel : RP.DMA.DMA_Channel_Id;
@@ -65,7 +65,7 @@ private
       (Data        : not null access RP.GPIO.GPIO_Point;
        BCLK        : not null access RP.GPIO.GPIO_Point;
        LRCLK       : not null access RP.GPIO.GPIO_Point;
-       PIO         : not null access PIO_Device'Class;
+       PIO         : PIO_Device;
        SM          : PIO_SM;
        Channels    : Channel_Count;
        DMA_Channel : RP.DMA.DMA_Channel_Id;
