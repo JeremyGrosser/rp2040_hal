@@ -1,4 +1,4 @@
-name = "test_rp2040_hal"
+name = "test_rp2350_hal"
 description = "Unit tests for rp2040_hal"
 version = "2.3.0"
 
@@ -6,7 +6,7 @@ authors = ["Jeremy Grosser"]
 maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
 maintainers-logins = ["JeremyGrosser"]
 
-executables = ["test_rp2040_hal"]
+executables = ["test_rp2350_hal"]
 
 [[depends-on]]  # Added by alr
 rp2040_hal = "^3"
