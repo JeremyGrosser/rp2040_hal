@@ -9,16 +9,22 @@ with RP.Flash;
 with RP.Flash.Cache;
 
 package body Flash_Tests is
-   Test_Area : UInt8_Array (1 .. RP.Flash.Sector_Size)
-      with Alignment      => RP.Flash.Sector_Size,
-           Linker_Section => ".flashdata";
+   --  The last sector of a 2 MB flash chip, the smallest fitted to any
+   --  supported board. Anything stored there is destroyed by these tests.
+   Test_Offset : constant RP.Flash.Flash_Offset := 16#1F_F000#;
+   Test_Area   : UInt8_Array (1 .. RP.Flash.Sector_Size)
+      with Import, Volatile,
+           Address => RP.Flash.To_Address (Test_Offset);
+
+   --  Too big for the environment task's stack
+   Data : UInt8_Array (Test_Area'Range);
 
    procedure Test_Erase
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
    begin
       RP.Flash.Erase
-         (Offset => RP.Flash.To_Flash_Offset (Test_Area'Address),
+         (Offset => Test_Offset,
           Length => Test_Area'Length);
 
       for I in Test_Area'Range loop
@@ -29,15 +35,13 @@ package body Flash_Tests is
    procedure Test_Program
       (T : in out AUnit.Test_Cases.Test_Case'Class)
    is
-      Data : UInt8_Array (Test_Area'Range)
-         with Alignment => RP.Flash.Sector_Size;
    begin
       for I in Data'Range loop
          Data (I) := UInt8 (I mod Integer (UInt8'Last));
       end loop;
 
       RP.Flash.Program
-         (Offset => RP.Flash.To_Flash_Offset (Test_Area'Address),
+         (Offset => Test_Offset,
           Source => Data'Address,
           Length => Data'Length);
 

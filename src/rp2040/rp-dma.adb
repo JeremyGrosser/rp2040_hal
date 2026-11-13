@@ -9,8 +9,6 @@ with Cortex_M.NVIC;
 with HAL; use HAL;
 with RP.Reset;
 
-with RP2040_SVD.Interrupts;
-
 package body RP.DMA is
 
    procedure Enable is
@@ -80,7 +78,7 @@ package body RP.DMA is
       return Boolean
    is
       DP : aliased DMA_Peripheral
-         with Import, Address => RP2040_SVD.DMA_Base;
+         with Import, Address => System'To_Address (16#5000_0000#);
    begin
       return DMA_Periph.CH (Channel).AL1_CTRL.BUSY;
    end Busy;
@@ -102,16 +100,21 @@ package body RP.DMA is
        Reversed  : Boolean := False;
        Inverted  : Boolean := False)
    is
+      CALC : constant array (Checksum_Algorithm) of UInt4 :=
+         (CRC_32  => 0,
+          CRC_32R => 1,
+          CRC_16  => 2,
+          CRC_16R => 3,
+          EVEN    => 14,
+          SUM     => 15);
    begin
       DMA_Periph.SNIFF_CTRL :=
          (EN      => True,
-          DMACH   => RP2040_SVD.DMA.SNIFF_CTRL_DMACH_Field (Channel),
-          CALC    => RP2040_SVD.DMA.SNIFF_CTRL_CALC_Field'Val
-            (Checksum_Algorithm'Pos (Algorithm)),
+          DMACH   => UInt4 (Channel),
+          CALC    => CALC (Algorithm),
           BSWAP   => Byte_Swap,
           OUT_REV => Reversed,
-          OUT_INV => Inverted,
-          others  => <>);
+          OUT_INV => Inverted);
       DMA_Periph.CH (Channel).AL1_CTRL.SNIFF_EN := True;
    end Enable_Checksum;
 
@@ -133,21 +136,21 @@ package body RP.DMA is
    procedure Enable_IRQ (Channel : DMA_Channel_Id;
                          IRQ     : DMA_IRQ_Id)
    is
-      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+      Mask : constant UInt32 := Shift_Left (UInt32 (1), Natural (Channel));
 
       Line : constant Cortex_M.NVIC.Interrupt_ID :=
         (case IRQ is
-            when 0 => RP2040_SVD.Interrupts.DMA_IRQ_0_Interrupt,
-            when 1 => RP2040_SVD.Interrupts.DMA_IRQ_1_Interrupt);
+            when 0 => 11,   --  DMA_IRQ_0
+            when 1 => 12);  --  DMA_IRQ_1
 
    begin
       case IRQ is
          when 0 =>
-            DMA_Periph.IRQ0.INTE.INTE0 :=
-              DMA_Periph.IRQ0.INTE.INTE0 or Mask;
+            DMA_Periph.IRQ0.INTE :=
+              DMA_Periph.IRQ0.INTE or Mask;
          when 1 =>
-            DMA_Periph.IRQ1.INTE.INTE0 :=
-              DMA_Periph.IRQ1.INTE.INTE0 or Mask;
+            DMA_Periph.IRQ1.INTE :=
+              DMA_Periph.IRQ1.INTE or Mask;
       end case;
 
       Cortex_M.NVIC.Clear_Pending (Line);
@@ -161,15 +164,15 @@ package body RP.DMA is
    procedure Disable_IRQ (Channel : DMA_Channel_Id;
                           IRQ     : DMA_IRQ_Id)
    is
-      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+      Mask : constant UInt32 := Shift_Left (UInt32 (1), Natural (Channel));
    begin
       case IRQ is
          when 0 =>
-            DMA_Periph.IRQ0.INTE.INTE0 :=
-              DMA_Periph.IRQ0.INTE.INTE0 and (not Mask);
+            DMA_Periph.IRQ0.INTE :=
+              DMA_Periph.IRQ0.INTE and (not Mask);
          when 1 =>
-            DMA_Periph.IRQ1.INTE.INTE0 :=
-              DMA_Periph.IRQ1.INTE.INTE0 and (not Mask);
+            DMA_Periph.IRQ1.INTE :=
+              DMA_Periph.IRQ1.INTE and (not Mask);
       end case;
    end Disable_IRQ;
 
@@ -180,13 +183,13 @@ package body RP.DMA is
    procedure Ack_IRQ (Channel : DMA_Channel_Id;
                       IRQ     : DMA_IRQ_Id)
    is
-      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+      Mask : constant UInt32 := Shift_Left (UInt32 (1), Natural (Channel));
    begin
       case IRQ is
          when 0 =>
-            DMA_Periph.IRQ0.INTS.INTS0 := Mask;
+            DMA_Periph.IRQ0.INTS := Mask;
          when 1 =>
-            DMA_Periph.IRQ1.INTS.INTS0 := Mask;
+            DMA_Periph.IRQ1.INTS := Mask;
       end case;
    end Ack_IRQ;
 
@@ -198,13 +201,13 @@ package body RP.DMA is
                         IRQ     : DMA_IRQ_Id)
                         return Boolean
    is
-      Mask : constant UInt16 := Shift_Left (UInt16 (1), Natural (Channel));
+      Mask : constant UInt32 := Shift_Left (UInt32 (1), Natural (Channel));
    begin
       case IRQ is
          when 0 =>
-            return (DMA_Periph.IRQ0.INTS.INTS0 and Mask) /= 0;
+            return (DMA_Periph.IRQ0.INTS and Mask) /= 0;
          when 1 =>
-            return (DMA_Periph.IRQ1.INTS.INTS0 and Mask) /= 0;
+            return (DMA_Periph.IRQ1.INTS and Mask) /= 0;
       end case;
    end IRQ_Status;
 

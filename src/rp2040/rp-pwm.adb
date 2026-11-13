@@ -3,50 +3,114 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.PWM;
 with RP.Reset;
 
 package body RP.PWM is
-   type PWM_Slice_Register is record
-      CSR : aliased RP2040_SVD.PWM.CH0_CSR_Register;
-      DIV : aliased RP2040_SVD.PWM.CH0_DIV_Register;
-      CTR : aliased RP2040_SVD.PWM.CH0_CTR_Register;
-      CC  : aliased RP2040_SVD.PWM.CH0_CC_Register;
-      TOP : aliased RP2040_SVD.PWM.CH0_TOP_Register;
+   type CSR_Register is record
+      PH_ADV      : Boolean := False;
+      PH_RET      : Boolean := False;
+      DIVMODE     : UInt2 := 0;
+      B_INV       : Boolean := False;
+      A_INV       : Boolean := False;
+      PH_CORRECT  : Boolean := False;
+      EN          : Boolean := False;
    end record
-      with Size => 32 * 5,
-           Volatile;
-   for PWM_Slice_Register use record
-      CSR at 0 range 0 .. 31;
-      DIV at 4 range 0 .. 31;
-      CTR at 8 range 0 .. 31;
-      CC  at 12 range 0 .. 31;
-      TOP at 16 range 0 .. 31;
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Writers,
+           Async_Readers,
+           Object_Size => 32;
+   for CSR_Register use record
+      PH_ADV      at 0 range 7 .. 7;
+      PH_RET      at 0 range 6 .. 6;
+      DIVMODE     at 0 range 4 .. 5;
+      B_INV       at 0 range 3 .. 3;
+      A_INV       at 0 range 2 .. 2;
+      PH_CORRECT  at 0 range 1 .. 1;
+      EN          at 0 range 0 .. 0;
    end record;
 
-   type PWM_Slices is array (PWM_Slice) of PWM_Slice_Register;
+   type DIV_Register is record
+      INT  : UInt8 := 1;
+      FRAC : UInt4 := 0;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for DIV_Register use record
+      INT   at 0 range 4 .. 11;
+      FRAC  at 0 range 0 .. 3;
+   end record;
+
+   type CC_Register is record
+      B : UInt16 := 0;
+      A : UInt16 := 0;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for CC_Register use record
+      B at 0 range 16 .. 31;
+      A at 0 range 0 .. 15;
+   end record;
+
+   type PWM_Slice_Register is record
+      CSR : CSR_Register;
+      DIV : DIV_Register;
+      CTR : UInt16 := 16#0000#;
+      CC  : CC_Register;
+      TOP : UInt16 := 16#FFFF#;
+   end record
+      with Volatile,
+           Object_Size => 160;
+
+   for PWM_Slice_Register use record
+      CSR at 16#00# range 0 .. 31;
+      DIV at 16#04# range 0 .. 31;
+      CTR at 16#08# range 0 .. 15;
+      CC  at 16#0C# range 0 .. 31;
+      TOP at 16#10# range 0 .. 15;
+   end record;
+
+   type PWM_Slices is array (PWM_Slice) of PWM_Slice_Register
+      with Volatile,
+           Component_Size => 160;
+
+   pragma Warnings (Off, "* bits of ""*"" unused");
+   type IRQ_Register is record
+      INTE : PWM_Slice_Array;
+      INTF : PWM_Slice_Array;
+      INTS : PWM_Slice_Array;
+   end record
+      with Volatile, Object_Size => 96;
+   for IRQ_Register use record
+      INTE at 0 range 0 .. 7;
+      INTF at 4 range 0 .. 7;
+      INTS at 8 range 0 .. 7;
+   end record;
+
+   type IRQ_Array is array (PWM_IRQ) of IRQ_Register
+      with Volatile, Component_Size => 96;
 
    type PWM_Peripheral is record
-      CH   : PWM_Slices;
-      EN   : aliased RP2040_SVD.PWM.EN_Register;
-      INTR : aliased RP2040_SVD.PWM.INTR_Register;
-      INTE : aliased RP2040_SVD.PWM.INTE_Register;
-      INTF : aliased RP2040_SVD.PWM.INTF_Register;
-      INTS : aliased RP2040_SVD.PWM.INTS_Register;
+      CH    : PWM_Slices;
+      EN    : PWM_Slice_Array;
+      INTR  : PWM_Slice_Array;
+      IRQ   : IRQ_Array;
    end record
-      with Size => 1440,
-           Volatile;
+      with Volatile;
    for PWM_Peripheral use record
-      CH   at   0 range 0 .. 1279;
-      EN   at 160 range 0 .. 31;
-      INTR at 164 range 0 .. 31;
-      INTE at 168 range 0 .. 31;
-      INTF at 172 range 0 .. 31;
-      INTS at 176 range 0 .. 31;
+      CH    at 16#000# range 0 .. 1279;
+      EN    at 16#0A0# range 0 .. 31;
+      INTR  at 16#0A4# range 0 .. 31;
+      IRQ   at 16#0A8# range 0 .. 95;
    end record;
+   pragma Warnings (On, "* bits of ""*"" unused");
 
    PWM_Periph : aliased PWM_Peripheral
-      with Import, Address => RP2040_SVD.PWM_Base;
+      with Import, Address => System'To_Address (16#4005_0000#);
 
    function Div_Integer
       (V : Divider)
@@ -79,7 +143,7 @@ package body RP.PWM is
       use RP.Reset;
    begin
       Reset_Peripheral (Reset_PWM);
-      PWM_Periph.EN.CH.Val := 0;
+      PWM_Periph.EN := (others => False);
       for Slice in PWM_Periph.CH'Range loop
          PWM_Periph.CH (Slice) := (others => <>);
       end loop;
@@ -87,73 +151,75 @@ package body RP.PWM is
    end Initialize;
 
    function To_PWM
-      (Pin : RP.GPIO.GPIO_Pin)
-      return PWM_Point
-   is ((Slice   => PWM_Slice (Shift_Right (UInt32 (Pin), 1) and 2#111#),
-        Channel => PWM_Channel'Val (UInt32 (Pin) and 1)));
-
-   function To_PWM
       (GPIO : RP.GPIO.GPIO_Point)
       return PWM_Point
-   is (To_PWM (GPIO.Pin));
+   is
+      Pin      : constant UInt32 := UInt32 (GPIO.Pin);
+      Channel  : constant UInt32 := Pin and 1;
+      Slice    : UInt32 := Shift_Right (Pin, 1);
+   begin
+      if Pin < 32 then
+         Slice := Slice and 2#111#;
+      else
+         Slice := 8 + (Slice and 2#11#);
+      end if;
+      return PWM_Point'
+         (Slice   => PWM_Slice (Slice),
+          Channel => PWM_Channel'Val (Natural (Channel)));
+   end To_PWM;
 
    procedure Enable
       (Slice : PWM_Slice)
    is
    begin
-      PWM_Periph.EN.CH.Arr (Natural (Slice)) := True;
+      PWM_Periph.EN (Slice) := True;
    end Enable;
 
    procedure Disable
       (Slice : PWM_Slice)
    is
    begin
-      PWM_Periph.EN.CH.Arr (Natural (Slice)) := False;
+      PWM_Periph.EN (Slice) := False;
    end Disable;
 
-   function To_Mask
-      (Slices : PWM_Slice_Array)
-      return UInt8
-   is
-      Mask : UInt8 := 0;
-   begin
-      for I in Slices'Range loop
-         if Slices (I) then
-            Mask := Mask or Shift_Left (1, Natural (I));
-         end if;
-      end loop;
-      return Mask;
-   end To_Mask;
-
    procedure Enable
       (Slices : PWM_Slice_Array)
    is
-      Mask : constant UInt8 := To_Mask (Slices);
+      Val : PWM_Slice_Array := PWM_Periph.EN;
    begin
-      PWM_Periph.EN.CH.Val := PWM_Periph.EN.CH.Val or Mask;
+      for S in Slices'Range loop
+         if Slices (S) then
+            Val (S) := True;
+         end if;
+      end loop;
+      PWM_Periph.EN := Val;
    end Enable;
 
    procedure Disable
       (Slices : PWM_Slice_Array)
    is
-      Mask : constant UInt8 := To_Mask (Slices);
+      Val : PWM_Slice_Array := PWM_Periph.EN;
    begin
-      PWM_Periph.EN.CH.Val := PWM_Periph.EN.CH.Val and not Mask;
+      for S in Slices'Range loop
+         if Slices (S) then
+            Val (S) := False;
+         end if;
+      end loop;
+      PWM_Periph.EN := Val;
    end Disable;
 
    function Enabled
       (Slice : PWM_Slice)
       return Boolean
-   is (PWM_Periph.EN.CH.Arr (Natural (Slice)));
+   is (PWM_Periph.EN (Slice));
 
    procedure Set_Mode
       (Slice : PWM_Slice;
        Mode  : PWM_Divider_Mode)
    is
-      use RP2040_SVD.PWM;
    begin
-      PWM_Periph.CH (Slice).CSR.DIVMODE :=
-         CH0_CSR_DIVMODE_Field'Enum_Val (PWM_Divider_Mode'Enum_Rep (Mode));
+      PWM_Periph.CH (Slice).CSR.DIVMODE := UInt2
+         (PWM_Divider_Mode'Enum_Rep (Mode));
    end Set_Mode;
 
    procedure Set_Interval
@@ -161,7 +227,7 @@ package body RP.PWM is
        Clocks : Period)
    is
    begin
-      PWM_Periph.CH (Slice).TOP.CH0_TOP := Clocks;
+      PWM_Periph.CH (Slice).TOP := Clocks;
    end Set_Interval;
 
    procedure Set_Duty_Cycle
@@ -230,13 +296,10 @@ package body RP.PWM is
       (Slice : PWM_Slice;
        Div   : Divider)
    is
-      use RP2040_SVD.PWM;
-      D : constant CH0_DIV_Register :=
-         (INT    => CH0_DIV_INT_Field (Div_Integer (Div)),
-          FRAC   => CH0_DIV_FRAC_Field (Div_Fraction (Div)),
-          others => <>);
    begin
-      PWM_Periph.CH (Slice).DIV := D;
+      PWM_Periph.CH (Slice).DIV :=
+         (INT  => Div_Integer (Div),
+          FRAC => Div_Fraction (Div));
    end Set_Divider;
 
    procedure Set_Frequency
@@ -252,44 +315,41 @@ package body RP.PWM is
    function Count
       (Slice : PWM_Slice)
       return UInt16
-   is (PWM_Periph.CH (Slice).CTR.CH0_CTR);
+   is (PWM_Periph.CH (Slice).CTR);
 
    procedure Set_Count
       (Slice : PWM_Slice;
        Value : Period)
    is
    begin
-      PWM_Periph.CH (Slice).CTR.CH0_CTR := Value;
+      PWM_Periph.CH (Slice).CTR := Value;
    end Set_Count;
 
-   function Compare_Reg_Address (Slice : PWM_Slice) return System.Address is
-   begin
-      return PWM_Periph.CH (Slice).CC'Address;
-   end Compare_Reg_Address;
+   function Compare_Reg_Address
+      (Slice : PWM_Slice)
+      return System.Address
+   is (PWM_Periph.CH (Slice).CC'Address);
 
    procedure Enable_Interrupt
       (Slice : PWM_Slice;
        IRQ   : PWM_IRQ := 0)
    is
-      pragma Unreferenced (IRQ);
    begin
-      PWM_Periph.INTE.CH.Arr (Natural (Slice)) := True;
+      PWM_Periph.IRQ (IRQ).INTE (Slice) := True;
    end Enable_Interrupt;
 
    procedure Disable_Interrupt
       (Slice : PWM_Slice;
        IRQ   : PWM_IRQ := 0)
    is
-      pragma Unreferenced (IRQ);
    begin
-      PWM_Periph.INTE.CH.Arr (Natural (Slice)) := False;
+      PWM_Periph.IRQ (IRQ).INTE (Slice) := False;
    end Disable_Interrupt;
 
    procedure Acknowledge_Interrupt
       (Slice : PWM_Slice)
    is
    begin
-      PWM_Periph.INTR.CH.Arr (Natural (Slice)) := True;
+      PWM_Periph.INTR (Slice) := True;
    end Acknowledge_Interrupt;
-
 end RP.PWM;

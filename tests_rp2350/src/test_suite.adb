@@ -14,7 +14,7 @@ with I2CM_Tests;
 with PIO_Tests;
 with Reset_Tests;
 with USB_Tests;
---  with Flash_Tests;
+with Flash_Tests;
 
 package body Test_Suite is
    Result : aliased AUnit.Test_Suites.Test_Suite;
@@ -30,7 +30,7 @@ package body Test_Suite is
    PIO_Case       : aliased PIO_Tests.PIO_Test;
    Reset_Case     : aliased Reset_Tests.Reset_Test;
    USB_Case       : aliased USB_Tests.USB_Test;
-   --  Flash_Case     : aliased Flash_Tests.Flash_Test;
+   Flash_Case     : aliased Flash_Tests.Flash_Test;
 
    function Suite
       return AUnit.Test_Suites.Access_Test_Suite
@@ -48,7 +48,7 @@ package body Test_Suite is
       Add_Test (Result'Access, PIO_Case'Access);
       Add_Test (Result'Access, Reset_Case'Access);
       Add_Test (Result'Access, USB_Case'Access);
-      --  Add_Test (Result'Access, Flash_Case'Access);
+      Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;
 end Test_Suite;

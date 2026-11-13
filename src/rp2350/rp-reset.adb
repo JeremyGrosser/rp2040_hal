@@ -3,7 +3,7 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2350_SVD;
+with System;
 
 package body RP.Reset is
 
@@ -25,7 +25,7 @@ package body RP.Reset is
    end record;
 
    RESETS_Periph : aliased RESETS_Peripheral
-      with Import, Address => RP2350_SVD.RESETS_Base;
+      with Import, Address => System'To_Address (16#4002_0000#);
 
    procedure Reset_Peripheral
       (Peripheral : Reset_Id)

@@ -22,7 +22,15 @@ is
 
    procedure Disable;
 
+   function Enabled
+      return Boolean;
+
    procedure Reload;
+
+   function Remaining
+      return Natural;
+   --  Milliseconds left before the watchdog resets the processors, rounded
+   --  down. Does not change while the watchdog is disabled or paused.
 
    procedure Trigger;
    --  Reset now

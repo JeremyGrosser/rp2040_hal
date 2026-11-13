@@ -33,7 +33,9 @@ package RP.Flash is
    --  will trigger a fault.
    --
    --  This is why the procedures are flagged No_Inline and their code located
-   --  in RAM (using the linker section ".time_critical").
+   --  in RAM. The runtime linker scripts have no section for RAM code, so
+   --  ".gnu.linkonce.d.time_critical" is used, which they collect into .data along with
+   --  initialized variables.
    --
    --  Any interrupt that may execute from flash must be masked. If a second
    --  core is running, make sure it only executes code in RAM or bootrom.
@@ -41,7 +43,7 @@ package RP.Flash is
    procedure Erase
       (Offset : Flash_Offset;
        Length : Natural)
-     with No_Inline, Linker_Section => ".time_critical",
+     with No_Inline, Linker_Section => ".gnu.linkonce.d.time_critical",
           Pre => (Length mod Sector_Size) = 0
                  and (Offset mod Sector_Size) = 0
                  and Offset + Flash_Offset (Length) <= Flash_Offset'Last;
@@ -52,7 +54,7 @@ package RP.Flash is
       (Offset : Flash_Offset;
        Source : System.Address;
        Length : Natural)
-     with No_Inline, Linker_Section => ".time_critical",
+     with No_Inline, Linker_Section => ".gnu.linkonce.d.time_critical",
      Pre => (Length mod Page_Size) = 0
             and (Offset mod Page_Size) = 0
             and Offset + Flash_Offset (Length) <= Flash_Offset'Last

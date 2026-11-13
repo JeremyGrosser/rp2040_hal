@@ -3,7 +3,8 @@
 Host side of the RP.USB_Device CDC-ACM loopback test.
 
 Waits for the test firmware's serial port to appear, sends a sync byte, then
-echoes everything it receives until the device goes away or --timeout expires.
+echoes everything it receives until --timeout expires, reconnecting if the
+device is reset.
 Run it before starting the tests:
 
     ./usb_echo.py &
@@ -30,18 +31,8 @@ def wait_for_port(deadline):
     return None
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--timeout", type=float, default=120.0,
-                        help="give up after this many seconds (default: %(default)s)")
-    args = parser.parse_args()
-    deadline = time.monotonic() + args.timeout
-
-    port = wait_for_port(deadline)
-    if port is None:
-        print("usb_echo: test device did not enumerate", file=sys.stderr)
-        return 1
-
+def echo(port, deadline):
+    """Echo until the device goes away. Returns the number of bytes echoed."""
     # udev may still be fixing up permissions when the symlink appears
     while True:
         try:
@@ -51,6 +42,8 @@ def main():
             if time.monotonic() >= deadline:
                 raise
             time.sleep(0.05)
+        except OSError:
+            return 0  # went away before we could open it
 
     total = 0
     try:
@@ -70,11 +63,35 @@ def main():
             total += len(data)
             while data:
                 data = data[os.write(fd, data):]
-    except OSError:
+    except (OSError, termios.error):
         pass  # device was reset or unplugged
     finally:
         os.close(fd)
+    return total
 
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--timeout", type=float, default=120.0,
+                        help="give up after this many seconds (default: %(default)s)")
+    args = parser.parse_args()
+    deadline = time.monotonic() + args.timeout
+
+    # The port may already exist if a previous run left the firmware idling.
+    # It disappears when the board is reset, so keep reconnecting.
+    total = 0
+    seen = False
+    while time.monotonic() < deadline:
+        port = wait_for_port(deadline)
+        if port is None:
+            break
+        seen = True
+        total += echo(port, deadline)
+        time.sleep(0.1)
+
+    if not seen:
+        print("usb_echo: test device did not enumerate", file=sys.stderr)
+        return 1
     print(f"usb_echo: echoed {total} bytes", file=sys.stderr)
     return 0
 

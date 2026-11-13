@@ -4,14 +4,111 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with RP.GPIO; use RP.GPIO;
-with RP2040_SVD.ADC;
-with RP.Device;
 with RP.Reset;
 
 package body RP.ADC is
    use HAL;
 
-   P : RP2040_SVD.ADC.ADC_Peripheral renames RP.Device.ADC;
+   type CS_Register is record
+      RROBIN      : UInt5 := 0;
+      AINSEL      : UInt3 := 0;
+      ERR_STICKY  : Boolean := False;
+      ERR         : Boolean := False;
+      READY       : Boolean := False;
+      START_MANY  : Boolean := False;
+      START_ONCE  : Boolean := False;
+      TS_EN       : Boolean := False;
+      EN          : Boolean := False;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Async_Writers,
+           Object_Size => 32;
+   for CS_Register use record
+      RROBIN      at 0 range 16 .. 20;
+      AINSEL      at 0 range 12 .. 14;
+      ERR_STICKY  at 0 range 10 .. 10;
+      ERR         at 0 range 9 .. 9;
+      READY       at 0 range 8 .. 8;
+      START_MANY  at 0 range 3 .. 3;
+      START_ONCE  at 0 range 2 .. 2;
+      TS_EN       at 0 range 1 .. 1;
+      EN          at 0 range 0 .. 0;
+   end record;
+
+   type FCS_Register is record
+      THRESH   : UInt4 := 0;
+      LEVEL    : UInt4 := 0;
+      OVER     : Boolean := False;
+      UNDER    : Boolean := False;
+      FULL     : Boolean := False;
+      EMPTY    : Boolean := False;
+      DREQ_EN  : Boolean := False;
+      ERR      : Boolean := False;
+      SHIFT    : Boolean := False;
+      EN       : Boolean := False;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Async_Writers,
+           Object_Size => 32;
+   for FCS_Register use record
+      THRESH   at 0 range 24 .. 27;
+      LEVEL    at 0 range 16 .. 19;
+      OVER     at 0 range 11 .. 11;
+      UNDER    at 0 range 10 .. 10;
+      FULL     at 0 range 9 .. 9;
+      EMPTY    at 0 range 8 .. 8;
+      DREQ_EN  at 0 range 3 .. 3;
+      ERR      at 0 range 2 .. 2;
+      SHIFT    at 0 range 1 .. 1;
+      EN       at 0 range 0 .. 0;
+   end record;
+
+   type FIFO_Register is record
+      ERR : Boolean := False;
+      VAL : UInt12 := 0;
+   end record
+      with Volatile_Full_Access,
+           Effective_Reads,
+           Async_Writers,
+           Object_Size => 32;
+   for FIFO_Register use record
+      ERR at 0 range 15 .. 15;
+      VAL at 0 range 0 .. 11;
+   end record;
+
+   type DIV_Register is record
+      INT   : UInt16 := 0;
+      FRAC  : UInt8 := 0;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for DIV_Register use record
+      INT   at 0 range 8 .. 23;
+      FRAC  at 0 range 0 .. 7;
+   end record;
+
+   type ADC_Peripheral is record
+      CS    : aliased CS_Register;
+      FCS   : aliased FCS_Register;
+      FIFO  : aliased FIFO_Register;
+      DIV   : aliased DIV_Register;
+   end record
+      with Volatile;
+   for ADC_Peripheral use record
+      CS    at 16#00# range 0 .. 31;
+      FCS   at 16#08# range 0 .. 31;
+      FIFO  at 16#0C# range 0 .. 31;
+      DIV   at 16#10# range 0 .. 31;
+   end record;
+
+   P : ADC_Peripheral
+      with Import, Address => System'To_Address (16#4004_C000#);
 
    function Div_Integer
       (V : ADC_Divider)
@@ -109,7 +206,7 @@ package body RP.ADC is
             Val := Val or 1;
          end if;
       end loop;
-      P.CS.RROBIN := RP2040_SVD.ADC.CS_RROBIN_Field (Val);
+      P.CS.RROBIN := UInt5 (Val);
    end Set_Round_Robin;
 
    procedure Set_Divider
@@ -118,8 +215,7 @@ package body RP.ADC is
    begin
       P.DIV :=
          (INT    => Div_Integer (Div),
-          FRAC   => Div_Fraction (Div),
-          others => <>);
+          FRAC   => Div_Fraction (Div));
    end Set_Divider;
 
    procedure Set_Sample_Rate
@@ -143,7 +239,7 @@ package body RP.ADC is
       return Analog_Value
    is
    begin
-      P.CS.AINSEL := RP2040_SVD.ADC.CS_AINSEL_Field (Channel);
+      P.CS.AINSEL := UInt3 (Channel);
       return Read;
    end Read;
 

@@ -3,8 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
---  with RP2040_SVD.UART;
-with RP2350_SVD;
 with RP.SPI;
 with RP.I2C_Master;
 with RP.UART;
@@ -14,23 +12,23 @@ with System;
 
 package RP.Device is
    SPI0_Periph : aliased RP.SPI.SPI_Peripheral
-      with Import, Address => RP2350_SVD.SPI0_Base;
+      with Import, Address => System'To_Address (16#4008_0000#);
    SPI1_Periph : aliased RP.SPI.SPI_Peripheral
-      with Import, Address => RP2350_SVD.SPI1_Base;
+      with Import, Address => System'To_Address (16#4008_8000#);
    SPI_0 : aliased RP.SPI.SPI_Port (0, SPI0_Periph'Access);
    SPI_1 : aliased RP.SPI.SPI_Port (1, SPI1_Periph'Access);
 
    I2CM0_Periph : aliased RP.I2C_Master.I2C_Peripheral
-      with Import, Address => RP2350_SVD.I2C0_Base;
+      with Import, Address => System'To_Address (16#4009_0000#);
    I2CM1_Periph : aliased RP.I2C_Master.I2C_Peripheral
-      with Import, Address => RP2350_SVD.I2C1_Base;
+      with Import, Address => System'To_Address (16#4009_8000#);
    I2CM_0 : aliased RP.I2C_Master.I2C_Master_Port (0, I2CM0_Periph'Access);
    I2CM_1 : aliased RP.I2C_Master.I2C_Master_Port (1, I2CM1_Periph'Access);
 
    UART0_Periph : aliased RP.UART.UART_Peripheral
-      with Import, Address => RP2350_SVD.UART0_Base;
+      with Import, Address => System'To_Address (16#4007_0000#);
    UART1_Periph : aliased RP.UART.UART_Peripheral
-      with Import, Address => RP2350_SVD.UART1_Base;
+      with Import, Address => System'To_Address (16#4007_8000#);
    UART_0 : aliased RP.UART.UART_Port (0, UART0_Periph'Access);
    UART_1 : aliased RP.UART.UART_Port (1, UART1_Periph'Access);
 

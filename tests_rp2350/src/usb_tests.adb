@@ -80,6 +80,14 @@ package body USB_Tests is
           Max_Packet_Size => 64) = Ok,
           "USB stack initialization failed");
 
+      --  If the board was reset by a debugger while still enumerated from a
+      --  previous run, the pull-up never dropped. Stack.Start releases it for
+      --  too short a time for the host to notice, leaving the host talking to
+      --  a device that no longer has an address. Hold the bus disconnected
+      --  long enough to force a new enumeration.
+      UDC.Initialize;
+      delay 0.1;
+
       Stack.Start;
       Started := True;
 

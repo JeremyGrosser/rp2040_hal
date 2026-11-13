@@ -3,9 +3,37 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.TIMER; use RP2040_SVD.TIMER;
+with System;
 
 package body RP.Timer is
+
+   type DBGPAUSE_Register is record
+      DBG1 : Boolean := True;
+      DBG0 : Boolean := True;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for DBGPAUSE_Register use record
+      DBG1 at 0 range 2 .. 2;
+      DBG0 at 0 range 1 .. 1;
+   end record;
+
+   type TIMER_Peripheral is record
+      TIMERAWH : UInt32;
+      TIMERAWL : UInt32;
+      DBGPAUSE : DBGPAUSE_Register;
+   end record
+      with Volatile;
+   for TIMER_Peripheral use record
+      TIMERAWH at 16#24# range 0 .. 31;
+      TIMERAWL at 16#28# range 0 .. 31;
+      DBGPAUSE at 16#2C# range 0 .. 31;
+   end record;
+
+   TIMER_Periph : TIMER_Peripheral
+      with Import, Address => System'To_Address (16#4005_4000#);
    function Clock
       return Time
    is
@@ -64,7 +92,7 @@ package body RP.Timer is
       (Core_0, Core_1 : Boolean)
    is
    begin
-      TIMER_Periph.DBGPAUSE.DBG := (As_Array => True, Arr => (0 => Core_0, 1 => Core_1));
+      TIMER_Periph.DBGPAUSE := (DBG0 => Core_0, DBG1 => Core_1);
    end Set_Debug_Pause;
 
 end RP.Timer;

@@ -3,8 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-private with RP2350_SVD.DMA;
-private with RP2350_SVD;
 with HAL; use HAL;
 with System;
 
@@ -324,8 +322,42 @@ private
       AL3_READ_ADDR_TRIG   at 16#3C# range 0 .. 31;
    end record;
 
+   type TIMER_Register is record
+      X : UInt16 := 0;
+      Y : UInt16 := 0;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for TIMER_Register use record
+      X at 0 range 16 .. 31;
+      Y at 0 range 0 .. 15;
+   end record;
+
+   type SNIFF_CTRL_Register is record
+      OUT_INV  : Boolean := False;
+      OUT_REV  : Boolean := False;
+      BSWAP    : Boolean := False;
+      CALC     : UInt4 := 0;
+      DMACH    : UInt4 := 0;
+      EN       : Boolean := False;
+   end record
+      with Volatile_Full_Access,
+           Effective_Writes,
+           Async_Readers,
+           Object_Size => 32;
+   for SNIFF_CTRL_Register use record
+      OUT_INV  at 0 range 11 .. 11;
+      OUT_REV  at 0 range 10 .. 10;
+      BSWAP    at 0 range 9 .. 9;
+      CALC     at 0 range 5 .. 8;
+      DMACH    at 0 range 1 .. 4;
+      EN       at 0 range 0 .. 0;
+   end record;
+
    type DMA_Channel_Debug is record
-      CTDREQ : aliased RP2350_SVD.DMA.CH0_DBG_CTDREQ_Register;
+      CTDREQ : aliased UInt32;
       TCR    : UInt32;
    end record
       with Volatile, Size => 64;
@@ -335,9 +367,9 @@ private
    end record;
 
    type DMA_IRQ is record
-      INTE : aliased RP2350_SVD.DMA.INTE0_Register;
-      INTF : aliased RP2350_SVD.DMA.INTF0_Register;
-      INTS : aliased RP2350_SVD.DMA.INTS0_Register;
+      INTE : aliased UInt32;
+      INTF : aliased UInt32;
+      INTS : aliased UInt32;
    end record
       with Volatile, Size => 96;
    for DMA_IRQ use record
@@ -352,23 +384,23 @@ private
    type DMA_Channels_Debug is array (DMA_Channel_Id) of DMA_Channel_Debug
       with Volatile, Component_Size => 64;
 
-   type DMA_Timers is array (DMA_Timer_Id) of RP2350_SVD.DMA.TIMER_Register
+   type DMA_Timers is array (DMA_Timer_Id) of TIMER_Register
       with Volatile, Component_Size => 32;
 
    type DMA_Peripheral is record
       CH                 : DMA_Channels;
-      INTR               : aliased RP2350_SVD.DMA.INTR_Register;
+      INTR               : aliased UInt32;
       IRQ0               : DMA_IRQ;
       IRQ1               : DMA_IRQ;
       IRQ2               : DMA_IRQ;
       IRQ3               : DMA_IRQ;
       TIMER              : DMA_Timers;
-      MULTI_CHAN_TRIGGER : aliased RP2350_SVD.DMA.MULTI_CHAN_TRIGGER_Register;
-      SNIFF_CTRL         : aliased RP2350_SVD.DMA.SNIFF_CTRL_Register;
+      MULTI_CHAN_TRIGGER : aliased UInt32;
+      SNIFF_CTRL         : aliased SNIFF_CTRL_Register;
       SNIFF_DATA         : aliased UInt32;
-      FIFO_LEVELS        : aliased RP2350_SVD.DMA.FIFO_LEVELS_Register;
-      CHAN_ABORT         : aliased RP2350_SVD.DMA.CHAN_ABORT_Register;
-      N_CHANNELS         : aliased RP2350_SVD.DMA.N_CHANNELS_Register;
+      FIFO_LEVELS        : aliased UInt32;
+      CHAN_ABORT         : aliased UInt32;
+      N_CHANNELS         : aliased UInt32;
       CH_DBG             : DMA_Channels_Debug;
    end record
       with Volatile;
@@ -390,6 +422,6 @@ private
    end record;
 
    DMA_Periph : aliased DMA_Peripheral
-      with Import, Address => RP2350_SVD.DMA_Base;
+      with Import, Address => System'To_Address (16#5000_0000#);
 
 end RP.DMA;
