@@ -102,12 +102,14 @@ package body USB_Tests is
       Assert (Started, "Controller was not started");
 
       Deadline := Clock + Enumerate_Timeout;
-      while not Serial.List_Ctrl_State.DTE_Is_Present loop
+      loop
+         exit when Serial.List_Ctrl_State.DTE_Is_Present;
          Assert (Clock < Deadline, "Host did not open the serial port. Is USB connected and usb_echo.py running?");
          Stack.Poll;
       end loop;
 
-      while not Synced loop
+      loop
+         exit when Synced;
          Assert (Clock < Deadline, "Host opened the serial port but did not send sync");
          Stack.Poll;
          Len := Data'Length;
@@ -123,7 +125,7 @@ package body USB_Tests is
       --  Not a multiple of the packet size, so the transfer ends with a short
       --  packet, and bigger than the class queues, so they have to wrap.
       Total    : constant := 1000;
-      TX, RX   : UInt8_Array (1 .. Total) := (others => 0);
+      TX, RX   : aliased UInt8_Array (1 .. Total) := (others => 0);
       Sent     : Natural := 0;
       Received : Natural := 0;
       Deadline : Time;
