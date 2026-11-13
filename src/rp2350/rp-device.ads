@@ -9,7 +9,7 @@ with RP.SPI;
 with RP.I2C_Master;
 with RP.UART;
 with RP.Interpolator;
---  with RP.USB_Device;
+with RP.USB_Device;
 with System;
 
 package RP.Device is
@@ -41,5 +41,5 @@ package RP.Device is
    INTERP_1 : aliased RP.Interpolator.INTERP_Peripheral
       with Import, Address => INTERP1_Base;
 
-   --  UDC     : aliased RP.USB_Device.USB_Device_Controller;
+   UDC     : aliased RP.USB_Device.USB_Device_Controller;
 end RP.Device;

@@ -3,9 +3,8 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with RP2040_SVD.PADS_BANK0;
-with RP2040_SVD.IO_BANK0;
-with RP2040_SVD;
+with RP.Device_Parameters;
+with RP.Clock;
 with RP.Reset;
 
 package body RP.USB_Device is
@@ -389,6 +388,7 @@ package body RP.USB_Device is
    is
       use RP.Reset;
    begin
+      RP.Clock.Enable_USB;
       Reset_Peripheral (Reset_USBCTRL);
    end Initialize;
 
@@ -505,7 +505,7 @@ package body RP.USB_Device is
          --  Write 1 to clear
          REGS.SIE_STATUS := (BUS_RESET => True, others => <>);
 
-         if REGS.SIE_CTRL.PULLUP_EN then
+         if RP.Device_Parameters.Has_USB_Errata_E5 and then REGS.SIE_CTRL.PULLUP_EN then
             This.Enumeration_Fix;
          end if;
          return (Kind => USB.HAL.Device.Reset);
@@ -726,17 +726,29 @@ package body RP.USB_Device is
       return Line_States
    is (Line_States'Val (REGS.SIE_STATUS.LINE_STATE));
 
+   --  RP2040-E5: the device controller may miss a bus reset that arrives
+   --  while DP is still low. Work around it by borrowing GPIO15 to force a J
+   --  state into the controller for 1 ms. Only called on RP2040, the register
+   --  addresses and GPIO function below do not apply to any other device.
    procedure Enumeration_Fix
       (This : in out USB_Device_Controller)
    is
-      use RP2040_SVD.IO_BANK0;
-      use RP2040_SVD.PADS_BANK0;
-      DP_CTRL : GPIO15_CTRL_Register renames IO_BANK0_Periph.GPIO15_CTRL;
-      DP_PAD  : GPIO_Register renames PADS_BANK0_Periph.GPIO15;
+      DP_CTRL : UInt32 --  IO_BANK0.GPIO15_CTRL
+         with Import, Volatile, Address => System'To_Address (16#4001_407C#);
+      DP_PAD  : UInt32 --  PADS_BANK0.GPIO15
+         with Import, Volatile, Address => System'To_Address (16#4001_C040#);
+
+      PAD_PUE              : constant UInt32 := Shift_Left (1, 3);
+      PAD_PDE              : constant UInt32 := Shift_Left (1, 2);
+      CTRL_FUNCSEL_Mask    : constant UInt32 := 16#1F#;
+      CTRL_FUNCSEL_USB_DP  : constant UInt32 := 8; --  usb_muxing_digital_dp
+      CTRL_OEOVER_Mask     : constant UInt32 := Shift_Left (3, 12);
+      CTRL_OEOVER_Disable  : constant UInt32 := Shift_Left (2, 12);
+      CTRL_INOVER_High     : constant UInt32 := Shift_Left (3, 16);
 
       --  Save DP state
-      DP_CTRL_Save : constant GPIO15_CTRL_Register := DP_CTRL;
-      DP_PAD_Save  : constant GPIO_Register := DP_PAD;
+      DP_CTRL_Save : constant UInt32 := DP_CTRL;
+      DP_PAD_Save  : constant UInt32 := DP_PAD;
 
       DP_PULLUP_EN               : constant UInt32 := Shift_Left (1, 6);
       DP_PULLUP_EN_OVERRIDE_EN   : constant UInt32 := Shift_Left (1, 4);
@@ -746,15 +758,14 @@ package body RP.USB_Device is
       end loop;
 
       --  Enable pull up/down
-      DP_PAD.PUE := True;
-      DP_PAD.PDE := True;
+      DP_PAD := DP_PAD_Save or PAD_PUE or PAD_PDE;
 
       --  Disconnect the pad from USB
-      DP_CTRL.OEOVER := DISABLE;
-      DP_CTRL.FUNCSEL := usb_muxing_digital_dp;
+      DP_CTRL := (DP_CTRL_Save and not (CTRL_OEOVER_Mask or CTRL_FUNCSEL_Mask))
+                 or CTRL_OEOVER_Disable or CTRL_FUNCSEL_USB_DP;
 
       --  Pretend DP is high
-      DP_CTRL.INOVER := HIGH;
+      DP_CTRL := DP_CTRL or CTRL_INOVER_High;
       REGS.USBPHY_DIRECT := DP_PULLUP_EN;
       REGS.USBPHY_DIRECT_OVERRIDE := DP_PULLUP_EN_OVERRIDE_EN;
       REGS.USB_MUXING :=

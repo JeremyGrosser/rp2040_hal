@@ -13,6 +13,7 @@ with SPI_Tests;
 with I2CM_Tests;
 with PIO_Tests;
 with Reset_Tests;
+with USB_Tests;
 --  with Flash_Tests;
 
 package body Test_Suite is
@@ -28,6 +29,7 @@ package body Test_Suite is
    I2CM_Case      : aliased I2CM_Tests.I2CM_Test;
    PIO_Case       : aliased PIO_Tests.PIO_Test;
    Reset_Case     : aliased Reset_Tests.Reset_Test;
+   USB_Case       : aliased USB_Tests.USB_Test;
    --  Flash_Case     : aliased Flash_Tests.Flash_Test;
 
    function Suite
@@ -45,6 +47,7 @@ package body Test_Suite is
       Add_Test (Result'Access, I2CM_Case'Access);
       Add_Test (Result'Access, PIO_Case'Access);
       Add_Test (Result'Access, Reset_Case'Access);
+      Add_Test (Result'Access, USB_Case'Access);
       --  Add_Test (Result'Access, Flash_Case'Access);
       return Result'Access;
    end Suite;

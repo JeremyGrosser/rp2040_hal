@@ -59,4 +59,5 @@ is
 
    procedure Enable_ADC;
    procedure Enable_PERI;
+   procedure Enable_USB;
 end RP.Clock;

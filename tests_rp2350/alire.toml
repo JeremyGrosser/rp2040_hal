@@ -13,6 +13,7 @@ rp2040_hal = "^3"
 aunit = "^24"
 gnatcov = "^22"
 embedded_rp2350 = ">=15"
+usb_embedded = "^1"
 
 [[pins]]
 rp2040_hal = { path='..' }

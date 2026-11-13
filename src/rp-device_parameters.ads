@@ -40,4 +40,7 @@ is
          when RP2040 => 2,
          when others => 3);
 
+   Has_USB_Errata_E5 : constant Boolean := Device = RP2040;
+   --  USB device fails to exit RESET state on busy USB bus
+
 end RP.Device_Parameters;
